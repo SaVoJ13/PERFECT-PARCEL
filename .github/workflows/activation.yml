@@ -8,7 +8,7 @@ jobs:
     name: Generate ALF File
     runs-on: ubuntu-latest
     container:
-      image: unityci/editor:ubuntu-6000.0.32f1-base-3.0.0
+      image: unityci/editor:ubuntu-2022.3.20f1-base-3.0.0
     steps:
       - name: Request ALF
         run: |
