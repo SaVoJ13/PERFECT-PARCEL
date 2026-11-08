@@ -15,6 +15,7 @@ jobs:
         uses: game-ci/unity-builder@v4
         with:
           entrypoint: /bin/bash
+          unityLicensingServer: fake-licensing-server
           customParameters: -quit -batchmode -nographics -logFile /dev/stdout -createManualActivationFile
 
       - name: Expose activation file
