@@ -91,6 +91,7 @@ namespace PerfectParcel.Economy
 
                 SaveManager.Instance.SaveDataAtomic();
                 OnUpgradePurchased?.Invoke(type, nextTier);
+                if (nextTier >= MaxUpgradeTier) AchievementsManager.Instance?.UnlockAchievement("ACH-08");
                 Debug.Log($"[UpgradesManager] Придбано покращення {type} до рівня {nextTier}!");
                 return true;
             }
@@ -100,36 +101,33 @@ namespace PerfectParcel.Economy
 
         #region Gameplay Modifiers
         /// <summary>
-        /// Додаткові серця / життя з покращення SafetyBuffer (+1 на Tier 3, +2 на Tier 5).
+        /// Додаткові секунди до лінії падіння (Safety Buffer: +0.3с за рівень, до +1.5с) — ECONOMY_DESIGN.md.
         /// </summary>
-        public int GetBonusLives()
+        public float GetDropLineGraceSeconds()
         {
-            int tier = GetUpgradeTier(UpgradeType.SafetyBuffer);
-            if (tier >= 5) return 2;
-            if (tier >= 3) return 1;
-            return 0;
+            return GetUpgradeTier(UpgradeType.SafetyBuffer) * 0.3f;
         }
 
         /// <summary>
-        /// Модифікатор швидкості конвеєра (-3% за рівень SmoothBelt).
+        /// Модифікатор швидкості конвеєра (-4% за рівень SmoothBelt, до -20%).
         /// </summary>
         public float GetSpeedReductionModifier()
         {
             int tier = GetUpgradeTier(UpgradeType.SmoothBelt);
-            return 1f - (tier * 0.03f);
+            return 1f - (tier * 0.04f);
         }
 
         /// <summary>
-        /// Бонус до монет (+5% за рівень CoinMultiplier).
+        /// Бонус до монет (+8% за рівень CoinMultiplier, до +40%).
         /// </summary>
         public float GetCoinMultiplier()
         {
             int tier = GetUpgradeTier(UpgradeType.CoinMultiplier);
-            return 1f + (tier * 0.05f);
+            return 1f + (tier * 0.08f);
         }
 
         /// <summary>
-        /// Шанс порятунку крихкої посилки (10% за рівень CushionedBin).
+        /// Шанс порятунку крихкої посилки: штраф за помилку знижується з 2 до 1 життя (10% за рівень CushionedBin).
         /// </summary>
         public float GetCushionSaveChance()
         {
@@ -138,12 +136,12 @@ namespace PerfectParcel.Economy
         }
 
         /// <summary>
-        /// Додаткові монети за термінову посилку (+2 монети за рівень ExpressDeliveryFee).
+        /// Множник монет за термінову посилку (+25% за рівень ExpressDeliveryFee, до +125%).
         /// </summary>
-        public int GetExpressBonusCoins()
+        public float GetExpressCoinMultiplier()
         {
             int tier = GetUpgradeTier(UpgradeType.ExpressDeliveryFee);
-            return tier * 2;
+            return 1f + (tier * 0.25f);
         }
         #endregion
 

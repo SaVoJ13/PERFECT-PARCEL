@@ -1,5 +1,6 @@
 using UnityEngine;
 using PerfectParcel.Conveyor;
+using PerfectParcel.Economy;
 using PerfectParcel.Levels;
 using PerfectParcel.Parcels;
 using PerfectParcel.Sorting;
@@ -27,11 +28,13 @@ namespace PerfectParcel.Core
         [SerializeField] private GameState currentState = GameState.None;
         [SerializeField] private int currentLevelIndex = 1;
         [SerializeField] private int currentLives = GameConstants.DefaultStartingLives;
+        [SerializeField] private int maxLives = GameConstants.DefaultStartingLives;
         [SerializeField] private int targetParcels = GameConstants.TargetParcelsLevel1;
 
         public GameState CurrentState => currentState;
         public int CurrentLevelIndex => currentLevelIndex;
         public int CurrentLives => currentLives;
+        public int MaxLives => maxLives;
         public int TargetParcels => targetParcels;
 
         private void Awake()
@@ -42,8 +45,10 @@ namespace PerfectParcel.Core
 
         private void Start()
         {
+            // Рівень НЕ стартує автоматично: гравець спочатку бачить головне меню
+            // і запускає рівень через UIManager.StartLevelFromUI -> StartLevel().
             InitializeSystems();
-            StartLevel(1);
+            SetState(GameState.MainMenu);
         }
 
         public void InitializeSystems()
@@ -63,6 +68,7 @@ namespace PerfectParcel.Core
 
         private void OnDestroy()
         {
+            if (Instance == this) Instance = null;
             if (beltController != null) beltController.OnParcelDropped -= HandleParcelDropped;
             if (sortingGate != null) sortingGate.OnActionProcessed -= HandleSortingAction;
         }
@@ -72,18 +78,27 @@ namespace PerfectParcel.Core
             currentLevelIndex = Mathf.Clamp(levelIndex, 1, 30);
             var config = LevelConfigLoader.GetLevelConfig(currentLevelIndex);
 
+            var upgrades = UpgradesManager.Instance;
+            float speedModifier = upgrades != null ? Mathf.Max(0.1f, upgrades.GetSpeedReductionModifier()) : 1f;
+
             if (config != null)
             {
                 targetParcels = config.targetParcels;
-                currentLives = config.maxLives;
+                maxLives = Mathf.Max(1, config.maxLives);
 
-                if (beltController != null) beltController.BeltSpeed = config.conveyorSpeed;
+                if (beltController != null) beltController.BeltSpeed = config.conveyorSpeed * speedModifier;
             }
             else
             {
                 targetParcels = GameConstants.TargetParcelsLevel1;
-                currentLives = GameConstants.DefaultStartingLives;
-                if (beltController != null) beltController.BeltSpeed = GameConstants.DefaultConveyorSpeed;
+                maxLives = GameConstants.DefaultStartingLives;
+                if (beltController != null) beltController.BeltSpeed = GameConstants.DefaultConveyorSpeed * speedModifier;
+            }
+
+            currentLives = maxLives;
+            if (beltController != null)
+            {
+                beltController.DropLineGraceSeconds = upgrades != null ? upgrades.GetDropLineGraceSeconds() : 0f;
             }
 
             if (validator != null) validator.ResetStats();
@@ -99,6 +114,8 @@ namespace PerfectParcel.Core
             }
 
             PublishStatusEvents();
+            // Синхронізація HUD (життя) зі старту рівня — без ефектів помилки
+            EventBus.Publish(new LivesChangedEvent { CurrentLives = currentLives, MaxLives = maxLives, Decreased = false });
         }
 
         public void StartGameSession(int targetCount)
@@ -148,7 +165,8 @@ namespace PerfectParcel.Core
             EventBus.Publish(new LivesChangedEvent
             {
                 CurrentLives = currentLives,
-                MaxLives = GameConstants.DefaultStartingLives
+                MaxLives = maxLives,
+                Decreased = amount > 0
             });
 
             if (currentLives <= 0)

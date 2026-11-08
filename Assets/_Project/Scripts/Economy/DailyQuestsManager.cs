@@ -106,6 +106,11 @@ namespace PerfectParcel.Economy
             if (e.IsCorrect)
             {
                 IncrementQuestProgress("quest_sort_total", 1);
+
+                if (e.ParcelType == Parcels.ParcelType.Express || e.ParcelType == Parcels.ParcelType.Fragile)
+                {
+                    IncrementQuestProgress("quest_special_parcels", 1);
+                }
             }
         }
 

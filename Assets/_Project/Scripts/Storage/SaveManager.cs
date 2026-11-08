@@ -86,7 +86,8 @@ namespace PerfectParcel.Storage
                 // Перевірка контрольної суми
                 string originalChecksum = parsed.checksum;
                 parsed.checksum = "";
-                string calculatedChecksum = ComputeHash(JsonUtility.ToJson(parsed));
+                // Той самий формат серіалізації, що й у SaveDataAtomic (pretty-print), інакше сума ніколи не збігається
+                string calculatedChecksum = ComputeHash(JsonUtility.ToJson(parsed, true));
                 parsed.checksum = originalChecksum;
 
                 if (!string.IsNullOrEmpty(originalChecksum) && originalChecksum != calculatedChecksum)

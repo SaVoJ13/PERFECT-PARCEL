@@ -21,10 +21,32 @@ namespace PerfectParcel.Conveyor
 
         public event Action<ParcelController> OnParcelDropped;
 
+        /// <summary>Поточна лінія падіння (з урахуванням апгрейду Safety Buffer) — спільна для стрічки та шлюзу.</summary>
+        public static float CurrentDropLineY { get; private set; } = GameConstants.ConveyorDropLineY;
+
+        private float _dropLineGraceSeconds;
+
+        /// <summary>Додаткові секунди перед падінням посилки (Safety Buffer).</summary>
+        public float DropLineGraceSeconds
+        {
+            get => _dropLineGraceSeconds;
+            set { _dropLineGraceSeconds = Mathf.Max(0f, value); RecalculateDropLine(); }
+        }
+
         public float BeltSpeed
         {
             get => beltSpeed;
-            set => beltSpeed = Mathf.Max(0f, value);
+            set { beltSpeed = Mathf.Max(0f, value); RecalculateDropLine(); }
+        }
+
+        private void RecalculateDropLine()
+        {
+            CurrentDropLineY = GameConstants.ConveyorDropLineY - beltSpeed * _dropLineGraceSeconds;
+        }
+
+        private void OnDestroy()
+        {
+            CurrentDropLineY = GameConstants.ConveyorDropLineY;
         }
 
         public bool IsRunning
@@ -42,7 +64,8 @@ namespace PerfectParcel.Conveyor
         {
             if (!isRunning || parcelPool == null) return;
 
-            float deltaMove = beltSpeed * Time.deltaTime;
+            float baseMove = beltSpeed * Time.deltaTime;
+            float dropLineY = CurrentDropLineY;
             var activeList = parcelPool.ActiveParcels;
 
             for (int i = activeList.Count - 1; i >= 0; i--)
@@ -50,10 +73,12 @@ namespace PerfectParcel.Conveyor
                 var parcel = activeList[i];
                 if (parcel != null && parcel.IsActiveOnBelt)
                 {
-                    parcel.MoveOnBelt(deltaMove);
+                    // Express +40%, Heavy -30% (ParcelData.SpeedModifier)
+                    float modifier = parcel.Data != null ? parcel.Data.SpeedModifier : 1f;
+                    parcel.MoveOnBelt(baseMove * modifier);
 
                     // Якщо посилка перетнула лінію падіння
-                    if (parcel.transform.position.y <= GameConstants.ConveyorDropLineY)
+                    if (parcel.transform.position.y <= dropLineY)
                     {
                         HandleParcelDrop(parcel);
                     }

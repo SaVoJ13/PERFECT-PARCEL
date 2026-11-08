@@ -141,21 +141,25 @@ namespace PerfectParcel.Audio
         }
 
         #region Event Subscriptions
+        private int _lastCoinsInRun;
+
         private void OnScoreChanged(ScoreChangedEvent e)
         {
-            // Якщо збільшилися монети
-            PlaySFX(SoundEffect.CoinGain);
+            // Звук монет — лише коли кількість зароблених монет справді зросла
+            if (e.CurrentCoins > _lastCoinsInRun) PlaySFX(SoundEffect.CoinGain);
+            _lastCoinsInRun = e.CurrentCoins;
         }
 
         private void OnLivesChanged(LivesChangedEvent e)
         {
-            // Втрата життя
-            PlaySFX(SoundEffect.ErrorMistake);
+            // Втрата життя (на старті рівня подія лише синхронізує HUD)
+            if (e.Decreased) PlaySFX(SoundEffect.ErrorMistake);
         }
 
         private void OnParcelSorted(ParcelSortedEvent e)
         {
-            PlaySFX(SoundEffect.SuccessSort);
+            // Звук помилки для неправильного сортування відтворює SortingValidator
+            if (e.IsCorrect) PlaySFX(SoundEffect.SuccessSort);
         }
 
         private void OnGameStateChanged(GameStateChangedEvent e)

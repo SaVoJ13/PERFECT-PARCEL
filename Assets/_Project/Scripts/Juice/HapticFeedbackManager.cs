@@ -67,7 +67,7 @@ namespace PerfectParcel.Juice
 
         private void OnLivesChanged(LivesChangedEvent e)
         {
-            TriggerErrorVibration();
+            if (e.Decreased) TriggerErrorVibration();
         }
 
         private void OnGameStateChanged(GameStateChangedEvent e)

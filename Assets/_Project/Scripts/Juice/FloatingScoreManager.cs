@@ -76,6 +76,12 @@ namespace PerfectParcel.Juice
             float x = 270f;
             float y = 500f;
 
+            if (!e.IsCorrect)
+            {
+                SpawnPopup("✗", new Vector2(x, y), new Color(1f, 0.25f, 0.25f));
+                return;
+            }
+
             string label = $"+{e.PointsEarned}";
             Color c = Color.yellow;
 

@@ -42,7 +42,7 @@ namespace PerfectParcel.Juice
         private void OnLivesChanged(LivesChangedEvent e)
         {
             // Якщо життя зменшилися — викликаємо мікрострус камери
-            TriggerShake(0.15f, 25f);
+            if (e.Decreased) TriggerShake(0.15f, 25f);
         }
 
         public void TriggerShake(float duration = 0.15f, float magnitude = 20f)

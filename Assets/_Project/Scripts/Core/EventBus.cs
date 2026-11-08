@@ -72,6 +72,7 @@ namespace PerfectParcel.Core
         public int PointsEarned;
         public int CoinsEarned;
         public int CurrentCombo;
+        public Parcels.ParcelType ParcelType;
     }
 
     public struct ParcelMissedEvent
@@ -84,6 +85,8 @@ namespace PerfectParcel.Core
     {
         public int CurrentLives;
         public int MaxLives;
+        /// <summary>true — життя втрачено (shake/вібрація/звук помилки); false — лише синхронізація HUD (старт рівня).</summary>
+        public bool Decreased;
     }
 
     public struct ScoreChangedEvent

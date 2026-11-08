@@ -41,6 +41,15 @@ namespace PerfectParcel.Sorting
                 points = Mathf.RoundToInt(parcel.Data.BasePoints * comboMultiplier);
                 coins = parcel.Data.BaseCoins;
 
+                // Апгрейди складу: Express Delivery Fee (лише термінові) та Coin Multiplier
+                var upgrades = Economy.UpgradesManager.Instance;
+                if (upgrades != null)
+                {
+                    float coinFactor = upgrades.GetCoinMultiplier();
+                    if (parcel.Data.Type == ParcelType.Express) coinFactor *= upgrades.GetExpressCoinMultiplier();
+                    coins = Mathf.RoundToInt(coins * coinFactor);
+                }
+
                 _totalScore += points;
                 _totalCoins += coins;
             }
@@ -50,6 +59,13 @@ namespace PerfectParcel.Sorting
 
                 // Спеціальний штраф: для крихкої посилки 2 життя, для інших 1 життя
                 livesPenalty = (parcel.Data.Type == ParcelType.Fragile) ? 2 : 1;
+
+                // Cushioned Bin: шанс зменшити штраф за крихку посилку до 1 життя
+                if (parcel.Data.Type == ParcelType.Fragile && Economy.UpgradesManager.Instance != null &&
+                    Random.value < Economy.UpgradesManager.Instance.GetCushionSaveChance())
+                {
+                    livesPenalty = 1;
+                }
 
                 if (parcel.Data.Type == ParcelType.Fragile)
                 {
@@ -67,7 +83,8 @@ namespace PerfectParcel.Sorting
                 IsCorrect = isCorrect,
                 PointsEarned = points,
                 CoinsEarned = coins,
-                CurrentCombo = _currentCombo
+                CurrentCombo = _currentCombo,
+                ParcelType = parcel.Data.Type
             });
 
             return isCorrect;
