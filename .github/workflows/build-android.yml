@@ -12,7 +12,7 @@ on:
 
 jobs:
   buildAndroid:
-    name: Build Android Player
+    name: Build Android Release
     runs-on: ubuntu-latest
     timeout-minutes: 120
 
