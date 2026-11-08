@@ -1,41 +1,39 @@
 name: Build Android APK & AAB (Game-CI)
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
-    inputs:
-      buildType:
-        description: 'Build format to produce'
-        required: true
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - apk
-          - aab
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/workflows/activation.yml'
+      - 'README.md'
+      - 'docs/**'
 
 jobs:
   buildAndroid:
-    name: Build Android (${{ matrix.target }}) 📦
+    name: Build Android Player
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [apk, aab]
+    timeout-minutes: 120
+
     steps:
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: false
+          swap-storage: true
+
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Cache Unity Library
+      - name: Cache Library
         uses: actions/cache@v4
         with:
           path: Library
@@ -43,25 +41,29 @@ jobs:
           restore-keys: |
             Library-Android-
 
-      - name: Unity Builder (Game-CI)
+      - name: Build Android AAB and APK
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
           ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
         with:
           targetPlatform: Android
-          unityVersion: 2022.3.20f1
-          buildMethod: ${{ matrix.target == 'aab' && 'PerfectParcel.Editor.BuildScript.BuildAndroidAab' || 'PerfectParcel.Editor.BuildScript.BuildAndroidApk' }}
-          versioning: Semantic
+          buildMethod: UnityBuilderAction.Builder.BuildProject
+          buildName: PerfectParcel
+          androidAppBundle: true
+          androidKeystoreName: release.keystore
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
 
-      - name: Upload Build Artifact
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: PerfectParcel-${{ matrix.target == 'aab' && 'Release-AAB' || 'Test-APK' }}
-          path: build/Android/*.${{ matrix.target }}
+          name: PerfectParcel-Android-Builds
+          path: build/Android
           retention-days: 14
