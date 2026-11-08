@@ -54,16 +54,9 @@ jobs:
         with:
           targetPlatform: Android
           unityVersion: 2022.3.20f1
-          buildMethod: ${{ matrix.target == 'aab' && 'PerfectParcel.Editor.BuildScript.BuildAndroidAab' || 'PerfectParcel.Editor.BuildScript.BuildAndroidApk' }}
-          # Docker-збірка НЕ успадковує env воркфлоу: змінні підпису потрібно явно передати через dockerEnv,
-          # інакше BuildScript.ConfigureKeystoreSigning() ніколи не бачить секретів.
-          dockerEnv: |
-            ANDROID_KEYSTORE_BASE64=${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-            ANDROID_KEYSTORE_PASS=${{ secrets.ANDROID_KEYSTORE_PASS }}
-            ANDROID_KEYALIAS_NAME=${{ secrets.ANDROID_KEYALIAS_NAME }}
-            ANDROID_KEYALIAS_PASS=${{ secrets.ANDROID_KEYALIAS_PASS }}
-            ALLOW_UNSIGNED_AAB=${{ github.event_name == 'pull_request' }}
-          # Semantic-версіонування вимагає повної історії git і тегів (checkout за замовчуванням shallow)
+          # Збирає і APK, і AAB (див. BuildScript.BuildAndroidAll). Секрети підпису приходять у Unity
+          # через inputs androidKeystore* нижче (game-ci експортує їх як ANDROID_KEYSTORE_* у контейнері).
+          buildMethod: PerfectParcel.Editor.BuildScript.BuildAndroidAll
           versioning: None
           buildName: PerfectParcel
           androidExportType: androidAppBundle

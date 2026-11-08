@@ -21,6 +21,12 @@ namespace PerfectParcel.Editor
             PerformBuild(isAppBundle: false, "build/Android/PerfectParcel.apk");
         }
 
+        public static void BuildAndroidAll()
+        {
+            PerformBuild(isAppBundle: false, "build/Android/PerfectParcel.apk");
+            PerformBuild(isAppBundle: true, "build/Android/PerfectParcel.aab");
+        }
+
         public static void BuildAndroidAab()
         {
             PerformBuild(isAppBundle: true, "build/Android/PerfectParcel.aab");
