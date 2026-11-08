@@ -54,13 +54,13 @@ jobs:
         with:
           targetPlatform: Android
           buildName: PerfectParcel
-          androidAppBundle: true
-          customParameters: -nographics -batchmode -DisableDirectoryMonitor
+          androidExportType: androidAppBundle
           androidKeystoreName: release.keystore
           androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
           androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+          customParameters: -nographics -batchmode -DisableDirectoryMonitor
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
