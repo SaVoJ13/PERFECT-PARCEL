@@ -133,7 +133,7 @@ namespace PerfectParcel.UI
             }
             else if (_gameState == GameState.LevelComplete)
             {
-                currentLvl = GameManager.Instance != null ? GameManager.Instance.CurrentLevelIndex : 1;
+                int currentLvl = GameManager.Instance != null ? GameManager.Instance.CurrentLevelIndex : 1;
                 ShowEndGamePopup("ПЕРЕМОГА!", $"Рівень {currentLvl} пройдено!\nРахунок: {_score} | Монети: {_coins}", Color.green, true);
             }
         }
