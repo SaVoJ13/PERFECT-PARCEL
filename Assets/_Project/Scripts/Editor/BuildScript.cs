@@ -26,9 +26,31 @@ namespace PerfectParcel.Editor
             PerformBuild(isAppBundle: true, "build/Android/PerfectParcel.aab");
         }
 
+        private const string ScenePath = "Assets/_Project/Scenes/PrototypeScene.unity";
+
+        /// <summary>
+        /// Сцени немає в репозиторії — без неї BuildPlayer падає. Створюємо мінімальну сцену
+        /// з PrototypeBootstrapper (він сам будує камеру, конвеєр, UI та менеджери).
+        /// </summary>
+        private static void EnsureBuildScene()
+        {
+            if (File.Exists(ScenePath)) return;
+
+            Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
+            var scene = UnityEditor.SceneManagement.EditorSceneManager.NewScene(
+                UnityEditor.SceneManagement.NewSceneSetup.EmptyScene,
+                UnityEditor.SceneManagement.NewSceneMode.Single);
+            var go = new GameObject("PrototypeBootstrapper");
+            go.AddComponent<PerfectParcel.Core.PrototypeBootstrapper>();
+            UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene, ScenePath);
+            AssetDatabase.Refresh();
+            Debug.Log($"[BuildScript] Сцену {ScenePath} згенеровано автоматично.");
+        }
+
         private static void PerformBuild(bool isAppBundle, string outputPath)
         {
             Directory.CreateDirectory("build/Android");
+            EnsureBuildScene();
 
             // Загальні налаштування збірки під вимоги Google Play 2026
             PlayerSettings.SetScriptingBackend(BuildTargetGroup.Android, ScriptingImplementation.IL2CPP);
@@ -38,7 +60,14 @@ namespace PerfectParcel.Editor
             EditorUserBuildSettings.buildAppBundle = isAppBundle;
 
             // Налаштування підпису Keystore, якщо передано змінні середовища
-            ConfigureKeystoreSigning();
+            bool signed = ConfigureKeystoreSigning();
+            if (isAppBundle && !signed && Environment.GetEnvironmentVariable("ALLOW_UNSIGNED_AAB") != "true")
+            {
+                // AAB, підписаний debug-ключем, Google Play відхиляє — краще впасти одразу, ніж видати хибний «Release»
+                Debug.LogError("[BuildScript] Release AAB потребує Keystore (ANDROID_KEYSTORE_*). Задайте секрети або ALLOW_UNSIGNED_AAB=true для тестової збірки.");
+                EditorApplication.Exit(1);
+                return;
+            }
 
             var buildOptions = new BuildPlayerOptions
             {
@@ -64,7 +93,7 @@ namespace PerfectParcel.Editor
             }
         }
 
-        private static void ConfigureKeystoreSigning()
+        private static bool ConfigureKeystoreSigning()
         {
             string keystoreBase64 = Environment.GetEnvironmentVariable("ANDROID_KEYSTORE_BASE64");
             string keystorePass = Environment.GetEnvironmentVariable("ANDROID_KEYSTORE_PASS");
@@ -86,15 +115,18 @@ namespace PerfectParcel.Editor
                     PlayerSettings.Android.keyaliasPass = !string.IsNullOrEmpty(keyaliasPass) ? keyaliasPass : keystorePass;
 
                     Debug.Log("[BuildScript] Keystore успішно згенеровано з секретів та підключено до збірки.");
+                    return true;
                 }
                 catch (Exception ex)
                 {
                     Debug.LogWarning($"[BuildScript] Помилка налаштування Keystore: {ex.Message}. Збірка продовжиться без кастомного підпису.");
+                    return false;
                 }
             }
             else
             {
                 Debug.Log("[BuildScript] Змінні Keystore не виявлені. Збірка виконується з дефолтним Debug-підписом.");
+                return false;
             }
         }
     }

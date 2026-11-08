@@ -33,7 +33,15 @@ namespace PerfectParcel.UI
         private int _targetCount = 15;
         private int _lives = 3;
         private int _combo = 0;
+        private int _maxLives = 3;
         private bool _isLastLevelVictory = false;
+        private bool _coinsDoubled = false;       // подвоєння монет за рекламу — лише 1 раз на результат
+        private int _mistakesThisLevel = 0;
+        private bool _fragileBrokenThisLevel = false;
+
+        // IAP-покупки симулюються лише в Editor/Development-збірках. У релізі без Billing SDK
+        // кнопки не повинні видавати монети безкоштовно.
+        private static bool IapSimulationEnabled => Debug.isDebugBuild;
 
         private Vector2 _levelSelectScroll;
         private Vector2 _upgradesScroll;
@@ -55,6 +63,7 @@ namespace PerfectParcel.UI
             EventBus.Subscribe<ScoreChangedEvent>(OnScoreChanged);
             EventBus.Subscribe<LivesChangedEvent>(OnLivesChanged);
             EventBus.Subscribe<ParcelSortedEvent>(OnParcelSorted);
+            EventBus.Subscribe<ParcelMissedEvent>(OnParcelMissed);
             EventBus.Subscribe<GameStateChangedEvent>(OnGameStateChanged);
         }
 
@@ -63,6 +72,7 @@ namespace PerfectParcel.UI
             EventBus.Unsubscribe<ScoreChangedEvent>(OnScoreChanged);
             EventBus.Unsubscribe<LivesChangedEvent>(OnLivesChanged);
             EventBus.Unsubscribe<ParcelSortedEvent>(OnParcelSorted);
+            EventBus.Unsubscribe<ParcelMissedEvent>(OnParcelMissed);
             EventBus.Unsubscribe<GameStateChangedEvent>(OnGameStateChanged);
         }
 
@@ -86,6 +96,13 @@ namespace PerfectParcel.UI
         public void SwitchScreen(ScreenType newScreen)
         {
             Audio.AudioManager.Instance?.PlaySFX(Audio.SoundEffect.ButtonClick);
+
+            // Налаштування (гучність, вібрація) змінюються в пам'яті — зберігаємо при виході з екрана
+            if (currentScreen == ScreenType.Settings && newScreen != ScreenType.Settings)
+            {
+                SaveManager.Instance?.SaveDataAtomic();
+            }
+
             currentScreen = newScreen;
             _showDailyRewardModal = false;
             Debug.Log($"[UIManager] Перехід на екран: {newScreen}");
@@ -106,23 +123,54 @@ namespace PerfectParcel.UI
         private void OnLivesChanged(LivesChangedEvent e)
         {
             _lives = e.CurrentLives;
+            _maxLives = Mathf.Max(1, e.MaxLives);
         }
 
         private void OnParcelSorted(ParcelSortedEvent e)
         {
             _combo = e.CurrentCombo;
+            if (!e.IsCorrect)
+            {
+                _mistakesThisLevel++;
+                if (e.ParcelType == Parcels.ParcelType.Fragile) _fragileBrokenThisLevel = true;
+            }
+        }
+
+        private void OnParcelMissed(ParcelMissedEvent e)
+        {
+            _mistakesThisLevel++;
+        }
+
+        private int CalculateStars()
+        {
+            // 3 зірки — жодного життя не втрачено; 2 — втрачено менше половини; інакше 1
+            if (_lives >= _maxLives) return 3;
+            if (_lives * 2 > _maxLives) return 2;
+            return 1;
         }
 
         private void OnGameStateChanged(GameStateChangedEvent e)
         {
-            if (e.NewState == GameState.LevelComplete)
+            if (e.NewState == GameState.Playing)
+            {
+                // Новий забіг: скидаємо локальну статистику HUD/результату
+                _combo = 0;
+                _coinsDoubled = false;
+                _mistakesThisLevel = 0;
+                _fragileBrokenThisLevel = false;
+            }
+            else if (e.NewState == GameState.LevelComplete)
             {
                 _isLastLevelVictory = true;
-                int stars = (_lives >= 3) ? 3 : (_lives >= 2) ? 2 : 1;
+                int stars = CalculateStars();
                 int currentLvl = GameManager.Instance != null ? GameManager.Instance.CurrentLevelIndex : 1;
                 SaveManager.Instance?.SaveLevelStars(currentLvl, stars, _score);
                 SaveManager.Instance?.AddCoins(_coins);
-                AchievementsManager.Instance?.CheckLevelProgressionAchievements(currentLvl, stars);
+
+                var cfg = LevelConfigLoader.GetLevelConfig(currentLvl);
+                bool hadFragile = cfg != null && cfg.fragilePercent > 0f;
+                AchievementsManager.Instance?.CheckLevelProgressionAchievements(currentLvl, stars, hadFragile, _fragileBrokenThisLevel);
+                if (_mistakesThisLevel == 0) DailyQuestsManager.Instance?.IncrementQuestProgress("quest_no_fail", 1);
 
                 SwitchScreen(ScreenType.Results);
             }
@@ -139,6 +187,9 @@ namespace PerfectParcel.UI
         {
             float scale = Screen.width / 540f;
             GUI.matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.identity, new Vector3(scale, scale, 1f));
+
+            // Поки відкрите модальне вікно щоденних нагород, елементи екрана під ним не повинні реагувати на кліки
+            GUI.enabled = !_showDailyRewardModal;
 
             switch (currentScreen)
             {
@@ -161,6 +212,8 @@ namespace PerfectParcel.UI
                     RenderSettingsScreen();
                     break;
             }
+
+            GUI.enabled = true;
 
             if (_showDailyRewardModal)
             {
@@ -376,7 +429,7 @@ namespace PerfectParcel.UI
 
             if (_isLastLevelVictory)
             {
-                int stars = (_lives >= 3) ? 3 : (_lives >= 2) ? 2 : 1;
+                int stars = CalculateStars();
                 string starIcons = stars == 3 ? "⭐️ ⭐️ ⭐️" : stars == 2 ? "⭐️ ⭐️" : "⭐️";
                 GUILayout.Label(starIcons, new GUIStyle(GUI.skin.label) { fontSize = 28, alignment = TextAnchor.MiddleCenter });
                 GUILayout.Label($"{T("score", _score)}\n{T("coins", "+" + _coins)}", new GUIStyle(GUI.skin.label) { fontSize = 18, alignment = TextAnchor.MiddleCenter });
@@ -384,15 +437,19 @@ namespace PerfectParcel.UI
 
                 // Rewarded Ads Button (x2 Coins)
                 GUI.backgroundColor = new Color(1f, 0.8f, 0.1f);
+                GUI.enabled = !_coinsDoubled;
                 if (GUILayout.Button(T("btn_double_coins"), GUILayout.Height(55)))
                 {
                     AdsManager.Instance?.ShowRewardedAd(() =>
                     {
+                        if (_coinsDoubled) return; // нагорода за результат видається лише один раз
+                        _coinsDoubled = true;
                         SaveManager.Instance?.AddCoins(_coins);
                         _coins *= 2;
                         Debug.Log("[UIManager] Rewarded Ads переглянуто! Монети подвоєно.");
                     }, AdsManager.PlacementDoubleWin);
                 }
+                GUI.enabled = true;
 
                 GUI.backgroundColor = new Color(0.2f, 0.85f, 0.4f);
                 GUILayout.Space(10);
@@ -400,7 +457,8 @@ namespace PerfectParcel.UI
                 {
                     AdsManager.Instance?.RecordLevelCompleted(currentLvl, () =>
                     {
-                        StartLevelFromUI(currentLvl + 1);
+                        if (currentLvl >= 30) SwitchScreen(ScreenType.LevelSelect); // після останнього рівня — вибір рівня
+                        else StartLevelFromUI(currentLvl + 1);
                     });
                 }
             }
@@ -473,9 +531,7 @@ namespace PerfectParcel.UI
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("$0.99 (~40 ₴)", GUILayout.Width(130), GUILayout.Height(42)))
             {
-                SaveManager.Instance?.RecordIAPPurchase("pp_coins_tier1_5k", 5000);
-                _shopStatusMessage = "✅ " + T("shop_pack_1") + " OK!";
-                _shopStatusTimer = 3.5f;
+                PurchaseCoinPack("pp_coins_tier1_5k", 5000, "shop_pack_1");
             }
             GUILayout.EndHorizontal();
 
@@ -485,9 +541,7 @@ namespace PerfectParcel.UI
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("$2.49 (~100 ₴)", GUILayout.Width(130), GUILayout.Height(42)))
             {
-                SaveManager.Instance?.RecordIAPPurchase("pp_coins_tier2_15k", 15000);
-                _shopStatusMessage = "✅ " + T("shop_pack_2") + " OK!";
-                _shopStatusTimer = 3.5f;
+                PurchaseCoinPack("pp_coins_tier2_15k", 15000, "shop_pack_2");
             }
             GUILayout.EndHorizontal();
 
@@ -498,9 +552,7 @@ namespace PerfectParcel.UI
             GUILayout.FlexibleSpace();
             if (GUILayout.Button("$4.99 (~200 ₴)", GUILayout.Width(130), GUILayout.Height(42)))
             {
-                SaveManager.Instance?.RecordIAPPurchase("pp_coins_tier3_40k", 40000);
-                _shopStatusMessage = "✅ " + T("shop_pack_3") + " OK!";
-                _shopStatusTimer = 3.5f;
+                PurchaseCoinPack("pp_coins_tier3_40k", 40000, "shop_pack_3");
             }
             GUILayout.EndHorizontal();
 
@@ -707,6 +759,21 @@ namespace PerfectParcel.UI
             GUILayout.EndArea();
         }
         #endregion
+
+        private void PurchaseCoinPack(string sku, int coins, string nameKey)
+        {
+            if (!IapSimulationEnabled)
+            {
+                // Google Play Billing ще не інтегровано (див. CURRENT_STATE.md): у релізі не видаємо монети безкоштовно
+                _shopStatusMessage = "⚠️ " + T(nameKey) + ": Google Play Billing unavailable";
+                _shopStatusTimer = 3.5f;
+                return;
+            }
+
+            SaveManager.Instance?.RecordIAPPurchase(sku, coins);
+            _shopStatusMessage = "✅ " + T(nameKey) + " OK!";
+            _shopStatusTimer = 3.5f;
+        }
 
         private void RenderTopBar(string title, ScreenType backScreen)
         {

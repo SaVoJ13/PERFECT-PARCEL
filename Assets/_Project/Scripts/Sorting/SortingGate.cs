@@ -42,6 +42,9 @@ namespace PerfectParcel.Sorting
 
         private void HandleSwipe(SortingDirection direction)
         {
+            // Свайпи в меню/на екрані результатів/на паузі не повинні сортувати посилки
+            if (GameManager.Instance == null || GameManager.Instance.CurrentState != GameState.Playing) return;
+
             var targetParcel = FindNearestSortableParcel();
             if (targetParcel == null) return;
 
@@ -72,7 +75,7 @@ namespace PerfectParcel.Sorting
                 {
                     float y = parcel.transform.position.y;
                     // Посилка повинна бути нижче зони спавну і вище лінії падіння
-                    if (y < GameConstants.ConveyorSpawnY && y > GameConstants.ConveyorDropLineY)
+                    if (y < GameConstants.ConveyorSpawnY && y > Conveyor.ConveyorBeltController.CurrentDropLineY)
                     {
                         if (y < lowestY)
                         {

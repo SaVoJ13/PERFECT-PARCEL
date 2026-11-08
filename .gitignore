@@ -1,0 +1,30 @@
+# Unity
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/.vs/
+/.idea/
+*.csproj
+*.sln
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+*.apk
+*.aab
+
+# Секрети (правило git-security.md / Golden Rule #7)
+*.keystore
+*.jks
+keystore.properties
+
+# Файли ліцензії Unity та службові логи
+*.alf
+*.ulf
+create_alf.log
+
+# Тимчасові файли Office
+~$*

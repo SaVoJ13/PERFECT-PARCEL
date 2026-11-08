@@ -58,6 +58,7 @@ namespace PerfectParcel.Storage
         public string lastSaveTimestamp = "";
         public int coins = 0;
         public int highestUnlockedLevel = 1;
+        public int totalParcelsSorted = 0; // для ACH-05
 
         public List<LevelProgressData> levels = new List<LevelProgressData>();
         public List<UpgradeProgressData> upgrades = new List<UpgradeProgressData>();

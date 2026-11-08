@@ -43,6 +43,7 @@ namespace PerfectParcel.Parcels
             }
 
             var controller = obj.GetComponent<ParcelController>();
+            controller.OnExitFinished += ReturnParcel;
             controller.Deactivate();
             _availableParcels.Enqueue(controller);
             return controller;
@@ -71,8 +72,11 @@ namespace PerfectParcel.Parcels
             if (parcel == null) return;
 
             parcel.Deactivate();
-            _activeParcels.Remove(parcel);
-            _availableParcels.Enqueue(parcel);
+            // Захист від подвійного повернення (дублікат у черзі видав би одну посилку двом спавнам)
+            if (_activeParcels.Remove(parcel))
+            {
+                _availableParcels.Enqueue(parcel);
+            }
         }
 
         public void ReturnAll()

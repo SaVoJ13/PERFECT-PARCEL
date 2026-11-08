@@ -67,6 +67,14 @@ namespace PerfectParcel.Economy
             {
                 UnlockAchievement("ACH-01"); // Перша коробка
 
+                // ACH-05: сумарно 100 посилок (лічильник зберігається разом із сейвом)
+                var save = SaveManager.Instance?.CurrentData;
+                if (save != null)
+                {
+                    save.totalParcelsSorted++;
+                    if (save.totalParcelsSorted >= 100) UnlockAchievement("ACH-05");
+                }
+
                 if (e.CurrentCombo >= 20)
                 {
                     UnlockAchievement("ACH-03"); // Швидкі пальці
@@ -74,13 +82,16 @@ namespace PerfectParcel.Economy
             }
         }
 
-        public void CheckLevelProgressionAchievements(int levelIndex, int stars)
+        public void CheckLevelProgressionAchievements(int levelIndex, int stars, bool levelHadFragile = false, bool fragileBroken = false)
         {
+            if (levelHadFragile && !fragileBroken) UnlockAchievement("ACH-04"); // Кришталевий дотик
+
             if (levelIndex >= 5) UnlockAchievement("ACH-02");
             if (levelIndex >= 30) UnlockAchievement("ACH-10");
 
             if (SaveManager.Instance != null)
             {
+                if (SaveManager.Instance.Coins >= 10000) UnlockAchievement("ACH-09"); // Складський магнат
                 int totalStars = SaveManager.Instance.GetTotalStars();
                 if (totalStars >= 50) UnlockAchievement("ACH-06");
 

@@ -22,22 +22,28 @@ namespace PerfectParcel.Parcels
 
         public event Action<ParcelController> OnDropLinePassed;
         public event Action<ParcelController, SortingDirection> OnSorted;
+        /// <summary>Анімація вильоту завершена — посилку слід повернути в пул.</summary>
+        public event Action<ParcelController> OnExitFinished;
 
+        private Vector3 _startExitPosition;
         private Vector3 _targetExitPosition;
         private float _exitAnimationProgress;
         private const float ExitAnimationDuration = 0.25f;
+        private const float FallbackBodyScale = 200f; // 64px @ PPU 1 -> ~200 одиниць
+        private const float FallbackTagScale = 80f;
 
         private void Awake()
         {
             if (boxCollider == null) boxCollider = GetComponent<BoxCollider2D>();
             if (boxCollider == null) boxCollider = gameObject.AddComponent<BoxCollider2D>();
-            boxCollider.size = new Vector2(1.8f, 1.8f);
+            boxCollider.size = new Vector2(200f, 200f); // світові одиниці = пікселі (камера ortho 960)
 
             // Якщо спрайт-рендерер не призначений у префабі, створюємо процедурний
             if (bodyRenderer == null)
             {
                 var bodyObj = new GameObject("ParcelBody");
                 bodyObj.transform.SetParent(transform, false);
+                bodyObj.transform.localScale = new Vector3(FallbackBodyScale, FallbackBodyScale, 1f);
                 bodyRenderer = bodyObj.AddComponent<SpriteRenderer>();
                 bodyRenderer.sprite = CreateBoxSprite();
                 bodyRenderer.sortingOrder = 10;
@@ -50,7 +56,7 @@ namespace PerfectParcel.Parcels
                 tagRenderer = tagObj.AddComponent<SpriteRenderer>();
                 tagRenderer.sprite = CreateTagSprite();
                 tagRenderer.sortingOrder = 11;
-                tagRenderer.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
+                tagRenderer.transform.localScale = new Vector3(FallbackTagScale, FallbackTagScale, 1f);
             }
         }
 
@@ -167,7 +173,7 @@ namespace PerfectParcel.Parcels
             transform.position += new Vector3(0f, -deltaY, 0f);
 
             // Перевірка лінії падіння
-            if (transform.position.y <= GameConstants.ConveyorDropLineY)
+            if (transform.position.y <= Conveyor.ConveyorBeltController.CurrentDropLineY)
             {
                 IsActiveOnBelt = false;
                 OnDropLinePassed?.Invoke(this);
@@ -196,6 +202,7 @@ namespace PerfectParcel.Parcels
                     break;
             }
 
+            _startExitPosition = transform.position;
             _targetExitPosition = new Vector3(exitX, transform.position.y - 200f, transform.position.z);
             _exitAnimationProgress = 0f;
 
@@ -206,14 +213,15 @@ namespace PerfectParcel.Parcels
         {
             if (IsBeingSorted)
             {
-                _exitAnimationProgress += Time.deltaTime / ExitAnimationDuration;
-                transform.position = Vector3.Lerp(transform.position, _targetExitPosition, _exitAnimationProgress);
+                _exitAnimationProgress = Mathf.Min(1f, _exitAnimationProgress + Time.deltaTime / ExitAnimationDuration);
+                transform.position = Vector3.Lerp(_startExitPosition, _targetExitPosition, _exitAnimationProgress);
                 transform.localScale = Vector3.Lerp(Vector3.one, Vector3.zero, _exitAnimationProgress);
 
                 if (_exitAnimationProgress >= 1f)
                 {
                     IsBeingSorted = false;
                     gameObject.SetActive(false);
+                    OnExitFinished?.Invoke(this); // пул забирає посилку назад (інакше вона «тече» в ActiveParcels)
                 }
             }
         }
@@ -233,7 +241,7 @@ namespace PerfectParcel.Parcels
             for (int i = 0; i < pixels.Length; i++) pixels[i] = Color.white;
             texture.SetPixels(pixels);
             texture.Apply();
-            return Sprite.Create(texture, new Rect(0, 0, 64, 64), new Vector2(0.5f, 0.5f), 32);
+            return Sprite.Create(texture, new Rect(0, 0, 64, 64), new Vector2(0.5f, 0.5f), 1f);
         }
 
         private static Sprite CreateTagSprite()
@@ -243,7 +251,7 @@ namespace PerfectParcel.Parcels
             for (int i = 0; i < pixels.Length; i++) pixels[i] = Color.white;
             texture.SetPixels(pixels);
             texture.Apply();
-            return Sprite.Create(texture, new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f), 32);
+            return Sprite.Create(texture, new Rect(0, 0, 32, 32), new Vector2(0.5f, 0.5f), 1f);
         }
         #endregion
     }

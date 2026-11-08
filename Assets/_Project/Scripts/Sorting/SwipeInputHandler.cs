@@ -87,7 +87,7 @@ namespace PerfectParcel.Sorting
                 Audio.AudioManager.Instance?.PlaySFX(Audio.SoundEffect.Swipe);
                 OnSwipeDetected?.Invoke(SortingDirection.Straight);
             }
-            else if (angle > 135f || angle < -135f)
+            else if (angle > 135f || angle <= -135f)
             {
                 // Свайп ліворуч
                 Audio.AudioManager.Instance?.PlaySFX(Audio.SoundEffect.Swipe);

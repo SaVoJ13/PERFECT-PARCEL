@@ -84,8 +84,8 @@ namespace PerfectParcel.UI
             // Верхня панель HUD
             GUILayout.BeginArea(new Rect(15, 15, 510, 125), headerStyle);
             GUILayout.BeginHorizontal();
-            int currentLvl = GameManager.Instance != null ? GameManager.Instance.CurrentLevelIndex : 1;
-            GUILayout.Label($"📦 РІВЕНЬ {currentLvl}", labelStyle);
+            int hudLevel = GameManager.Instance != null ? GameManager.Instance.CurrentLevelIndex : 1;
+            GUILayout.Label($"📦 РІВЕНЬ {hudLevel}", labelStyle);
             GUILayout.FlexibleSpace();
             GUILayout.Label($"ЖИТТЯ: {GetHeartsString(_lives)}", labelStyle);
             GUILayout.EndHorizontal();

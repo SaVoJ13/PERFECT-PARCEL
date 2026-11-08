@@ -57,7 +57,16 @@ jobs:
           targetPlatform: Android
           unityVersion: 2022.3.20f1
           buildMethod: ${{ matrix.target == 'aab' && 'PerfectParcel.Editor.BuildScript.BuildAndroidAab' || 'PerfectParcel.Editor.BuildScript.BuildAndroidApk' }}
-          versioning: Semantic
+          # Docker-збірка НЕ успадковує env воркфлоу: змінні підпису потрібно явно передати через dockerEnv,
+          # інакше BuildScript.ConfigureKeystoreSigning() ніколи не бачить секретів.
+          dockerEnv: |
+            ANDROID_KEYSTORE_BASE64=${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+            ANDROID_KEYSTORE_PASS=${{ secrets.ANDROID_KEYSTORE_PASS }}
+            ANDROID_KEYALIAS_NAME=${{ secrets.ANDROID_KEYALIAS_NAME }}
+            ANDROID_KEYALIAS_PASS=${{ secrets.ANDROID_KEYALIAS_PASS }}
+            ALLOW_UNSIGNED_AAB=${{ github.event_name == 'pull_request' }}
+          # Semantic-версіонування вимагає повної історії git і тегів (checkout за замовчуванням shallow)
+          versioning: None
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
