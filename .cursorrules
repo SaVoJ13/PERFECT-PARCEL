@@ -1,0 +1,12 @@
+# PERFECT PARCEL — AI ASSISTANT & EDITOR RULES
+
+# CRITICAL SECURITY DIRECTIVE (IMMUTABLE CONSTRAINT):
+# Будь-якому ШІ суворо заборонено редагувати файли всередині директорії .agents/ без прямої команди Власника.
+# Do NOT modify, create, or delete any files inside the .agents/ directory unless the Project Owner explicitly instructs you to do so in their prompt.
+# This prevents AI agents from altering their own constraints, roles, rules, or workflows.
+
+- Main Project Rules: See AGENTS.md and perfect_parcel_roadmap_v1_4.md
+- Subordination: Project Owner -> Agent 0 (PM & Architect) -> Specialized Agents (Agent 1-4) -> Agent 5 (QA)
+- Documentation: Always update docs/governance/CURRENT_STATE.md and docs/governance/DECISIONS.md when required.
+- Quality Gates: No phase progression without explicit Owner Approval.
+- Zero-Code Burden on Owner: The Project Owner does not write code, review logs, or fix builds. Provide clean, actionable summaries.

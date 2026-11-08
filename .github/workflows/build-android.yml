@@ -1,0 +1,67 @@
+name: Build Android APK & AAB (Game-CI)
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      buildType:
+        description: 'Build format to produce'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - apk
+          - aab
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  buildAndroid:
+    name: Build Android (${{ matrix.target }}) 📦
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [apk, aab]
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-Android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-Android-
+
+      - name: Unity Builder (Game-CI)
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+        with:
+          targetPlatform: Android
+          unityVersion: 2022.3.20f1
+          buildMethod: ${{ matrix.target == 'aab' && 'PerfectParcel.Editor.BuildScript.BuildAndroidAab' || 'PerfectParcel.Editor.BuildScript.BuildAndroidApk' }}
+          versioning: Semantic
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PerfectParcel-${{ matrix.target == 'aab' && 'Release-AAB' || 'Test-APK' }}
+          path: build/Android/*.${{ matrix.target }}
+          retention-days: 14
