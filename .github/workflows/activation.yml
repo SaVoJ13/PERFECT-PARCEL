@@ -1,15 +1,22 @@
 name: Acquire Unity Activation File
+
 on:
   workflow_dispatch:
+
 jobs:
-  acquire_activation_file:
+  activation:
     name: Acquire .alf file
     runs-on: ubuntu-latest
     steps:
-      - name: Request manual activation file
-        uses: game-ci/unity-request-activation-file@v2
-      - name: Expose as artifact
+      - name: Request activation file
+        uses: game-ci/unity-builder@v4
+        with:
+          entrypoint: /bin/bash
+          customParameters: -quit -batchmode -nographics -logFile /dev/stdout -createManualActivationFile
+
+      - name: Expose activation file
         uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: activation-file
-          path: ${{ steps.get_file.outputs.filePath }}
+          path: manualActivationFile.alf
