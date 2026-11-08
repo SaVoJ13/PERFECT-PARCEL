@@ -1,41 +1,39 @@
 name: Build Android APK & AAB (Game-CI)
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
   workflow_dispatch:
-    inputs:
-      buildType:
-        description: 'Build format to produce'
-        required: true
-        default: 'all'
-        type: choice
-        options:
-          - all
-          - apk
-          - aab
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/workflows/activation.yml'
+      - 'README.md'
+      - 'docs/**'
 
 jobs:
   buildAndroid:
-    name: Build Android (${{ matrix.target }}) 📦
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        target: [apk, aab]
+    name: Build Android Release
+    runs-on: ubuntu-22.04
+    timeout-minutes: 120
+
     steps:
+      - name: Free Disk Space
+        uses: jlumbroso/free-disk-space@v1.3.1
+        with:
+          tool-cache: true
+          android: false
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: false
+          swap-storage: true
+
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           lfs: true
 
-      - name: Cache Unity Library
+      - name: Cache Library
         uses: actions/cache@v4
         with:
           path: Library
@@ -43,7 +41,7 @@ jobs:
           restore-keys: |
             Library-Android-
 
-      - name: Unity Builder (Game-CI)
+      - name: Build Android AAB and APK
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -67,10 +65,19 @@ jobs:
             ALLOW_UNSIGNED_AAB=${{ github.event_name == 'pull_request' }}
           # Semantic-версіонування вимагає повної історії git і тегів (checkout за замовчуванням shallow)
           versioning: None
+          buildName: PerfectParcel
+          androidExportType: androidAppBundle
+          androidKeystoreName: release.keystore
+          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+          customParameters: -nographics -DisableDirectoryMonitor
 
-      - name: Upload Build Artifact
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
+        if: always()
         with:
-          name: PerfectParcel-${{ matrix.target == 'aab' && 'Release-AAB' || 'Test-APK' }}
-          path: build/Android/*.${{ matrix.target }}
+          name: PerfectParcel-Android-Builds
+          path: build/Android
           retention-days: 14
