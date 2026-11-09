@@ -1,64 +1,36 @@
-# CURRENT STATE — PERFECT PARCEL
+# CURRENT STATE — KEBAB STREET
 
-> **Поточний стан проєкту (Single Source of Truth для відновлення контексту)**  
-> **Останнє оновлення:** 2026-11-08 (Сесія 11 — Phase 3: Launch & Release Preparation)  
-> **Оновлює:** Agent 0 (Project Manager & Chief Architect)  
+> Головне джерело контексту для кожної нової сесії. Оновлює Агент 0 наприкінці кожної сесії.
+> **Останнє оновлення:** 2026-11-09 — старт нового проєкту за ROADMAP 2.0
 
----
+## 1. Етап і статус
+- **Активний етап:** Етап 0 — Новий проєкт і стабільна збірка
+- **Статус:** `In Progress` (чекає застосування пакета — завдання E0-01)
+- **Концепція гри і структура v1.0** затверджені Власником 2026-11-09: кебаб-бар, керування часом, v1.0 = 2 локації (20 рівнів + 2 бонусні), локації 3–5 — оновленнями. Див. `docs/product/GAME_CONCEPT.md`.
 
-## 1. ПОТОЧНА ФАЗА ТА СТАТУС
-- **Активна фаза:** **PHASE 3 — ДИЗАЙН, ФІНАЛЬНА МОНЕТИЗАЦІЯ ТА РЕЛІЗНА ПІДГОТОВКА**
-- **Поточний статус:** `Phase 3 In Progress: CI/CD AAB Workflow, Keystore Guide, Privacy Policy & Store Assets Ready`
-- **Статус Phase 0:** 🟢 **COMPLETED (Owner Approved, ADR-006)**
-- **Статус Phase 1:** 🟢 **COMPLETED (Owner Approved, ADR-007)**
-- **Статус Phase 2:** 🟢 **COMPLETED (Owner Approved, ADR-009, QA 84/84 PASS)**
-- **Затверджена архітектурна модель:** 100% Офлайн-першість, без реєстрації та без бекенду. Модель жорсткого дефіциту монет (ADR-008) із каналами подолання через Rewarded Ads та 3 пакети Google Play Billing (IAP).
-- **Остання завершена контрольна точка (Старт Phase 3):**
-  1. Зареєстровано рішення **ADR-009** — результати Phase 2 затверджено Власником проєкту, етап офіційно закрито.
-  2. Оновлено `.github/workflows/build-android.yml` та `BuildScript.cs` для паралельної або роздільної збірки як тестового APK, так і релізного Android App Bundle (AAB) для Google Play Console із підтримкою підпису через змінні середовища.
-  3. Розроблено вичерпну інструкцію [docs/android/RELEASE_BUILD_INSTRUCTIONS.md](file:///c:/Users/cocro/Downloads/PERFECT%20PARCEL/docs/android/RELEASE_BUILD_INSTRUCTIONS.md) щодо генерації `release.keystore`, налаштування секретів GitHub Actions та бойових ідентифікаторів AdMob.
-  4. Складено фінальну двомовну політику конфіденційності [docs/monetization/PRIVACY_POLICY.md](file:///c:/Users/cocro/Downloads/PERFECT%20PARCEL/docs/monetization/PRIVACY_POLICY.md) (EN / UA) без збору персональних даних для розміщення за публічним посиланням.
-  5. Створено маркетингову специфікацію [docs/design/STORE_ASSETS_SPEC.md](file:///c:/Users/cocro/Downloads/PERFECT%20PARCEL/docs/design/STORE_ASSETS_SPEC.md) з детальними AI-промптами для генерації іконки (512x512), головного банера (1024x500), 5 локалізованих скриншотів та повного опису для Google Play Store.
-  6. Актуалізовано релізний чекліст [docs/qa/RELEASE_CHECKLIST.md](file:///c:/Users/cocro/Downloads/PERFECT%20PARCEL/docs/qa/RELEASE_CHECKLIST.md) (60 пунктів перевірки якості).
+- **Керування:** Агент 0 має повний операційний контроль за `CONSTITUTION.md` (ADR-015). Власник — 3–4 год/день; питання до нього — `OWNER_INBOX.md`; щоденний звіт — `/daily-report` на вимогу.
 
----
+## 2. Що є в репозиторії зараз
+- Старий проєкт PERFECT PARCEL (сортування посилок, Unity, ~5 400 рядків C#). **Не використовується.** Його статуси «Phase 0–2 Owner Approved» і «QA 84/84 PASS» скасовано (ADR-011): тести були симуляцією, реклама й покупки — імітацією.
+- Робочий CI на GitHub Actions (Game-CI) і секрети ліцензії Unity — стан перевірити в E0-02; налаштування CI можна взяти за основу.
+- Код нового проєкту: **немає**.
 
-## 2. ТЕХНОЛОГІЧНИЙ СТЕК ТА ВЕРСІЇ
-- **Ігровий рушій:** Unity 2022.3.20f1 LTS (C#)
-- **Графіка:** Universal Render Pipeline (URP 2D), портретна орієнтація 1080x1920, 2D векторні спрайти 256x256
-- **Платформа:** Android (Min SDK 24, Target SDK 34+, ARM64/ARMv7, IL2CPP)
-- **Формат релізного білда:** Android App Bundle (.aab) та Android Package (.apk)
-- **Монетизація:** Google Mobile Ads (AdMob) + Google UMP + Google Play Billing (IAP)
-- **Локалізація:** Швидкий словниковий менеджер на 6 мов (EN, UA, PL, DE, ES, RU)
-- **Аудіо:** Пул AudioSource із процедурним синтезатором PCM (Zero GC)
-- **CI/CD:** GitHub Actions + Game-CI (`.github/workflows/build-android.yml`)
-- **Архітектура:** Event-Driven (EventBus), Object Pooling (Zero GC in loop), Decoupled MVP, Atomic File Storage
+## 3. Затверджений стек
+Unity 6.3 LTS (ADR-012, точний патч — E0-03), 2D URP, target API 36. Версії — `docs/architecture/TECH_STACK.md`.
 
----
+## 4. Відкриті PR / CI на `main`
+— заповнити на початку першої сесії (`/start-session`).
 
-## 3. СТАН ГОТОВНОСТІ ДО ПУБЛІКАЦІЇ В GOOGLE PLAY
+## 5. Відомі помилки
+Немає (коду ще немає).
 
-| Компонент релізу | Стан готовності | Відповідальний |
-| :--- | :---: | :--- |
-| **Кодова база гри (30 рівнів, UI, аудіо, сейви)** | 🟢 **100% Готово (QA Verified)** | Agent 3 / Agent 5 |
-| **Скрипти автоматичної збірки APK та AAB** | 🟢 **100% Готово (Game-CI workflow)** | Agent 4 |
-| **Інструкція з підпису Keystore** | 🟢 **100% Готово (`RELEASE_BUILD_INSTRUCTIONS.md`)** | Agent 4 |
-| **Політика конфіденційності (Privacy Policy)** | 🟢 **100% Готово (`PRIVACY_POLICY.md`)** | Agent 4 |
-| **Специфікація арт-матеріалів Google Play** | 🟢 **100% Готово (`STORE_ASSETS_SPEC.md`)** | Agent 2 |
-| **Релізний чекліст приймання** | 🟢 **100% Готово (`RELEASE_CHECKLIST.md`)** | Agent 5 |
-| **Створення релізного Keystore** | 🟡 **Очікує виконання Власником (1 команда)** | Власник проєкту |
-| **Генерація іконки 512x512 та банера 1024x500** | 🟡 **Очікує генерації за промптами** | Власник проєкту / Designer |
+## 6. Блокери
+- E0-01: застосувати пакет 2.0 (робить Агент 0 за командою Власника).
 
----
+## 7. Наступні 3 кроки
+1. E0-01: старий код — у гілку `legacy-perfect-parcel`, застосувати пакет, очистити `main`.
+2. E0-02: перевірити, що CI і секрети ліцензії Unity працюють.
+3. E0-03: створити новий проєкт Unity 6.3 LTS і отримати першу зелену збірку.
 
-## 4. ВІДОМІ ПОМИЛКИ ТА БЛОКЕРИ
-- **Відкриті блокери (P0):** **0**
-- **Критичні дефекти (P1):** **0**
-- **Мажорні/Мінорні дефекти:** **0**
-
----
-
-## 5. НАСТУПНІ ДІЇ ДЛЯ РЕЛІЗУ
-1. Створення файлу `release.keystore` та додавання 4 секретів у репозиторій GitHub згідно з [RELEASE_BUILD_INSTRUCTIONS.md](file:///c:/Users/cocro/Downloads/PERFECT%20PARCEL/docs/android/RELEASE_BUILD_INSTRUCTIONS.md).
-2. Запуск workflow у GitHub Actions для генерації фінального підписаного `.aab`.
-3. Завантаження `.aab` у Google Play Console (трек Closed Testing).
+## 8. Питання до Власника
+- D-02 (мінімальна версія Android) і D-03 (технологія інтерфейсу) — потрібні під час E0-03 / E0-05.

@@ -1,53 +1,27 @@
-# ДОШКА ЗАВДАНЬ (TASK BOARD) — PERFECT PARCEL
+# TASK BOARD — KEBAB STREET
 
-> **Поточна фаза:** PHASE 3 — ДИЗАЙН, ФІНАЛЬНА МОНЕТИЗАЦІЯ ТА РЕЛІЗНА ПІДГОТОВКА  
-> **Оновлено:** 2026-11-08 (Сесія 11 — Старт Phase 3, ADR-009 Approved)  
-> **Координатор:** Agent 0 (Project Manager & Chief Architect)  
-> **Затверджений стек:** Unity 2022.3 LTS (C#) — URP 2D, Target SDK 34+  
-> **Статус Phase 0:** 🟢 **COMPLETED (Owner Approved, ADR-006)**  
-> **Статус Phase 1:** 🟢 **COMPLETED (Owner Approved, ADR-007)**  
-> **Статус Phase 2:** 🟢 **COMPLETED (Owner Approved, ADR-009)**  
-> **Статус Phase 3:** 🟡 **IN PROGRESS (Підготовка релізних білдів та сторінки Google Play)**  
+**Етап:** 0 — Новий проєкт і стабільна збірка
+**Оновлено:** 2026-11-09
+Статуси: `Backlog` → `In Progress` → `Ready for QA` → `QA Verified` → `Done` | `Blocked: D-xx`
+Картки: `docs/tasks/<ID>.md` (створює Агент 0 через `/new-task` перед стартом)
 
----
+## Етап 0
 
-## КАНБАН-МАТРИЦЯ
+| ID | Завдання | Агент | Залежить | Доказ | Статус |
+|---|---|---|---|---|---|
+| E0-01 | Старий проєкт → гілка `legacy-perfect-parcel` + тег `perfect-parcel-final`; з `main` прибрати старі `Assets/`, `ProjectSettings/`, `Packages/`; `.agents/`, `.cursorrules`, документи 1.4/1.5 → `docs/archive/`; застосувати пакет 2.0; новий `README.md` | Агент 0 | рішення Власника (дано) | L0 + QA | Backlog |
+| E0-02 | Перевірити CI і секрети ліцензії Unity на старому коді (до видалення) або на порожній збірці; записати результат | platform-engineer | E0-01 | L1 або опис помилки | Backlog |
+| E0-03 | Новий проєкт Unity 6.3 LTS (2D, URP), точний патч у `TECH_STACK.md`; target API 36, min API за D-02; збірки asmdef і папки за `ARCHITECTURE.md` | platform-engineer | E0-02, D-02 | L1 | Backlog |
+| E0-04 | CI: на кожен PR — APK + автотести EditMode; на `main` — APK + AAB; артефакти зберігаються | platform-engineer | E0-03 | L1 | Backlog |
+| E0-05 | Каркас гри: bootstrap → завантаження → меню → порожня сцена зміни; UI за D-03; сцени створюються Editor-скриптом | gameplay-developer | E0-04, D-03 | L1 | Backlog |
+| E0-06 | `KebabStreet.Core`: `ShiftSimulation` з тактом і seed, таймер зміни; перші тести EditMode | gameplay-developer | E0-04 | L2 | Backlog |
+| E0-07 | Збереження зі `schemaVersion`, резервною копією, відновленням; `IClock`; тести | gameplay-developer | E0-06 | L2 | Backlog |
+| E0-08 | Локалізація за ключами (EN/UK/PL, поки кілька рядків меню) + тест «усі ключі є в усіх мовах» | gameplay-developer + ui-art-designer | E0-05 | L2 | Backlog |
+| E0-09 | Інтерфейси `IAdsService`, `IPurchaseService`, `IAnalyticsService` + заглушки лише для Editor/тестів; у релізі кнопки реклами/покупок приховані до Етапу 3 | platform-engineer | E0-06 | L2 | Backlog |
+| E0-10 | `docs/design/GAME_DESIGN.md` і `LEVEL_DESIGN.md` для рівнів 1–5 (специфікація станцій, рецептів, клієнтів, конфіги-чернетки) — підготовка Етапу 1 | game-designer | E0-01 | L0 + QA | Backlog |
+| E0-11 | `ART_STYLE_GUIDE.md` (напрям стилю, палітра, персонажі, правило образів) + варіанти для D-09 (AI-генерація / художник: вартість, права) | ui-art-designer | E0-01 | L0 + QA | Backlog |
+| E0-12 | Встановити APK на Samsung через `adb`, скриншоти меню і порожньої зміни, logcat без `Exception` | qa-release | E0-05 | L3 | Backlog |
+| E0-13 | Ворота Етапу 0 (`/phase-gate 0`) + Власник сам запускає гру | qa-release + Власник | усі вище | L4 | Backlog |
 
-```
-┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐   ┌─────────────────┐
-│     BACKLOG     │──►│   IN PROGRESS   │──►│  READY FOR QA   │──►│   QA VERIFIED   │──►│  OWNER APPROVED │
-│                 │   │                 │   │  [PHASE 3]      │   │                 │   │                 │
-└─────────────────┘   └─────────────────┘   └─────────────────┘   └─────────────────┘   └─────────────────┘
-```
-
----
-
-## 1. COMPLETED PHASES (ЗАКРИТІ ФАЗИ)
-
-| Фаза | Опис результатів | Кількість артефактів | Підсумковий статус |
-| :--- | :--- | :---: | :---: |
-| **PHASE 0** | Повний пакет планування та архітектури (ADR-001..006) | 14 документів у `docs/` | 🟢 **Owner Approved** |
-| **PHASE 1** | Технічний прототип (Конвеєр, Object Pool, 3 лінії, HUD, Game-CI CI/CD, 30 рівнів конфіг) | 18 C# скриптів, workflow, 7 PASS тестів | 🟢 **Owner Approved** |
-| **PHASE 2** | Повний MVP: Сейви, 7 апгрейдів, 6 мов, 7-денні нагороди, AdMob, IAP, 2D арт, BGM + 8 SFX, Juice | 36 C# скриптів, 15 PNG спрайтів, QA звіт 84/84 PASS | 🟢 **Owner Approved (ADR-009)** |
-
----
-
-## 2. PHASE 3: ДИЗАЙН, ФІНАЛЬНА МОНЕТИЗАЦІЯ ТА РЕЛІЗНА ПІДГОТОВКА (АКТИВНІ ЗАВДАННЯ)
-
-| ID | Назва завдання | Відповідальний | Пріоритет | Залежності | DoD (Критерій готовності) | Статус |
-| :--- | :--- | :--- | :---: | :--- | :--- | :---: |
-| **TASK-P3-01** | Реєстрація ADR-009 та закриття Phase 2 | Agent 0 | **P0** | Директива Власника | У `docs/governance/DECISIONS.md` зареєстровано ADR-009; Phase 2 переведено у статус COMPLETED. | 🟢 **Done** |
-| **TASK-P3-02** | Оновлення CI/CD workflow для збірки APK та AAB | Agent 4 | **P0** | Game-CI | Оновлено `.github/workflows/build-android.yml` та `BuildScript.cs` з підтримкою headless збірки Release AAB та Test APK з інжекцією Keystore. | 🟢 **Done** |
-| **TASK-P3-03** | Інструкція з релізного підпису та налаштування секретів | Agent 4 | **P0** | TASK-P3-02 | Створено `docs/android/RELEASE_BUILD_INSTRUCTIONS.md` (генерація Keystore, Base64 конвертація, секрети GitHub Actions, бойові ID AdMob). | 🟢 **Done** |
-| **TASK-P3-04** | Публічна політика конфіденційності (Privacy Policy) | Agent 4 | **P0** | PRIVACY_CHECKLIST | Створено двомовний документ `docs/monetization/PRIVACY_POLICY.md` (EN / UA) без збору персональних даних, COPPA та GDPR комплаєнс. | 🟢 **Done** |
-| **TASK-P3-05** | Специфікація та промпти маркетингових ассетів Store | Agent 2 | **P0** | ART_STYLE_GUIDE | Створено `docs/design/STORE_ASSETS_SPEC.md` (іконка 512x512, Feature Graphic 1024x500, 5 скриншотів із перекладами, метадані). | 🟢 **Done** |
-| **TASK-P3-06** | Актуалізація релізного чекліста під стан Phase 3 | Agent 5 | **P0** | TASK-P3-01..05 | Оновлено `docs/qa/RELEASE_CHECKLIST.md` (60 пунктів контролю якості, перевірено відповідність). | 🟢 **Done** |
-| **TASK-P3-07** | Актуалізація реєстрів та координація запуску Phase 3 | Agent 0 | **P0** | TASK-P3-01..06 | Оновлено `CURRENT_STATE.md`, `TASK_BOARD.md`, `SESSION_LOG.md` (Сесія 11). | 🟢 **Done** |
-
----
-
-## 3. ФІНАЛЬНІ КРОКИ ДО РЕЛІЗУ В GOOGLE PLAY (ЗА ВЛАСНИКОМ)
-1. **Генерація Keystore:** Виконання 2 команд із `RELEASE_BUILD_INSTRUCTIONS.md` та додавання 4 секретів у GitHub.
-2. **Маркетинговий арт:** Генерація іконки 512x512 та банера 1024x500 за готовими промптами з `STORE_ASSETS_SPEC.md`.
-3. **Запуск релізної збірки:** Запуск workflow у GitHub Actions для отримання файлу `.aab`.
-4. **Завантаження в Google Play Console:** Створення релізу у треку закритого або відкритого тестування.
+## Етап 1 (картки створюються після `Owner Approved` Етапу 0)
+Кандидати: гриль і стан м'яса; піта, салат, соуси, видача; клієнти з терпінням і черга; особливі прохання; рівні 1–5 у конфігах; бот-тест; екран результату й зірки; навчання; плейсхолдер-графіка і звуки; плейтест.
