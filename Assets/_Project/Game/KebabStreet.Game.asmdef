@@ -1,0 +1,14 @@
+{
+    "name": "KebabStreet.Game",
+    "rootNamespace": "KebabStreet.Game",
+    "references": ["KebabStreet.Core", "KebabStreet.Services"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

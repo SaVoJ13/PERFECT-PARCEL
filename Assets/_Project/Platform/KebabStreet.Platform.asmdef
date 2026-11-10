@@ -1,0 +1,14 @@
+{
+    "name": "KebabStreet.Platform",
+    "rootNamespace": "KebabStreet.Platform",
+    "references": ["KebabStreet.Services"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

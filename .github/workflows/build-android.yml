@@ -1,4 +1,4 @@
-name: Build Android APK & AAB (Game-CI)
+name: Build Android APK (Game-CI)
 
 on:
   workflow_dispatch:
@@ -10,9 +10,13 @@ on:
       - 'README.md'
       - 'docs/**'
 
+env:
+  # Та сама версія, що в ProjectSettings/ProjectVersion.txt і docs/architecture/TECH_STACK.md
+  UNITY_VERSION: 6000.3.28f1
+
 jobs:
   buildAndroid:
-    name: Build Android Release
+    name: Build Android APK
     runs-on: ubuntu-22.04
     timeout-minutes: 120
 
@@ -37,29 +41,23 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Library
-          key: Library-Android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: Library-Android-${{ env.UNITY_VERSION }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
-            Library-Android-
+            Library-Android-${{ env.UNITY_VERSION }}-
 
-      - name: Build Android AAB and APK
+      - name: Build Android APK
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
-          ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
-          ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
         with:
           targetPlatform: Android
-          unityVersion: 2022.3.20f1
-          # Збирає і APK, і AAB (див. BuildScript.BuildAndroidAll). Секрети підпису приходять у Unity
-          # через inputs androidKeystore* нижче (game-ci експортує їх як ANDROID_KEYSTORE_* у контейнері).
-          buildMethod: PerfectParcel.Editor.BuildScript.BuildAndroidAll
+          unityVersion: ${{ env.UNITY_VERSION }}
+          buildMethod: KebabStreet.Editor.BuildScript.BuildAndroidApk
           versioning: None
-          buildName: PerfectParcel
-          androidExportType: androidAppBundle
+          buildName: KebabStreet
+          androidExportType: androidPackage
           androidKeystoreName: release.keystore
           androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
@@ -71,6 +69,28 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: PerfectParcel-Android-Builds
+          name: KebabStreet-Android-Builds
           path: build/Android
           retention-days: 14
+
+      # Довідка в журналі: ідентифікатор, min/target API і архітектури з готового APK.
+      - name: Print APK Info
+        run: |
+          IMAGE=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^unityci/editor' | head -1)
+          docker run --rm -v "$PWD/build/Android:/apk:ro" --entrypoint bash "$IMAGE" -c '
+            AAPT2=$(find /opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/build-tools -name aapt2 | sort | tail -1)
+            "$AAPT2" dump badging /apk/KebabStreet.apk | grep -E "^(package|sdkVersion|minSdkVersion|targetSdkVersion|native-code)"'
+
+      # Після чистого checkout редактор не має створювати чи змінювати файли проєкту:
+      # усі .meta і налаштування мають бути закомічені (файли редактора генерує лише CI).
+      - name: Verify Project Files Are Committed
+        run: |
+          CHANGES=$(git status --porcelain --untracked-files=all -- Assets/_Project Packages ProjectSettings)
+          if [ -n "$CHANGES" ]; then
+            echo "::error::Редактор Unity створив або змінив файли проєкту, яких немає в коміті"
+            echo "$CHANGES"
+            git diff --stat -- Assets/_Project Packages ProjectSettings
+            git diff -- Assets/_Project Packages ProjectSettings | sed -E 's/(Android(Keystore|Keyalias)Name: ).+/\1<приховано>/' | head -200
+            exit 1
+          fi
+          echo "Файли проєкту збігаються з комітом."
