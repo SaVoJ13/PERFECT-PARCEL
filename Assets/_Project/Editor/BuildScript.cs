@@ -15,6 +15,7 @@ namespace KebabStreet.Editor
     public static class BuildScript
     {
         private const string DefaultApkPath = "build/Android/KebabStreet.apk";
+        private const string DefaultAabPath = "build/Android/KebabStreet.aab";
 
         // Тимчасова порожня сцена лише на час збірки; справжні сцени з'являться в E0-05.
         private const string PlaceholderScenePath = ProjectSetup.SettingsFolder + "/_BuildPlaceholderScene.unity";
@@ -22,10 +23,32 @@ namespace KebabStreet.Editor
         /// <summary>Збирає APK. Викликається з CI: -executeMethod KebabStreet.Editor.BuildScript.BuildAndroidApk</summary>
         public static void BuildAndroidApk()
         {
+            Run(buildApk: true, buildAab: false);
+        }
+
+        /// <summary>Збирає APK і AAB (формат Google Play) за один запуск редактора.</summary>
+        public static void BuildAndroidApkAndAab()
+        {
+            Run(buildApk: true, buildAab: true);
+        }
+
+        private static void Run(bool buildApk, bool buildAab)
+        {
             int exitCode = 1;
             try
             {
-                exitCode = Build(GetArgument("-customBuildPath") ?? DefaultApkPath) ? 0 : 1;
+                bool ok = true;
+                if (buildApk)
+                {
+                    ok = Build(GetArgument("-customBuildPath") ?? DefaultApkPath, false);
+                }
+
+                if (ok && buildAab)
+                {
+                    ok = Build(DefaultAabPath, true);
+                }
+
+                exitCode = ok ? 0 : 1;
             }
             catch (Exception exception)
             {
@@ -38,10 +61,10 @@ namespace KebabStreet.Editor
             }
         }
 
-        private static bool Build(string outputPath)
+        private static bool Build(string outputPath, bool appBundle)
         {
             ProjectSetup.ApplyAll();
-            EditorUserBuildSettings.buildAppBundle = false;
+            EditorUserBuildSettings.buildAppBundle = appBundle;
 
             string[] scenes = GetEnabledScenes();
             bool usePlaceholder = scenes.Length == 0;
@@ -55,7 +78,7 @@ namespace KebabStreet.Editor
             {
                 bool customSigning = ConfigureSigning();
                 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath)));
-                Debug.Log($"[BuildScript] Збірка APK -> {outputPath}; сцен: {scenes.Length}; власний підпис: {customSigning}");
+                Debug.Log($"[BuildScript] Збірка {(appBundle ? "AAB" : "APK")} -> {outputPath}; сцен: {scenes.Length}; власний підпис: {customSigning}");
 
                 BuildReport report = BuildPipeline.BuildPlayer(new BuildPlayerOptions
                 {

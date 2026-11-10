@@ -32,3 +32,7 @@ create_alf.log
 # Службові файли пакета com.unity.test-framework.performance (створюються під час збірки)
 /Assets/Resources/PerformanceTestRun*.json
 /Assets/Resources/PerformanceTestRun*.json.meta
+
+# Скрипти game-ci, які копіюються в проєкт під час збірки (не файли проєкту)
+/Assets/Editor/
+/Assets/Editor.meta
