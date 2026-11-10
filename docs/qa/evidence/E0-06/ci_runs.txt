@@ -1,0 +1,18 @@
+E0-06 / PR #9 — запуски CI (зібрав Агент 5, 2026-11-10; gh api .../actions/runs/<id>, .../jobs, .../artifacts)
+
+run 42905992259  pull_request  ace17cf (голова PR)  success
+  https://github.com/SaVoJ13/PERFECT-PARCEL/actions/runs/42905992259
+  Build Android APK | Build Android                       | success
+  Build Android APK | Upload Build Artifacts              | success
+  Build Android APK | Verify Project Files Are Committed  | success
+  EditMode tests    | Run EditMode tests                  | success
+  EditMode tests    | Verify Project Files Are Committed  | success
+  artifacts: KebabStreet-EditMode-TestResults 13805701220 (20573 B), KebabStreet-Android-Builds 13804898640 (31033627 B)
+  editmode-results.xml: total="111" passed="111" failed="0" inconclusive="0" skipped="0"
+  список 111 назв+результатів ідентичний запуску 42903947527 (diff порожній) -> test_cases_run42903947527.txt
+
+run 42903947527  pull_request  1b78ea7  success  (обидва job, усі кроки вище success; 111/111)
+run 42901783792  pull_request  689d7c7 (коміт із кодом)  success  (обидва job, усі кроки вище success)
+
+git diff 689d7c7..ace17cf -- Assets  -> порожній (після коду лише документи)
+gh pr checks 9: Build Android APK pass 10m32s; EditMode tests pass 3m21s
