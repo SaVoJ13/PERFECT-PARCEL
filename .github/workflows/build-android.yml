@@ -1,4 +1,4 @@
-name: Build Android APK & AAB (Game-CI)
+name: Build Android APK (Game-CI)
 
 on:
   workflow_dispatch:
@@ -10,9 +10,13 @@ on:
       - 'README.md'
       - 'docs/**'
 
+env:
+  # Та сама версія, що в ProjectSettings/ProjectVersion.txt і docs/architecture/TECH_STACK.md
+  UNITY_VERSION: 6000.3.28f1
+
 jobs:
   buildAndroid:
-    name: Build Android Release
+    name: Build Android APK
     runs-on: ubuntu-22.04
     timeout-minutes: 120
 
@@ -37,29 +41,22 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Library
-          key: Library-Android-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          key: Library-Android-${{ env.UNITY_VERSION }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
           restore-keys: |
-            Library-Android-
+            Library-Android-${{ env.UNITY_VERSION }}-
 
-      - name: Build Android AAB and APK
+      - name: Build Android APK
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
-          ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
-          ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
         with:
           targetPlatform: Android
-          unityVersion: 2022.3.20f1
-          # Збирає і APK, і AAB (див. BuildScript.BuildAndroidAll). Секрети підпису приходять у Unity
-          # через inputs androidKeystore* нижче (game-ci експортує їх як ANDROID_KEYSTORE_* у контейнері).
-          buildMethod: PerfectParcel.Editor.BuildScript.BuildAndroidAll
+          unityVersion: ${{ env.UNITY_VERSION }}
           versioning: None
-          buildName: PerfectParcel
-          androidExportType: androidAppBundle
+          buildName: KebabStreet
+          androidExportType: androidPackage
           androidKeystoreName: release.keystore
           androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
@@ -67,10 +64,36 @@ jobs:
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
           customParameters: -nographics -DisableDirectoryMonitor
 
+      # ТИМЧАСОВО (E0-03, генерація файлів редактора) — прибрати до кінця завдання
+      - name: TEMP git status
+        if: always()
+        run: git status --porcelain --untracked-files=all | grep -v '^?? Library/' | head -300 || true
+
+      - name: TEMP editor info
+        if: always()
+        continue-on-error: true
+        run: |
+          IMG=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep unityci/editor | head -1)
+          echo "image: $IMG"
+          docker run --rm --entrypoint bash "$IMG" -c 'cat /opt/unity/Editor/Data/Resources/PackageManager/Editor/manifest.json | head -c 20000; echo; find /opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer -maxdepth 3 -type d | head -80' || true
+
+      - name: TEMP upload generated project files
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: KebabStreet-Generated-Project-Files
+          path: |
+            ProjectSettings
+            Packages
+            Assets/**/*.meta
+            Assets/_Project/Settings
+            Assets/_Project/Scenes
+          retention-days: 3
+
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: PerfectParcel-Android-Builds
+          name: KebabStreet-Android-Builds
           path: build/Android
           retention-days: 14
