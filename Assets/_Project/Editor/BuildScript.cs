@@ -80,6 +80,8 @@ namespace KebabStreet.Editor
                     AssetDatabase.DeleteAsset(PlaceholderScenePath);
                 }
 
+                // Дані підпису не повинні лишатися в ProjectSettings.asset (псевдонім ключа — секрет CI).
+                ClearSigning();
                 ProjectSetup.RelocateUrpGeneratedAssets();
                 AssetDatabase.SaveAssets();
             }
@@ -125,7 +127,7 @@ namespace KebabStreet.Editor
             bool hasKeystore = !string.IsNullOrEmpty(keystoreName) && File.Exists(keystoreName);
             if (!hasKeystore || string.IsNullOrEmpty(keystorePass) || string.IsNullOrEmpty(aliasName) || string.IsNullOrEmpty(aliasPass))
             {
-                PlayerSettings.Android.useCustomKeystore = false;
+                ClearSigning();
                 Debug.Log("[BuildScript] Ключ підпису не передано: APK підписується debug-ключем.");
                 return false;
             }
@@ -137,6 +139,15 @@ namespace KebabStreet.Editor
             PlayerSettings.Android.keyaliasPass = aliasPass;
             Debug.Log("[BuildScript] Підпис: ключ із секретів CI.");
             return true;
+        }
+
+        private static void ClearSigning()
+        {
+            PlayerSettings.Android.useCustomKeystore = false;
+            PlayerSettings.Android.keystoreName = string.Empty;
+            PlayerSettings.Android.keystorePass = string.Empty;
+            PlayerSettings.Android.keyaliasName = string.Empty;
+            PlayerSettings.Android.keyaliasPass = string.Empty;
         }
 
         private static string GetArgument(string name)

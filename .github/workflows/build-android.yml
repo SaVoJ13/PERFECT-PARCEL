@@ -65,33 +65,6 @@ jobs:
           androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
           customParameters: -nographics -DisableDirectoryMonitor
 
-      # ТИМЧАСОВО (E0-03, генерація файлів редактора) — прибрати до кінця завдання
-      - name: TEMP git status
-        if: always()
-        run: git status --porcelain --untracked-files=all | grep -v '^?? Library/' | head -300 || true
-
-      - name: TEMP editor info
-        if: always()
-        continue-on-error: true
-        run: |
-          IMG=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep unityci/editor | head -1)
-          echo "image: $IMG"
-          docker run --rm --entrypoint bash "$IMG" -c 'cat /opt/unity/Editor/Data/Resources/PackageManager/Editor/manifest.json | head -c 20000; echo; find /opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer -maxdepth 3 -type d | head -80' || true
-
-      - name: TEMP upload generated project files
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: KebabStreet-Generated-Project-Files
-          path: |
-            ProjectSettings
-            Packages
-            Assets/**/*.meta
-            Assets/*.asset
-            Assets/Resources
-            Assets/_Project/Settings
-          retention-days: 3
-
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         if: always()
@@ -99,3 +72,17 @@ jobs:
           name: KebabStreet-Android-Builds
           path: build/Android
           retention-days: 14
+
+      # Після чистого checkout редактор не має створювати чи змінювати файли проєкту:
+      # усі .meta і налаштування мають бути закомічені (файли редактора генерує лише CI).
+      - name: Verify Project Files Are Committed
+        run: |
+          CHANGES=$(git status --porcelain --untracked-files=all -- Assets/_Project Packages ProjectSettings)
+          if [ -n "$CHANGES" ]; then
+            echo "::error::Редактор Unity створив або змінив файли проєкту, яких немає в коміті"
+            echo "$CHANGES"
+            git diff --stat -- Assets/_Project Packages ProjectSettings
+            git diff -- Assets/_Project Packages ProjectSettings | grep -v -i 'key' | head -200
+            exit 1
+          fi
+          echo "Файли проєкту збігаються з комітом."

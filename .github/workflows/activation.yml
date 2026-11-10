@@ -1,5 +1,10 @@
 name: Acquire Unity Activation File
 
+# Запасний спосіб: створює файл запиту ліцензії (.alf) для версії Unity проєкту.
+# Чинний секрет UNITY_LICENSE (.ulf) не прив'язаний до версії Unity — він активує 6000.3 (перевірено в E0-03),
+# тож цей воркфлоу потрібен лише якщо ліцензію доведеться отримувати заново.
+# Актуальна інструкція game-ci для ліцензії Personal: https://game.ci/docs/github/activation/
+
 on:
   workflow_dispatch:
 
@@ -8,7 +13,8 @@ jobs:
     name: Generate ALF File
     runs-on: ubuntu-latest
     container:
-      image: unityci/editor:ubuntu-2022.3.20f1-base-3.0.0
+      # Та сама версія Unity, що в ProjectSettings/ProjectVersion.txt
+      image: unityci/editor:ubuntu-6000.3.28f1-base-3
     steps:
       - name: Request ALF
         run: |
