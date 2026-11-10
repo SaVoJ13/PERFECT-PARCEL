@@ -158,22 +158,61 @@ namespace KebabStreet.Editor
             AssetDatabase.CreateFolder(parent, Path.GetFileName(assetFolder));
         }
 
-        private static SerializedProperty FindActiveInputHandler(out SerializedObject serialized)
+        /// <summary>
+        /// Прибирає дані підпису з PlayerSettings, щоб вони не лишалися в ProjectSettings.asset
+        /// (псевдонім ключа — секрет CI). Поля додатково очищаються напряму: сетер keystoreName
+        /// перетворює шлях і не гарантує порожнього значення у файлі.
+        /// </summary>
+        public static void ClearAndroidSigning()
+        {
+            PlayerSettings.Android.useCustomKeystore = false;
+            PlayerSettings.Android.keystoreName = string.Empty;
+            PlayerSettings.Android.keystorePass = string.Empty;
+            PlayerSettings.Android.keyaliasName = string.Empty;
+            PlayerSettings.Android.keyaliasPass = string.Empty;
+
+            SerializedObject settings = LoadProjectSettings();
+            if (settings == null)
+            {
+                return;
+            }
+
+            SetString(settings, "AndroidKeystoreName", string.Empty);
+            SetString(settings, "AndroidKeyaliasName", string.Empty);
+            SerializedProperty useCustom = settings.FindProperty("androidUseCustomKeystore");
+            if (useCustom != null)
+            {
+                useCustom.boolValue = false;
+            }
+
+            settings.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void SetString(SerializedObject target, string propertyName, string value)
+        {
+            SerializedProperty property = target.FindProperty(propertyName);
+            if (property != null)
+            {
+                property.stringValue = value;
+            }
+        }
+
+        private static SerializedObject LoadProjectSettings()
         {
             Object[] assets = AssetDatabase.LoadAllAssetsAtPath("ProjectSettings/ProjectSettings.asset");
-            serialized = assets.Length > 0 ? new SerializedObject(assets[0]) : null;
-            return serialized?.FindProperty("activeInputHandler");
+            return assets.Length > 0 ? new SerializedObject(assets[0]) : null;
         }
 
         private static int GetActiveInputHandler()
         {
-            SerializedProperty property = FindActiveInputHandler(out _);
+            SerializedProperty property = LoadProjectSettings()?.FindProperty("activeInputHandler");
             return property != null ? property.intValue : -1;
         }
 
         private static void SetActiveInputHandler(int value)
         {
-            SerializedProperty property = FindActiveInputHandler(out SerializedObject serialized);
+            SerializedObject settings = LoadProjectSettings();
+            SerializedProperty property = settings?.FindProperty("activeInputHandler");
             if (property == null)
             {
                 Debug.LogError("[ProjectSetup] Поле activeInputHandler не знайдено в ProjectSettings.asset.");
@@ -183,7 +222,7 @@ namespace KebabStreet.Editor
             if (property.intValue != value)
             {
                 property.intValue = value;
-                serialized.ApplyModifiedPropertiesWithoutUndo();
+                settings.ApplyModifiedPropertiesWithoutUndo();
             }
         }
     }

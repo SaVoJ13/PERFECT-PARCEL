@@ -73,6 +73,14 @@ jobs:
           path: build/Android
           retention-days: 14
 
+      # Довідка в журналі: ідентифікатор, min/target API і архітектури з готового APK.
+      - name: Print APK Info
+        run: |
+          IMAGE=$(docker images --format '{{.Repository}}:{{.Tag}}' | grep '^unityci/editor' | head -1)
+          docker run --rm -v "$PWD/build/Android:/apk:ro" --entrypoint bash "$IMAGE" -c '
+            AAPT2=$(find /opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/build-tools -name aapt2 | sort | tail -1)
+            "$AAPT2" dump badging /apk/KebabStreet.apk | grep -E "^(package|sdkVersion|minSdkVersion|targetSdkVersion|native-code)"'
+
       # Після чистого checkout редактор не має створювати чи змінювати файли проєкту:
       # усі .meta і налаштування мають бути закомічені (файли редактора генерує лише CI).
       - name: Verify Project Files Are Committed
@@ -82,7 +90,7 @@ jobs:
             echo "::error::Редактор Unity створив або змінив файли проєкту, яких немає в коміті"
             echo "$CHANGES"
             git diff --stat -- Assets/_Project Packages ProjectSettings
-            git diff -- Assets/_Project Packages ProjectSettings | grep -v -i 'key' | head -200
+            git diff -- Assets/_Project Packages ProjectSettings | sed -E 's/(Android(Keystore|Keyalias)Name: ).+/<приховано>/' | head -200
             exit 1
           fi
           echo "Файли проєкту збігаються з комітом."

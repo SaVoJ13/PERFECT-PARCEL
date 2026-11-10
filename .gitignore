@@ -28,3 +28,7 @@ create_alf.log
 
 # Тимчасові файли Office
 ~$*
+
+# Службові файли пакета com.unity.test-framework.performance (створюються під час збірки)
+/Assets/Resources/PerformanceTestRun*.json
+/Assets/Resources/PerformanceTestRun*.json.meta
