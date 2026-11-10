@@ -54,6 +54,7 @@ jobs:
         with:
           targetPlatform: Android
           unityVersion: ${{ env.UNITY_VERSION }}
+          buildMethod: KebabStreet.Editor.BuildScript.BuildAndroidApk
           versioning: None
           buildName: KebabStreet
           androidExportType: androidPackage
@@ -86,8 +87,9 @@ jobs:
             ProjectSettings
             Packages
             Assets/**/*.meta
+            Assets/*.asset
+            Assets/Resources
             Assets/_Project/Settings
-            Assets/_Project/Scenes
           retention-days: 3
 
       - name: Upload Build Artifacts
