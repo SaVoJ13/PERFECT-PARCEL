@@ -11,7 +11,7 @@
 |---|---|---|---|---|---|
 | E0-01 | Старий проєкт → гілка `legacy-perfect-parcel` + тег `perfect-parcel-final`; з `main` прибрати старі `Assets/`, `ProjectSettings/`, `Packages/`; `.agents/`, `.cursorrules`, документи 1.4/1.5 → `docs/archive/`; застосувати пакет 2.0; новий `README.md` | Агент 0 | рішення Власника (дано) | L0 + QA | Done |
 | E0-02 | Перевірити CI і секрети ліцензії Unity на старому коді (до видалення) або на порожній збірці; записати результат | platform-engineer | E0-01 | L1 або опис помилки | Done |
-| E0-03 | Новий проєкт Unity 6.3 LTS (2D, URP), точний патч у `TECH_STACK.md`; target API 36, min API за D-02; збірки asmdef і папки за `ARCHITECTURE.md` | platform-engineer | E0-02 | L1 | QA Verified (PR #6, готовий до злиття) |
+| E0-03 | Новий проєкт Unity 6.3 LTS (2D, URP), точний патч у `TECH_STACK.md`; target API 36, min API за D-02; збірки asmdef і папки за `ARCHITECTURE.md` | platform-engineer | E0-02 | L1 | Done (PR #6, `3c08d41`; CI на `main` — запуск 42867369466) |
 | E0-04 | CI: на кожен PR — APK + автотести EditMode; на `main` — APK + AAB; артефакти зберігаються; + BUG-011 (перевірити кеш `Library` на дані підпису), BUG-010 (перевірка файлів у корені `Assets/`, `.gitignore` для `Assets/Editor/**`) | platform-engineer | E0-03 | L1 | Backlog |
 | E0-05 | Каркас гри: bootstrap → завантаження → меню → порожня сцена зміни; UI за D-03; сцени створюються Editor-скриптом | gameplay-developer | E0-04, D-03 | L1 | Backlog |
 | E0-06 | `KebabStreet.Core`: `ShiftSimulation` з тактом і seed, таймер зміни; перші тести EditMode | gameplay-developer | E0-04 | L2 | Backlog (🔥 ВАЖКЕ, Fable) |
