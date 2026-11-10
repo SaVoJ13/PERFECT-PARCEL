@@ -90,7 +90,7 @@ jobs:
             echo "::error::Редактор Unity створив або змінив файли проєкту, яких немає в коміті"
             echo "$CHANGES"
             git diff --stat -- Assets/_Project Packages ProjectSettings
-            git diff -- Assets/_Project Packages ProjectSettings | sed -E 's/(Android(Keystore|Keyalias)Name: ).+/<приховано>/' | head -200
+            git diff -- Assets/_Project Packages ProjectSettings | sed -E 's/(Android(Keystore|Keyalias)Name: ).+/\1<приховано>/' | head -200
             exit 1
           fi
           echo "Файли проєкту збігаються з комітом."
