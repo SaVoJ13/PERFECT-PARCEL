@@ -10,7 +10,13 @@
 ## Windows / PowerShell
 - PowerShell псує бінарний вивід через `>`. Для `adb exec-out screencap -p` використовувати `cmd /c "adb exec-out screencap -p > файл.png"`.
 
+## Робоча папка (Windows)
+- **Старі `Assets/`, `Packages/`, `ProjectSettings/` лежать у робочій папці як untracked** (залишок PERFECT PARCEL після E0-01; на `main` їх немає, повна копія — гілка `legacy-perfect-parcel`). Їх можна випадково закомітити або вони зіб'ють новий Unity-проєкт (E0-03).
+- **Шлях до папки містить пробіл** (`PERFECT PARCEL`, а репозиторій — `PERFECT-PARCEL`). Скрипти, `adb`, Unity batchmode без лапок ламаються на пробілі. Завжди бери шлях у лапки.
+- **Безпечне прибирання до E0-03 (пропозиція):** (1) переконатися, що вміст збігається з `legacy-perfect-parcel`; (2) найкраще — свіжий `git clone` у шлях без пробілів (напр. `C:\dev\kebab-street`), новий Unity-проєкт створювати там, стару папку не чіпати; (3) якщо лишаємось тут — не видаляти, а перемістити три папки в `..\PERFECT-PARCEL-old-backup`.
+
 ## Unity / CI
+- Локальний `python` на ПК Власника відсутній (Windows-заглушка). Для `tools/economy_sim.py` потрібен встановлений Python — врахувати в E0-03/Етапі 1.
 - (додавати по ходу)
 
 ## Android / adb / Google Play
