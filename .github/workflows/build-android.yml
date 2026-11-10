@@ -100,16 +100,20 @@ jobs:
           fi
 
       # Редактор не має створювати чи змінювати файли проєкту (усі .meta закомічені).
+      # Packages виключено лише в цьому job: редактор Unity на Linux сам дописує в manifest.json і
+      # packages-lock.json службові пакети sysroot (com.unity.sdk.linux-*, com.unity.toolchain.linux-*);
+      # це не налаштування проєкту. Пакети перевіряє job збірки Android (там вони не змінюються).
       - name: Verify Project Files Are Committed
         run: |
-          CHANGES=$(git status --porcelain --untracked-files=all -- Assets Packages ProjectSettings)
+          git diff --stat -- Packages || true
+          CHANGES=$(git status --porcelain --untracked-files=all -- Assets ProjectSettings)
           if [ -n "$CHANGES" ]; then
             echo "::error::Редактор Unity створив або змінив файли проєкту, яких немає в коміті"
             echo "$CHANGES"
-            git diff -- Assets Packages ProjectSettings | head -80
+            git diff -- Assets ProjectSettings | head -80
             exit 1
           fi
-          echo "Файли проєкту збігаються з комітом."
+          echo "Файли проєкту (Assets, ProjectSettings) збігаються з комітом."
 
   buildAndroid:
     name: Build Android APK
