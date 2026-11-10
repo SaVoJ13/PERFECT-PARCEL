@@ -30,7 +30,7 @@ Unity 6.3 LTS (патч — E0-03), 2D URP, target API 36, min API 24, UI Toolki
 - Ризик: ліцензія Unity (2022.3) може не підійти для 6.3 → можлива повторна активація (`OWNER_INBOX.md` №5).
 
 ## 7. Наступні 3 кроки
-1. Дія Власника: чистий clone у `C:devkebab-street` (`OWNER_INBOX` №4) — перед E0-03.
+1. Дія Власника: чистий clone у `C:\dev\kebab-street` (`OWNER_INBOX` №4) — перед E0-03.
 2. 🔥 E0-03 (Fable): новий проєкт Unity 6.3 — спершу вирішити питання шляху/clone (`OWNER_INBOX.md` №4).
 3. 🔥 E0-04 → E0-06 → E0-07 до 15.11.
 
