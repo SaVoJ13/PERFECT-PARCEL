@@ -98,7 +98,7 @@
 ## 7. Зірки та економіка рівня
 Ключі в `levels/Lxx.json`: `goal`, `stars`.
 - ★ — ціль виконано.
-- ★★ — вищий поріг (`stars.two`, монети або клієнти).
+- ★★ — більша сума монет (`stars.two`, `type=coins`).
 - ★★★ — додаткова умова (`stars.three.condition`: `noLostCustomers` / `noBurnt` / `combo`), за концепцією 5.5.
 - Кристали: за 3★ вперше на рівні (економіка — `ECONOMY_DESIGN.md`, поза межами E0-10; нагороди не змінюємо).
 - Нагорода монет: сума, зароблена в зміні (`coinsEarned`), переноситься в гаманець; пороги зірок виражені тією самою величиною.
@@ -116,7 +116,7 @@
 Показується також, скільки не вистачило до цілі. Рівні 1–2: умова поразки лише за часом, втрата клієнтів не рахується (захист від несправедливості). Рівень 3: втрата клієнтів рахується (`lose.maxLostCustomers`).
 
 ## 10. Список ключів локалізації (для Агента 2)
-`ui.level.goal.serve`, `ui.level.goal.earn`, `ui.level.goal.loseMax`, `ui.stars.*`, `lost.reason.*`, `customer.olya.name`, `customer.marko.name`, `customer.hanna.name`, `ingredient.*`, `recipe.kebab_pita.name`, `tutorial.*` (LEVEL_DESIGN розд. 7), `story.*` (NARRATIVE.md, E1+).
+`ui.level.goal.serve`, `ui.level.goal.earn`, `ui.level.goal.loseMax`, `ui.stars.*`, `lost.reason.*`, `customer.olya.name`, `customer.marko.name`, `customer.hanna.name`, `ingredient.*`, `recipe.kebab_pita.name`, `tutorial.*` (LEVEL_DESIGN розд. 8), `story.*` (NARRATIVE.md, E1+).
 
 ## 11. Приклад конфігів (лише приклади, файли поки не створюються)
 `recipes.json`:
