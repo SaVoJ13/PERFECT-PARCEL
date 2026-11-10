@@ -42,7 +42,6 @@ namespace KebabStreet.Editor
         {
             ProjectSetup.ApplyAll();
             EditorUserBuildSettings.buildAppBundle = false;
-            bool customSigning = ConfigureSigning();
 
             string[] scenes = GetEnabledScenes();
             bool usePlaceholder = scenes.Length == 0;
@@ -54,6 +53,7 @@ namespace KebabStreet.Editor
 
             try
             {
+                bool customSigning = ConfigureSigning();
                 Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath)));
                 Debug.Log($"[BuildScript] Збірка APK -> {outputPath}; сцен: {scenes.Length}; власний підпис: {customSigning}");
 
