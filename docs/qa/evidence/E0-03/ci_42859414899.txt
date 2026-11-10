@@ -1,0 +1,51 @@
+Доказ L1 для E0-03 (PR #6). Зібрано Агентом 5 (qa-release) 2026-11-10 самостійно через gh / aapt2.
+Значень секретів тут немає.
+
+== Запуск CI ==
+gh run view 42859414899 --json status,conclusion,headSha,headBranch,event,jobs
+  url:        https://github.com/SaVoJ13/PERFECT-PARCEL/actions/runs/42859414899
+  status:     completed
+  conclusion: success
+  event:      workflow_dispatch
+  branch:     task/E0-03-unity-project
+  headSha:    642c91142ad593b335f90521515c37740a4a0d98
+  кроки (усі success): Set up job, Free Disk Space, Checkout Repository, Cache Library,
+    Build Android APK, Upload Build Artifacts, Print APK Info,
+    Verify Project Files Are Committed, Post Cache Library, Post Checkout Repository, Complete job
+  образ редактора в журналі: unityci/editor:ubuntu-6000.3.28f1-android-3
+
+== Журнал запуску (gh run view 42859414899 --log, 8478 рядків) ==
+  "error CS": 0 збігів; "warning CS": 0
+  [ProjectSetup] PlayerSettings: product='Kebab Street', id='com.savoj.kebabstreet', minSdk=25, targetSdk=36,
+    backend=IL2CPP, arch=ARM64, orientation=Portrait, colorSpace=Linear, activeInputHandler=1
+  Build Finished, Result: Success.
+  Build succeeded
+  Print APK Info:
+    package: name='com.savoj.kebabstreet' versionCode='1' versionName='1.0' platformBuildVersionCode='36' compileSdkVersion='36'
+    minSdkVersion:'25'
+    targetSdkVersion:'36'
+    native-code: 'arm64-v8a'
+  Verify Project Files Are Committed: "Файли проєкту збігаються з комітом."
+  Помилок конвеєра рендерингу немає (згадки "FallbackError" — штатна компіляція шейдера-заглушки URP).
+  "[Licensing::Module] Error: Access token is unavailable" — штатне повідомлення при ULF-ліцензії, активація успішна.
+  Секрети підпису/ліцензії в журналі замасковані (***), включно з аргументами -androidKeyaliasName/-androidKeystorePass.
+
+== Артефакт ==
+gh api .../actions/artifacts: 13785780029 KebabStreet-Android-Builds run=42859414899 sha=642c911 size=31022269 expired=false
+gh run download 42859414899 -> KebabStreet-Android-Builds/KebabStreet.apk (31 982 516 B)
+
+== Локальна перевірка APK (Android SDK build-tools 36.0.0) ==
+aapt2 dump badging:
+  package: name='com.savoj.kebabstreet' ... compileSdkVersion='36'
+  minSdkVersion:'25'
+  targetSdkVersion:'36'
+  application-label:'Kebab Street'
+  native-code: 'arm64-v8a'
+  uses-permission: android.permission.INTERNET (типовий дозвіл Unity)
+aapt2 dump xmltree AndroidManifest.xml: screenOrientation=1 (portrait)
+unzip -l: lib/arm64-v8a/libil2cpp.so (IL2CPP), лише arm64-v8a
+apksigner verify: підпис дійсний (Signer #1), ключ не debug — сертифікат із секретів CI
+
+== Тимчасові артефакти інциденту ==
+У списку артефактів репозиторію (gh api .../actions/artifacts --paginate) артефактів запусків
+42847804606 і 42849630889 немає; KebabStreet-Generated-Project-Files — 0.
