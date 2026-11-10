@@ -106,6 +106,7 @@ jobs:
           if [ -n "$CHANGES" ]; then
             echo "::error::Редактор Unity створив або змінив файли проєкту, яких немає в коміті"
             echo "$CHANGES"
+            git diff -- Assets Packages ProjectSettings | head -80
             exit 1
           fi
           echo "Файли проєкту збігаються з комітом."
@@ -174,6 +175,16 @@ jobs:
           androidKeyaliasName: ${{ env.USE_RELEASE_KEY == 'true' && secrets.ANDROID_KEYALIAS_NAME || '' }}
           androidKeyaliasPass: ${{ env.USE_RELEASE_KEY == 'true' && secrets.ANDROID_KEYALIAS_PASS || '' }}
           customParameters: -nographics -DisableDirectoryMonitor
+
+      # BUG-011: Unity пише дані підпису в Library/Bee (Gradle-проєкт, графи збірки) під час збірки з ключем.
+      # Перед збереженням кешу такі файли видаляються (повторна генерація дешева), потім запобіжник перевіряє результат.
+      - name: Remove Signing Data From Library (before cache save)
+        if: always()
+        env:
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+        run: bash .github/workflows/scripts/scan-signing-data.sh report Library
 
       # BUG-011, постійний запобіжник: після збірки (до збереження кешу в кроці post) у Library не має бути
       # даних підпису. Знахідка = червоний CI, кеш не зберігається.
