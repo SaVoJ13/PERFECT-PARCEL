@@ -18,7 +18,7 @@
 | `KebabStreet.Services` | Core | Інтерфейси `IAdsService`, `IPurchaseService`, `IAnalyticsService`, `ISaveStorage`, `IClock` + заглушки |
 | `KebabStreet.Platform` | Services, SDK | Справжні реалізації (AdMob, UMP, Unity IAP, Firebase) — Етап 3 |
 | `KebabStreet.Game` | Core, Services, UnityEngine | В'юхи, ввід, анімації, звук, UI-контролери, композиція (bootstrap) |
-| `KebabStreet.Editor` | Game | Збірка, генерація сцен/префабів, валідація ресурсів |
+| `KebabStreet.Editor` | Game, збірки URP (для `ProjectSetup`) | Збірка, генерація сцен/префабів, валідація ресурсів |
 | `KebabStreet.Tests.EditMode` | Core, Services | Автотести логіки, бот-тест рівнів, тести міграцій збереження |
 
 ## 3. Структура папок
