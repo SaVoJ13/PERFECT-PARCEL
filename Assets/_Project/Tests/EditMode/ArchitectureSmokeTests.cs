@@ -41,7 +41,7 @@ namespace KebabStreet.Tests.EditMode
             AsmdefData services = LoadAsmdef("Services", "KebabStreet.Services.asmdef");
 
             Assert.AreEqual("KebabStreet.Services", services.name);
-            CollectionAssert.Contains(services.references, "KebabStreet.НавмисноЗламано");
+            CollectionAssert.Contains(services.references, "KebabStreet.Core");
         }
 
         [Test]
