@@ -1,0 +1,15 @@
+{
+  "game.title": "Kebab Street",
+  "boot.loading": "Loading...",
+  "menu.play": "Play",
+  "menu.settings": "Settings",
+  "menu.settings_soon": "Settings are coming soon",
+  "shift.time_left": "Time left: {0}",
+  "shift.finished": "Shift finished",
+  "shift.exit": "Exit",
+  "notice.progress_reset": "Your saved progress could not be restored and was reset.",
+  "notice.update_game": "Your save was made by a newer version. Please update the game. Progress will not be saved.",
+  "notice.storage_unavailable": "Saved data cannot be read right now. Progress will not be saved. Restart the game.",
+  "notice.save_disabled": "Progress saving is turned off because of a problem with the saved data.",
+  "notice.save_failed": "Progress could not be saved. Please try again later."
+}
