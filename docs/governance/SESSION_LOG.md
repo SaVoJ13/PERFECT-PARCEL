@@ -437,3 +437,7 @@
 - Власник злив PR #8, #9, #10 у `main` (`8e8e7b5`). Перевірено: запуск CI 43036942256 на `main` — успіх, тести EditMode пройшли, артефакт містить `KebabStreet.apk` і `KebabStreet.aab` (по ~32 МБ).
 - **E0-04, E0-06, E0-07 → Done.** Етап 0: 8 з 15 завдань Done.
 - Наступне: E0-15 (BUG-025/026), потім E0-05.
+- **E0-15** (Агент 3, Sonnet; QA Sonnet): PR #12, QA Verified L2, 338/338; BUG-025/026 Verified Fixed. Нові `SaveWriteResult.RejectedAfterUnavailableLoad`/`RejectedNewerSave`.
+- **E0-05** (Агент 3, Sonnet; QA Sonnet): PR #13, QA Verified L1+L2, 368/368; APK має 3 сцени. Сцени генерує `SceneSetup` у CI, у git не комітяться (`.gitignore`). НЕ ПЕРЕВІРЕНО: дотики по UI Toolkit на Android без EventSystem (E0-12). Нова помилка BUG-027 (P3, помилка в журналі).
+- Рішення Керівника (ADR-015): `.gitignore` змінено агентом поза його зоною — прийнято (зворотно, QA підтвердив безпечність); UI зібрано кодом, UXML/USS і тема — Агент 2 пізніше; числа порожньої зміни тимчасово зашиті (потрібен конфіг від Агента 1).
+- Наступне: Власник зливає #11, #12 → #13; далі E0-14, E0-08, E0-09, E0-12.
