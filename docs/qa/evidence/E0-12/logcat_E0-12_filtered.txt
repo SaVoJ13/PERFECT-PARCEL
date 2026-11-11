@@ -1,0 +1,129 @@
+# E0-12 logcat, витяг: тег Unity + IL2CPP + рядки процесу гри з рівнем W/E/F; пристрій SM-S928B, Android 17 (API 37); APK з main c935006 (CI 43067999529). Холодний запуск 19:24:23 + згортання/повернення.
+11-11 19:24:23.217 27169 27206 I Unity   : Handle cmd APP_CMD_START(11)
+11-11 19:24:23.220 27169 27206 I Unity   : Handle cmd APP_CMD_RESUME(12)
+11-11 19:24:23.224 27169 27169 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:23.224 27169 27169 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:23.227 27169 27169 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:23.228 27169 27169 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:23.228 27169 27206 I Unity   : Handle cmd APP_CMD_INIT_WINDOW(1)
+11-11 19:24:23.316 27169 27206 I Unity   :     HasWindow = 1, HasFocus = 0
+11-11 19:24:23.316 27169 27206 I Unity   : Handle cmd APP_CMD_WINDOW_REDRAW_NEEDED(4)
+11-11 19:24:23.316 27169 27206 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+11-11 19:24:23.318 27169 27206 I Unity   : Handle cmd APP_CMD_GAINED_FOCUS(7)
+11-11 19:24:30.121 28893 28893 I IL2CPP  : JNI_OnLoad
+11-11 19:24:30.121 28893 28893 V Unity   : Context Type: GameActivity
+11-11 19:24:30.123 28893 28920 I Unity   : UnityApplication::CreateInstance
+11-11 19:24:30.123 28893 28920 I Unity   : GameActivity Package Version '4.4.0'
+11-11 19:24:30.124 28893 28920 I Unity   : Starting Game Loop
+11-11 19:24:30.125 28893 28920 I Unity   : Handle cmd APP_CMD_START(11)
+11-11 19:24:30.127 28893 28920 I Unity   : Handle cmd APP_CMD_RESUME(12)
+11-11 19:24:30.133 28893 28920 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+11-11 19:24:30.136 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:30.136 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:30.137 28893 28920 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+11-11 19:24:30.137 28893 28920 I Unity   : Handle cmd APP_CMD_CONTENT_RECT_CHANGED(5)
+11-11 19:24:30.137 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:30.138 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:30.138 28893 28920 I Unity   : Handle cmd APP_CMD_INIT_WINDOW(1)
+11-11 19:24:30.145 28893 28920 I Unity   : MemoryManager: Using 'Dynamic Heap' Allocator.
+11-11 19:24:30.201 28893 28920 I Unity   : SystemInfo CPU = ARM64 FP ASIMD AES, Cores = 8, Memory = 11084mb
+11-11 19:24:30.201 28893 28920 I Unity   : SystemInfo ARM big.LITTLE configuration: 6 big (mask: 0xfc), 2 little (mask: 0x3)
+11-11 19:24:30.201 28893 28920 I Unity   : ApplicationInfo 'com.savoj.kebabstreet', Version '1.0', Min API Level '25', Target API Level '36'
+11-11 19:24:30.201 28893 28920 I Unity   : Built from '6000.3/respin/6000.3.28f1-21f78c3e21d1' branch, Version '6000.3.28f1 (8f082d2fe476)', Build type 'Release', Scripting Backend 'il2cpp', CPU 'arm64-v8a', Stripping 'Enabled'
+11-11 19:24:30.201 28893 28920 I Unity   : Device Model 'samsung SM-S928B', OS 'Android OS 17 (API 37)'
+11-11 19:24:30.279 28893 28920 I Unity   : Company Name: SaVoJ
+11-11 19:24:30.279 28893 28920 I Unity   : Product Name: Kebab Street
+11-11 19:24:30.477 28893 28920 I Unity   :     HasWindow = 1, HasFocus = 0
+11-11 19:24:30.477 28893 28920 I Unity   : Handle cmd APP_CMD_WINDOW_RESIZED(3)
+11-11 19:24:30.477 28893 28920 I Unity   : Handle cmd APP_CMD_WINDOW_REDRAW_NEEDED(4)
+11-11 19:24:30.477 28893 28920 I Unity   : Handle cmd APP_CMD_GAINED_FOCUS(7)
+11-11 19:24:30.477 28893 28920 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+11-11 19:24:30.626 28893 28920 I IL2CPP  : Locale uk-UA
+11-11 19:24:37.628 29019 29029 W libc    : Access denied finding property "ro.mediatek.platform"
+11-11 19:24:52.517 28893 28920 I Unity   : Handle cmd APP_CMD_PAUSE(14)
+11-11 19:24:52.595 28893 28920 I Unity   : Handle cmd APP_CMD_LOST_FOCUS(8)
+11-11 19:24:52.941 28893 28920 I Unity   : Handle cmd APP_CMD_TERM_WINDOW(2)
+11-11 19:24:52.998 28893 28920 I Unity   : Handle cmd APP_CMD_LOW_MEMORY(10)
+11-11 19:24:52.999 28893 28920 I Unity   : Handle cmd APP_CMD_STOP(15)
+11-11 19:24:52.999 28893 28920 I Unity   : Handle cmd APP_CMD_SAVE_STATE(13)
+11-11 19:24:55.824 28893 28920 I Unity   : Handle cmd APP_CMD_START(11)
+11-11 19:24:55.831 28893 28920 I Unity   : Handle cmd APP_CMD_RESUME(12)
+11-11 19:24:55.832 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:55.833 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:55.834 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:55.835 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:55.836 28893 28920 I Unity   : Handle cmd APP_CMD_INIT_WINDOW(1)
+11-11 19:24:55.877 28893 28920 I Unity   :     HasWindow = 1, HasFocus = 0
+11-11 19:24:55.877 28893 28920 I Unity   : Handle cmd APP_CMD_WINDOW_REDRAW_NEEDED(4)
+11-11 19:24:55.877 28893 28920 I Unity   : Handle cmd APP_CMD_GAINED_FOCUS(7)
+11-11 19:24:55.885 28893 28920 I Unity   : Handle cmd APP_CMD_WINDOW_INSETS_CHANGED(17)
+# --- рядки процесу 28893 з рівнем W/E/F:
+11-11 19:24:30.135 28893 28893 E BufferQueueProducer: Unable to open libpenguin.so: dlopen failed: library "libpenguin.so" not found.
+11-11 19:24:30.135 28893 28893 E voj.kebabstreet: Unable to open libpenguin.so: dlopen failed: library "libpenguin.so" not found.
+11-11 19:24:30.136 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:30.136 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:30.137 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:30.138 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:30.141 28893 28893 W qdgralloc: Failed to load libubwcp.so
+11-11 19:24:30.295 28893 28920 E Adreno-AppProfiles: QSPM AIDL service doesn't exist
+11-11 19:24:30.319 28893 28920 W qdgralloc: GetSize: Pixel format: 0x3b is not supported by gralloc
+11-11 19:24:30.319 28893 28920 W qdgralloc: gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+11-11 19:24:30.319 28893 28920 E Gralloc4: isSupported(1, 1, 59, 1, ...) failed with 7
+11-11 19:24:30.319 28893 28920 E GraphicBufferAllocator: Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 2
+11-11 19:24:30.319 28893 28920 E AHardwareBuffer: GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -2), handle=0x0
+11-11 19:24:30.319 28893 28920 W qdgralloc: GetSize: Pixel format: 0x3b is not supported by gralloc
+11-11 19:24:30.319 28893 28920 W qdgralloc: gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+11-11 19:24:30.319 28893 28920 E Gralloc4: isSupported(1, 1, 59, 1, ...) failed with 7
+11-11 19:24:30.319 28893 28920 E GraphicBufferAllocator: Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 2
+11-11 19:24:30.319 28893 28920 E AHardwareBuffer: GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -2), handle=0x0
+11-11 19:24:30.321 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:30.322 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:30.323 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:30.325 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:30.330 28893 28920 E SwappyDisplayManager: dalvik.system.InMemoryDexClassLoader[DexPathList[[dex file "InMemoryDexFile[cookie=[-5476376637430259376, -5476376640651734320]]"],nativeLibraryDirectories=[/system/lib64, /system_ext/lib64]]] couldn't find "libgame.so"
+11-11 19:24:30.480 28893 28920 W qdgralloc: GetSize: Pixel format: 0x3b is not supported by gralloc
+11-11 19:24:30.480 28893 28920 W qdgralloc: gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+11-11 19:24:30.480 28893 28920 E Gralloc4: isSupported(1, 1, 59, 1, ...) failed with 7
+11-11 19:24:30.480 28893 28920 E GraphicBufferAllocator: Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 2
+11-11 19:24:30.480 28893 28920 E AHardwareBuffer: GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -2), handle=0x0
+11-11 19:24:30.480 28893 28920 W qdgralloc: GetSize: Pixel format: 0x3b is not supported by gralloc
+11-11 19:24:30.480 28893 28920 W qdgralloc: gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+11-11 19:24:30.480 28893 28920 E Gralloc4: isSupported(1, 1, 59, 1, ...) failed with 7
+11-11 19:24:30.481 28893 28920 E GraphicBufferAllocator: Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 2
+11-11 19:24:30.481 28893 28920 E AHardwareBuffer: GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -2), handle=0x0
+11-11 19:24:30.481 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:30.484 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:30.486 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:30.489 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:30.494 28893 28920 E SwappyDisplayManager: dalvik.system.InMemoryDexClassLoader[DexPathList[[dex file "InMemoryDexFile[cookie=[-5476376637430689904, -5476376640651729168]]"],nativeLibraryDirectories=[/system/lib64, /system_ext/lib64]]] couldn't find "libgame.so"
+11-11 19:24:30.534 28893 28935 W InteractionJankMonitor: Initializing without READ_DEVICE_CONFIG permission. enabled=false, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.savoj.kebabstreet
+11-11 19:24:43.690 28893 28907 E System  : Uncaught exception thrown by finalizer
+11-11 19:24:43.690 28893 28907 E System  : java.lang.AssertionError: Failed to close dex file in finalizer.
+11-11 19:24:43.690 28893 28907 E System  : 	at dalvik.system.DexFile.finalize(DexFile.java:386)
+11-11 19:24:43.690 28893 28907 E System  : 	at java.lang.Daemons$FinalizerDaemon.doFinalize(Daemons.java:387)
+11-11 19:24:43.690 28893 28907 E System  : 	at java.lang.Daemons$FinalizerDaemon.processReference(Daemons.java:367)
+11-11 19:24:43.690 28893 28907 E System  : 	at java.lang.Daemons$FinalizerDaemon.runInternal(Daemons.java:339)
+11-11 19:24:43.690 28893 28907 E System  : 	at java.lang.Daemons$Daemon.run(Daemons.java:135)
+11-11 19:24:43.690 28893 28907 E System  : 	at java.lang.Thread.run(Thread.java:1571)
+11-11 19:24:52.961 28893 29155 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:55.832 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:55.833 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:55.834 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:55.835 28893 28893 W libc    : Access denied finding property "vendor.display.enable_optimal_refresh_rate"
+11-11 19:24:55.845 28893 28920 W qdgralloc: GetSize: Pixel format: 0x3b is not supported by gralloc
+11-11 19:24:55.845 28893 28920 W qdgralloc: gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+11-11 19:24:55.845 28893 28920 E Gralloc4: isSupported(1, 1, 59, 1, ...) failed with 7
+11-11 19:24:55.846 28893 28920 E GraphicBufferAllocator: Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 2
+11-11 19:24:55.846 28893 28920 E AHardwareBuffer: GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -2), handle=0x0
+11-11 19:24:55.846 28893 28920 W qdgralloc: GetSize: Pixel format: 0x3b is not supported by gralloc
+11-11 19:24:55.846 28893 28920 W qdgralloc: gralloc failed to allocate buffer for size 0 format 59 AWxAH 1x1 usage 2816
+11-11 19:24:55.846 28893 28920 E Gralloc4: isSupported(1, 1, 59, 1, ...) failed with 7
+11-11 19:24:55.846 28893 28920 E GraphicBufferAllocator: Failed to allocate (4 x 4) layerCount 1 format 59 usage b00: 2
+11-11 19:24:55.846 28893 28920 E AHardwareBuffer: GraphicBuffer(w=4, h=4, lc=1) failed (Unknown error -2), handle=0x0
+11-11 19:24:55.848 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:55.858 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:55.860 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:55.861 28893 28920 W qdgralloc: getInterlacedFlag: getMetaData returned 3, defaulting to interlaced_flag = 0
+11-11 19:24:55.866 28893 28920 E SwappyDisplayManager: dalvik.system.InMemoryDexClassLoader[DexPathList[[dex file "InMemoryDexFile[cookie=[-5476376637430690352, -5476376640651663312]]"],nativeLibraryDirectories=[/system/lib64, /system_ext/lib64]]] couldn't find "libgame.so"
+# --- пошук по всьому логу (усі процеси) Exception|FATAL|ANR in|CRASH для com.savoj.kebabstreet:
+11-11 19:24:28.222  3203  3304 W WindowManager: Exception thrown during dispatchAppVisibility Window{b24eb0b u0 com.savoj.kebabstreet/com.unity3d.player.UnityPlayerGameActivity EXITING}
