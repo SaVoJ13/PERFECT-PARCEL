@@ -1,10 +1,10 @@
 using System;
 using System.IO;
+using System.IO.Compression;
 using UnityEditor;
 using UnityEditor.Build.Reporting;
 using UnityEditor.SceneManagement;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace KebabStreet.Editor
 {
@@ -16,9 +16,6 @@ namespace KebabStreet.Editor
     {
         private const string DefaultApkPath = "build/Android/KebabStreet.apk";
         private const string DefaultAabPath = "build/Android/KebabStreet.aab";
-
-        // Тимчасова порожня сцена лише на час збірки; справжні сцени з'являться в E0-05.
-        private const string PlaceholderScenePath = ProjectSetup.SettingsFolder + "/_BuildPlaceholderScene.unity";
 
         /// <summary>Збирає APK. Викликається з CI: -executeMethod KebabStreet.Editor.BuildScript.BuildAndroidApk</summary>
         public static void BuildAndroidApk()
@@ -66,13 +63,8 @@ namespace KebabStreet.Editor
             ProjectSetup.ApplyAll();
             EditorUserBuildSettings.buildAppBundle = appBundle;
 
-            string[] scenes = GetEnabledScenes();
-            bool usePlaceholder = scenes.Length == 0;
-            if (usePlaceholder)
-            {
-                CreatePlaceholderScene();
-                scenes = new[] { PlaceholderScenePath };
-            }
+            // Сцени Boot/Menu/Shift генеруються кодом перед кожною збіркою (E0-05) і прибираються після неї.
+            string[] scenes = SceneSetup.Generate();
 
             try
             {
@@ -93,15 +85,17 @@ namespace KebabStreet.Editor
                 Debug.Log(
                     $"[BuildScript] Результат: {summary.result}; розмір: {summary.totalSize} байт; " +
                     $"помилок: {summary.totalErrors}; попереджень: {summary.totalWarnings}; час: {summary.totalTime}");
+                if (!appBundle && summary.result == BuildResult.Succeeded)
+                {
+                    LogScenesInApk(outputPath, scenes.Length);
+                }
+
                 return summary.result == BuildResult.Succeeded;
             }
             finally
             {
-                if (usePlaceholder)
-                {
-                    EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-                    AssetDatabase.DeleteAsset(PlaceholderScenePath);
-                }
+                EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+                SceneSetup.Cleanup();
 
                 // Дані підпису не повинні лишатися в ProjectSettings.asset (псевдонім ключа — секрет CI).
                 ProjectSetup.ClearAndroidSigning();
@@ -110,29 +104,34 @@ namespace KebabStreet.Editor
             }
         }
 
-        private static string[] GetEnabledScenes()
+        /// <summary>
+        /// Доказ у журналі збірки: файли сцен (assets/bin/Data/levelN) у готовому APK і їх кількість.
+        /// </summary>
+        private static void LogScenesInApk(string apkPath, int expected)
         {
-            var result = new System.Collections.Generic.List<string>();
-            foreach (EditorBuildSettingsScene scene in EditorBuildSettings.scenes)
+            try
             {
-                if (scene.enabled && File.Exists(scene.path))
+                int count = 0;
+                using (ZipArchive zip = ZipFile.OpenRead(apkPath))
                 {
-                    result.Add(scene.path);
+                    foreach (ZipArchiveEntry entry in zip.Entries)
+                    {
+                        if (entry.FullName.StartsWith("assets/bin/Data/level", StringComparison.Ordinal)
+                            && !entry.FullName.EndsWith(".resS", StringComparison.Ordinal)
+                            && !entry.FullName.EndsWith(".resource", StringComparison.Ordinal))
+                        {
+                            count++;
+                            Debug.Log("[BuildScript] Сцена в APK: " + entry.FullName);
+                        }
+                    }
                 }
+
+                Debug.Log($"[BuildScript] Сцен в APK (файли levelN): {count}; очікувалось: {expected}");
             }
-
-            return result.ToArray();
-        }
-
-        private static void CreatePlaceholderScene()
-        {
-            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
-            var cameraObject = new GameObject("Main Camera") { tag = "MainCamera" };
-            var camera = cameraObject.AddComponent<Camera>();
-            camera.orthographic = true;
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.16f, 0.12f, 0.10f);
-            EditorSceneManager.SaveScene(scene, PlaceholderScenePath);
+            catch (Exception exception)
+            {
+                Debug.LogWarning("[BuildScript] Не вдалося перелічити сцени в APK: " + exception.Message);
+            }
         }
 
         /// <summary>

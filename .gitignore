@@ -36,3 +36,7 @@ create_alf.log
 # Скрипти game-ci, які копіюються в проєкт під час збірки (не файли проєкту)
 /Assets/Editor/
 /Assets/Editor.meta
+
+# Сцени каркаса генеруються Editor-скриптом перед збіркою (E0-05), не комітяться
+/Assets/_Project/Generated/
+/Assets/_Project/Generated.meta

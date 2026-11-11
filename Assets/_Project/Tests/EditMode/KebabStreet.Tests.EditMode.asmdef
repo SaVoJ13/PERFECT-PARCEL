@@ -4,6 +4,7 @@
     "references": [
         "KebabStreet.Core",
         "KebabStreet.Services",
+        "KebabStreet.Game",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
