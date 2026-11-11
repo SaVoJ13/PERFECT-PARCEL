@@ -11,3 +11,12 @@ EditMode tests	success	Verify Project Files Are Committed: success
 <test-run id="2" testcasecount="292" result="Passed" total="292" passed="292" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-11 01:23:59Z" end-time="2026-11-11 01:24:00Z" duration="0.7346364">
 
 # Звірка з E0-06 (docs/qa/evidence/E0-06/test_cases_run42903947527.txt): 111 з 111 тестів E0-06 присутні й Passed; нових 181 (179 Save*/Clock* + 2 CoreRulesTests за BUG-016). Файли Shift*/SplitMix64*/ArchitectureSmoke* тестів у diff E0-07 не змінені.
+
+# Повторна перевірка: запуски після виправлень
+42969187684	pull_request	0884a4b	completed	success
+42969103574	pull_request	f57f8e6	completed	cancelled
+42967809191	pull_request	b1f702e	completed	success
+42939870821	pull_request	3b4a87b	completed	success
+42969187684 job: EditMode tests success, Build Android APK success; Verify Project Files Are Committed success в обох
+<test-run id="2" testcasecount="330" result="Passed" total="330" passed="330" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-11 06:01:44Z" end-time="2026-11-11 06:01:45Z" duration="0.8880445">
+Звірка: 292/292 назви запуску 42938293545 на місці й Passed; нових 38 (SaveServiceFaultTests 19 x 2).
