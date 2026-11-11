@@ -1,4 +1,4 @@
-using KebabStreet.Editor;
+using SceneSetup = KebabStreet.Editor.SceneSetup;
 using KebabStreet.Game;
 using NUnit.Framework;
 using UnityEditor;
@@ -26,7 +26,7 @@ namespace KebabStreet.Tests.EditMode
         [OneTimeTearDown]
         public void CleanUp()
         {
-            EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            EditorSceneManager.NewScene(UnityEditor.SceneManagement.NewSceneSetup.EmptyScene, NewSceneMode.Single);
             SceneSetup.Cleanup();
         }
 
