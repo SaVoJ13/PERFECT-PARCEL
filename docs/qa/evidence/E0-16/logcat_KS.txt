@@ -1,0 +1,25 @@
+5 I Unity   : [KS] start v1.0 screen=1440x3120 dpi=560 gfx=Vulkan
+5 I Unity   : [KS] scene loaded: Boot mode=2 roots=2
+5 I Unity   : [KS] BootController.Start: panelSettings=True theme=True root=True panel=True
+5 I Unity   : [KS] Open Menu (з Boot)
+5 I Unity   : [KS] BootController.Build: дітей у контейнері=2
+5 I Unity   : [KS] scene unloaded: Boot
+5 I Unity   : [KS] scene loaded: Menu mode=Single roots=2
+5 I Unity   : [KS] Open Menu: завантажено
+5 I Unity   : [KS] MenuController.Start: panelSettings=True theme=True root=True panel=True
+5 I Unity   : [KS] MenuController.Build: дітей у контейнері=4
+5 I Unity   : [KS] MenuController layout: root=(x:0.00, y:0.00, width:973.52, height:2109.30) container=(x:0.00, y:0.00, width:973.52, height:2109.30) display=Flex visibil
+5 I Unity   : [KS] Open Shift (з Menu)
+5 I Unity   : [KS] scene unloaded: Menu
+5 I Unity   : [KS] scene loaded: Shift mode=Single roots=2
+5 I Unity   : [KS] Open Shift: завантажено
+5 I Unity   : [KS] ShiftController.Start: panelSettings=True theme=True root=True panel=True
+5 I Unity   : [KS] ShiftController.Build: дітей у контейнері=2
+5 I Unity   : [KS] ShiftController layout: root=(x:0.00, y:0.00, width:973.52, height:2109.30) container=(x:0.00, y:0.00, width:973.52, height:2109.30) display=Flex visibi
+5 I Unity   : [KS] Open Menu (з Shift)
+5 I Unity   : [KS] scene unloaded: Shift
+5 I Unity   : [KS] scene loaded: Menu mode=Single roots=2
+5 I Unity   : [KS] Open Menu: завантажено
+5 I Unity   : [KS] MenuController.Start: panelSettings=True theme=True root=True panel=True
+5 I Unity   : [KS] MenuController.Build: дітей у контейнері=4
+5 I Unity   : [KS] MenuController layout: root=(x:0.00, y:0.00, width:973.52, height:2109.30) container=(x:0.00, y:0.00, width:973.52, height:2109.30) display=Flex visibil

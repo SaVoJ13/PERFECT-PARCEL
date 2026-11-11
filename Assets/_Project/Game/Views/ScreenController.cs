@@ -11,6 +11,8 @@ namespace KebabStreet.Game
     [RequireComponent(typeof(UIDocument))]
     public abstract class ScreenController : MonoBehaviour
     {
+        private const long DiagnosticDelayMs = 700;
+
         protected GameContext Context { get; private set; }
 
         protected VisualElement Container { get; private set; }
@@ -22,19 +24,42 @@ namespace KebabStreet.Game
             Context = GameContext.Current;
             if (NeedsContext && Context == null)
             {
+                GameLog.Info(GetType().Name + ": немає контексту, завантажую " + GameFlow.BootScene);
                 SceneManager.LoadScene(GameFlow.BootScene);
                 return;
             }
 
-            Container = UiFactory.Screen(GetComponent<UIDocument>().rootVisualElement);
+            UIDocument document = GetComponent<UIDocument>();
+            VisualElement root = document.rootVisualElement;
+            GameLog.Info(GetType().Name + ".Start: panelSettings=" + (document.panelSettings != null)
+                + " theme=" + (document.panelSettings != null && document.panelSettings.themeStyleSheet != null)
+                + " root=" + (root != null) + " panel=" + (root != null && root.panel != null));
+            Container = UiFactory.Screen(root);
             Build();
+            GameLog.Info(GetType().Name + ".Build: дітей у контейнері=" + Container.childCount);
+            root.schedule.Execute(() => LogLayout(root)).StartingIn(DiagnosticDelayMs);
+        }
+
+        private void LogLayout(VisualElement root)
+        {
+            GameLog.Info(GetType().Name + " layout: root=" + root.layout + " container=" + Container.layout
+                + " display=" + root.resolvedStyle.display + " visibility=" + root.resolvedStyle.visibility
+                + " cameras=" + Camera.allCamerasCount);
         }
 
         protected abstract void Build();
 
         protected static void Open(string sceneName)
         {
-            SceneManager.LoadScene(sceneName);
+            GameLog.Info("Open " + sceneName + " (з " + SceneManager.GetActiveScene().name + ")");
+            AsyncOperation load = SceneManager.LoadSceneAsync(sceneName);
+            if (load == null)
+            {
+                GameLog.Info("Open " + sceneName + ": сцену не знайдено в збірці");
+                return;
+            }
+
+            load.completed += _ => GameLog.Info("Open " + sceneName + ": завантажено");
         }
     }
 }

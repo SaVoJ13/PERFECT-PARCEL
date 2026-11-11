@@ -22,7 +22,9 @@ namespace KebabStreet.Editor
         public const string PanelSettingsPath = GeneratedFolder + "/PanelSettings.asset";
 
         private static readonly Vector2Int ReferenceResolution = new Vector2Int(1080, 1920);
-        private static readonly Color CameraColor = new Color(0.16f, 0.12f, 0.10f);
+        // Колір камери навмисно відрізняється від UiFactory.Background: видно, чи панель UI малюється (BUG-029).
+        public static readonly Color CameraColor = new Color(0.08f, 0.20f, 0.35f);
+        public const string DefaultThemePath = AutoThemeFolder + "/UnityThemes/UnityDefaultRuntimeTheme.tss";
 
         /// <summary>Порядок важливий: перша сцена - Boot.</summary>
         public static readonly string[] SceneNames =
@@ -42,14 +44,14 @@ namespace KebabStreet.Editor
         public static string[] Generate()
         {
             EnsureFolder(GeneratedFolder);
-            PanelSettings panelSettings = EnsurePanelSettings();
+            EnsurePanelSettings();
 
             var paths = new string[SceneNames.Length];
             var buildScenes = new EditorBuildSettingsScene[SceneNames.Length];
             for (int i = 0; i < SceneNames.Length; i++)
             {
                 paths[i] = GeneratedFolder + "/" + SceneNames[i] + ".unity";
-                CreateScene(paths[i], panelSettings, ControllerTypeOf(SceneNames[i]));
+                CreateScene(paths[i], ControllerTypeOf(SceneNames[i]));
                 buildScenes[i] = new EditorBuildSettingsScene(paths[i], true);
             }
 
@@ -96,6 +98,12 @@ namespace KebabStreet.Editor
                 AssetDatabase.CreateAsset(settings, PanelSettingsPath);
             }
 
+            if (settings.themeStyleSheet == null)
+            {
+                settings.themeStyleSheet = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(DefaultThemePath);
+                Debug.Log("[SceneSetup] Тема PanelSettings: " + (settings.themeStyleSheet != null ? DefaultThemePath : "НЕ ЗНАЙДЕНО"));
+            }
+
             settings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
             settings.referenceResolution = ReferenceResolution;
             settings.screenMatchMode = PanelScreenMatchMode.MatchWidthOrHeight;
@@ -104,7 +112,7 @@ namespace KebabStreet.Editor
             return settings;
         }
 
-        private static void CreateScene(string path, PanelSettings panelSettings, Type controllerType)
+        private static void CreateScene(string path, Type controllerType)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -116,7 +124,9 @@ namespace KebabStreet.Editor
 
             var ui = new GameObject("UI");
             var document = ui.AddComponent<UIDocument>();
-            document.panelSettings = panelSettings;
+            // Ресурс перезавантажується щоразу: NewScene вивантажує невикористані ресурси, і посилання,
+            // отримане до цього, стає знищеним (BUG-029: у сценах після Boot panelSettings був null).
+            document.panelSettings = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath);
             ui.AddComponent(controllerType);
 
             EditorSceneManager.SaveScene(scene, path);

@@ -5,6 +5,7 @@
         "KebabStreet.Core",
         "KebabStreet.Services",
         "KebabStreet.Game",
+        "KebabStreet.Editor",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"
     ],
