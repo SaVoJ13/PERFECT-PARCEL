@@ -56,7 +56,7 @@ jobs:
             Library-EditMode-${{ env.UNITY_VERSION }}-
 
       - name: Run EditMode tests
-        uses: game-ci/unity-test-runner@v4.3.1
+        uses: game-ci/unity-test-runner@fa6ced25861c16ef56187828c43f76d00df43a23 # v4.3.2
         id: tests
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -65,6 +65,9 @@ jobs:
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           testMode: editmode
+          # BUG-013: той самий образ, що в збірці (unity-builder для Android бере unityci/editor:ubuntu-<версія>-android-3),
+          # щоб тести йшли на тому самому наборі пакетів. Тег існує на Docker Hub (перевірено 2026-11-11).
+          customImage: unityci/editor:ubuntu-${{ env.UNITY_VERSION }}-android-3
           customParameters: -nographics -DisableDirectoryMonitor
 
       - name: Upload Test Results
@@ -100,20 +103,17 @@ jobs:
           fi
 
       # Редактор не має створювати чи змінювати файли проєкту (усі .meta закомічені).
-      # Packages виключено лише в цьому job: редактор Unity на Linux сам дописує в manifest.json і
-      # packages-lock.json службові пакети sysroot (com.unity.sdk.linux-*, com.unity.toolchain.linux-*);
-      # це не налаштування проєкту. Пакети перевіряє job збірки Android (там вони не змінюються).
+      # Образ тестів збігається з образом збірки, тому Packages перевіряється повністю (BUG-013).
       - name: Verify Project Files Are Committed
         run: |
-          git diff --stat -- Packages || true
-          CHANGES=$(git status --porcelain --untracked-files=all -- Assets ProjectSettings)
+          CHANGES=$(git status --porcelain --untracked-files=all -- Assets Packages ProjectSettings)
           if [ -n "$CHANGES" ]; then
             echo "::error::Редактор Unity створив або змінив файли проєкту, яких немає в коміті"
             echo "$CHANGES"
-            git diff -- Assets ProjectSettings | head -80
+            git diff -- Assets Packages ProjectSettings | head -80
             exit 1
           fi
-          echo "Файли проєкту (Assets, ProjectSettings) збігаються з комітом."
+          echo "Файли проєкту (Assets, Packages, ProjectSettings) збігаються з комітом."
 
   buildAndroid:
     name: Build Android APK
@@ -128,7 +128,7 @@ jobs:
 
     steps:
       - name: Free Disk Space
-        uses: jlumbroso/free-disk-space@v1.3.1
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be # v1.3.1
         with:
           tool-cache: true
           android: false
@@ -161,7 +161,7 @@ jobs:
         run: bash .github/workflows/scripts/scan-signing-data.sh report Library
 
       - name: Build Android
-        uses: game-ci/unity-builder@v4
+        uses: game-ci/unity-builder@4423ee75828dff56037d1d1cfdac6b68e3a6ba00 # v4.8.2 (на 2026-11-11 збігається з плаваючим тегом v4)
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
