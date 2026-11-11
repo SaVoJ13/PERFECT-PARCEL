@@ -1,0 +1,36 @@
+20:10:13.956 I/Unity   ( 9357): [KS] start v1.0 screen=1440x3120 dpi=560 gfx=Vulkan
+20:10:13.982 I/Unity   ( 9357): [KS] scene loaded: Boot mode=2 roots=2
+20:10:14.001 I/Unity   ( 9357): [KS] BootController.Start: panelSettings=True theme=True root=True panel=True
+20:10:14.016 I/Unity   ( 9357): [KS] Open Menu (з Boot)
+20:10:14.016 I/Unity   ( 9357): [KS] BootController.Build: дітей у контейнері=2
+20:10:14.218 I/Unity   ( 9357): [KS] scene unloaded: Boot
+20:10:14.221 I/Unity   ( 9357): [KS] scene loaded: Menu mode=Single roots=2
+20:10:14.221 I/Unity   ( 9357): [KS] Open Menu: завантажено
+20:10:14.222 I/Unity   ( 9357): [KS] MenuController.Start: panelSettings=True theme=True root=True panel=True
+20:10:14.228 I/Unity   ( 9357): [KS] MenuController.Build: дітей у контейнері=4
+20:10:14.938 I/Unity   ( 9357): [KS] MenuController layout: root=(x:0.00, y:0.00, width:973.52, height:2109.30) container=(x:0.00, y:0.00, width:973.52, height:2109.30) display=Flex visibility=Visible cameras=1
+20:10:26.672 I/Unity   ( 9357): [KS] Open Shift (з Menu)
+20:10:26.723 I/Unity   ( 9357): [KS] scene unloaded: Menu
+20:10:26.734 I/Unity   ( 9357): [KS] scene loaded: Shift mode=Single roots=2
+20:10:26.735 I/Unity   ( 9357): [KS] Open Shift: завантажено
+20:10:26.735 I/Unity   ( 9357): [KS] ShiftController.Start: panelSettings=True theme=True root=True panel=True
+20:10:26.737 I/Unity   ( 9357): [KS] ShiftController.Build: дітей у контейнері=2
+20:10:27.455 I/Unity   ( 9357): [KS] ShiftController layout: root=(x:0.00, y:0.00, width:973.52, height:2109.30) container=(x:0.00, y:0.00, width:973.52, height:2109.30) display=Flex visibility=Visible cameras=1
+20:10:49.811 I/Unity   ( 9357): [KS] Open Menu (з Shift)
+20:10:49.843 I/Unity   ( 9357): [KS] scene unloaded: Shift
+20:10:49.850 I/Unity   ( 9357): [KS] scene loaded: Menu mode=Single roots=2
+20:10:49.851 I/Unity   ( 9357): [KS] Open Menu: завантажено
+20:10:49.851 I/Unity   ( 9357): [KS] MenuController.Start: panelSettings=True theme=True root=True panel=True
+20:10:49.851 I/Unity   ( 9357): [KS] MenuController.Build: дітей у контейнері=4
+20:10:50.575 I/Unity   ( 9357): [KS] MenuController layout: root=(x:0.00, y:0.00, width:973.52, height:2109.30) container=(x:0.00, y:0.00, width:973.52, height:2109.30) display=Flex visibility=Visible cameras=1
+20:11:07.923 I/Unity   ( 9867): [KS] start v1.0 screen=1440x3120 dpi=560 gfx=Vulkan
+20:11:07.944 I/Unity   ( 9867): [KS] scene loaded: Boot mode=2 roots=2
+20:11:07.952 I/Unity   ( 9867): [KS] BootController.Start: panelSettings=True theme=True root=True panel=True
+20:11:07.964 I/Unity   ( 9867): [KS] Open Menu (з Boot)
+20:11:07.964 I/Unity   ( 9867): [KS] BootController.Build: дітей у контейнері=2
+20:11:08.119 I/Unity   ( 9867): [KS] scene unloaded: Boot
+20:11:08.122 I/Unity   ( 9867): [KS] scene loaded: Menu mode=Single roots=2
+20:11:08.123 I/Unity   ( 9867): [KS] Open Menu: завантажено
+20:11:08.123 I/Unity   ( 9867): [KS] MenuController.Start: panelSettings=True theme=True root=True panel=True
+20:11:08.130 I/Unity   ( 9867): [KS] MenuController.Build: дітей у контейнері=4
+20:11:08.856 I/Unity   ( 9867): [KS] MenuController layout: root=(x:0.00, y:0.00, width:973.52, height:2109.30) container=(x:0.00, y:0.00, width:973.52, height:2109.30) display=Flex visibility=Visible cameras=1
