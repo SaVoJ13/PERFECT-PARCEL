@@ -94,6 +94,51 @@ namespace KebabStreet.Tests.EditMode
         }
     }
 
+    /// <summary>Сховище, у якому вказані файли можна «вимикати» і «вмикати» під час тесту (тимчасова недоступність).</summary>
+    internal sealed class ToggleUnreadableStorage : ISaveStorage
+    {
+        private readonly ISaveStorage _inner;
+        private readonly string[] _names;
+
+        public ToggleUnreadableStorage(ISaveStorage inner, params string[] names)
+        {
+            _inner = inner;
+            _names = names;
+        }
+
+        public bool Unreadable { get; set; }
+
+        public bool Exists(string name)
+        {
+            return _inner.Exists(name);
+        }
+
+        public string ReadText(string name)
+        {
+            if (Unreadable && System.Array.IndexOf(_names, name) >= 0)
+            {
+                throw new IOException("Імітація: тимчасово не читається " + name);
+            }
+
+            return _inner.ReadText(name);
+        }
+
+        public void WriteText(string name, string text)
+        {
+            _inner.WriteText(name, text);
+        }
+
+        public void Move(string fromName, string toName)
+        {
+            _inner.Move(fromName, toName);
+        }
+
+        public void Delete(string name)
+        {
+            _inner.Delete(name);
+        }
+    }
+
     /// <summary>
     /// Сховище зі збоєм. Модель аварії: операції до номера failFrom виконуються, операція failFrom
     /// і всі наступні кидають IOException (процес «загинув»). tornWrite — запис, на якому стався збій,

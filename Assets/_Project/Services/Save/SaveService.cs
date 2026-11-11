@@ -32,6 +32,10 @@ namespace KebabStreet.Services
         private readonly ISaveStorage _storage;
         private readonly IClock _clock;
 
+        // Результат останнього Load: Unavailable або NewerVersion. Поки він не змінився успішним Load,
+        // Save нічого не пише, бо гра тримає чистий профіль, а не справжній прогрес (BUG-025).
+        private SaveLoadSource? _blockedBy;
+
         public SaveService(ISaveStorage storage, IClock clock)
         {
             if (storage == null)
@@ -70,6 +74,14 @@ namespace KebabStreet.Services
         /// </summary>
         public SaveLoadResult Load()
         {
+            SaveLoadResult result = LoadCore();
+            bool blocked = result.Source == SaveLoadSource.Unavailable || result.Source == SaveLoadSource.NewerVersion;
+            _blockedBy = blocked ? (SaveLoadSource?)result.Source : null;
+            return result;
+        }
+
+        private SaveLoadResult LoadCore()
+        {
             SaveData primaryData;
             SaveData backupData;
             bool primaryMigrated;
@@ -91,7 +103,15 @@ namespace KebabStreet.Services
             if (primary == FileKind.Valid)
             {
                 bool canSave = backup != FileKind.Newer && backup != FileKind.Unavailable;
-                return new SaveLoadResult(primaryData, SaveLoadSource.Primary, primaryMigrated, false, 0, canSave);
+                int corruptBackup = 0;
+                if (backup == FileKind.Corrupt)
+                {
+                    // BUG-026: пошкоджену резервну копію не видаляємо мовчки, а відкладаємо й повідомляємо.
+                    corruptBackup = 1;
+                    TryQuarantine(BackupName);
+                }
+
+                return new SaveLoadResult(primaryData, SaveLoadSource.Primary, primaryMigrated, false, corruptBackup, canSave);
             }
 
             if (backup == FileKind.Unavailable)
@@ -137,6 +157,16 @@ namespace KebabStreet.Services
                 throw new ArgumentNullException(nameof(data));
             }
 
+            if (_blockedBy == SaveLoadSource.NewerVersion)
+            {
+                return SaveWriteResult.RejectedNewerSave;
+            }
+
+            if (_blockedBy == SaveLoadSource.Unavailable)
+            {
+                return SaveWriteResult.RejectedAfterUnavailableLoad;
+            }
+
             try
             {
                 SaveData unused;
@@ -178,7 +208,15 @@ namespace KebabStreet.Services
                 //    щоб не затерти ним справну резервну копію.
                 if (primary == FileKind.Valid)
                 {
-                    DeleteIfExists(BackupName);
+                    if (backup == FileKind.Corrupt)
+                    {
+                        Quarantine(BackupName);
+                    }
+                    else
+                    {
+                        DeleteIfExists(BackupName);
+                    }
+
                     _storage.Move(PrimaryName, BackupName);
                 }
                 else if (primary == FileKind.Corrupt)
