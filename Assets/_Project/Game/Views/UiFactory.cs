@@ -14,7 +14,7 @@ namespace KebabStreet.Game
         private const float BodySize = 40f;
         private const float ButtonHeight = 140f;
         private const float Gap = 32f;
-        private static readonly Color Background = new Color(0.16f, 0.12f, 0.10f);
+        public static readonly Color Background = new Color(0.16f, 0.12f, 0.10f);
         private static readonly Color ButtonColor = new Color(0.85f, 0.45f, 0.15f);
         private static readonly Color NoticeColor = new Color(1f, 0.85f, 0.4f);
 

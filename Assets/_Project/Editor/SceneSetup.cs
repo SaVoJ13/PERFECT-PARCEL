@@ -22,7 +22,9 @@ namespace KebabStreet.Editor
         public const string PanelSettingsPath = GeneratedFolder + "/PanelSettings.asset";
 
         private static readonly Vector2Int ReferenceResolution = new Vector2Int(1080, 1920);
-        private static readonly Color CameraColor = new Color(0.16f, 0.12f, 0.10f);
+        // Колір камери навмисно відрізняється від UiFactory.Background: видно, чи панель UI малюється (BUG-029).
+        public static readonly Color CameraColor = new Color(0.08f, 0.20f, 0.35f);
+        public const string DefaultThemePath = AutoThemeFolder + "/UnityThemes/UnityDefaultRuntimeTheme.tss";
 
         /// <summary>Порядок важливий: перша сцена - Boot.</summary>
         public static readonly string[] SceneNames =
@@ -94,6 +96,12 @@ namespace KebabStreet.Editor
             {
                 settings = ScriptableObject.CreateInstance<PanelSettings>();
                 AssetDatabase.CreateAsset(settings, PanelSettingsPath);
+            }
+
+            if (settings.themeStyleSheet == null)
+            {
+                settings.themeStyleSheet = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(DefaultThemePath);
+                Debug.Log("[SceneSetup] Тема PanelSettings: " + (settings.themeStyleSheet != null ? DefaultThemePath : "НЕ ЗНАЙДЕНО"));
             }
 
             settings.scaleMode = PanelScaleMode.ScaleWithScreenSize;
