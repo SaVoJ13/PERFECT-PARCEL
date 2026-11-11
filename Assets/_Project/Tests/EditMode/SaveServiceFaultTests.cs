@@ -242,8 +242,8 @@ namespace KebabStreet.Tests.EditMode
 
             // Сценарій QA: гра отримала «недоступно», але все одно двічі спробувала зберегти чистий профіль.
             SaveData blank = blocked.Load().Data;
-            Assert.AreEqual(SaveWriteResult.Failed, blocked.Save(blank));
-            Assert.AreEqual(SaveWriteResult.Failed, blocked.Save(blank));
+            Assert.AreEqual(SaveWriteResult.RejectedAfterUnavailableLoad, blocked.Save(blank));
+            Assert.AreEqual(SaveWriteResult.RejectedAfterUnavailableLoad, blocked.Save(blank));
 
             Assert.AreEqual(before, Snapshot());
             AssertRealProgressIsBack();
@@ -253,6 +253,87 @@ namespace KebabStreet.Tests.EditMode
             Assert.AreEqual(400, result.Data.Coins);
             bool migrated;
             Assert.AreEqual(250, SaveSerializer.Deserialize(_storage.ReadText(Backup), out migrated).Coins);
+        }
+
+        // ---------- BUG-025: запобіжник запису після Unavailable / NewerVersion ----------
+
+        [Test]
+        public void Save_AfterUnavailableLoadEvenIfAccessReturned_IsRejectedUntilNextSuccessfulLoad()
+        {
+            SaveTwice();
+            string before = Snapshot();
+            var toggle = new ToggleUnreadableStorage(_storage, Primary, Backup);
+            var service = new SaveService(toggle, _clock);
+
+            toggle.Unreadable = true;
+            SaveLoadResult blocked = service.Load();
+            AssertUnavailable(blocked);
+
+            // Доступ відновився, але гра тримає чистий профіль: два Save не можуть затерти прогрес.
+            toggle.Unreadable = false;
+            Assert.AreEqual(SaveWriteResult.RejectedAfterUnavailableLoad, service.Save(blocked.Data));
+            Assert.AreEqual(SaveWriteResult.RejectedAfterUnavailableLoad, service.Save(blocked.Data));
+            Assert.AreEqual(before, Snapshot(), "Файли не змінено");
+            AssertRealProgressIsBack();
+
+            SaveLoadResult reloaded = service.Load();
+            Assert.AreEqual(SaveLoadSource.Primary, reloaded.Source);
+            Assert.AreEqual(250, reloaded.Data.Coins);
+            reloaded.Data.Coins = 400;
+            Assert.AreEqual(SaveWriteResult.Saved, service.Save(reloaded.Data));
+            Assert.AreEqual(400, _service.Load().Data.Coins);
+        }
+
+        [Test]
+        public void Save_AfterNewerVersionLoad_IsRejectedAndLaterLoadOfValidFileReenablesSaving()
+        {
+            _storage.WriteText(Primary, SaveTestKit.NewerVersionText);
+            SaveLoadResult newer = _service.Load();
+            Assert.AreEqual(SaveLoadSource.NewerVersion, newer.Source);
+
+            // Файл замінили на справний (наприклад, відновлено з копії): Save усе одно чекає на Load.
+            _storage.Delete(Primary);
+            string before = Snapshot();
+            Assert.AreEqual(SaveWriteResult.RejectedNewerSave, _service.Save(newer.Data));
+            Assert.AreEqual(before, Snapshot());
+
+            SaveLoadResult fresh = _service.Load();
+            Assert.AreEqual(SaveLoadSource.NewProfile, fresh.Source);
+            Assert.AreEqual(SaveWriteResult.Saved, _service.Save(fresh.Data));
+        }
+
+        // ---------- BUG-026: пошкоджена резервна копія при справному основному ----------
+
+        [Test]
+        public void Load_ValidPrimaryAndCorruptBackup_ReportsAndQuarantinesBackup()
+        {
+            SaveTwice();
+            _storage.WriteText(Backup, "{\"schemaVersion\":2,\"coi");
+
+            SaveLoadResult result = _service.Load();
+
+            Assert.AreEqual(SaveLoadSource.Primary, result.Source);
+            Assert.AreEqual(250, result.Data.Coins);
+            Assert.IsFalse(result.ProgressReset);
+            Assert.IsTrue(result.CanSave);
+            Assert.AreEqual(1, result.CorruptFilesFound);
+            Assert.IsFalse(_storage.Exists(Backup));
+            Assert.AreEqual("{\"schemaVersion\":2,\"coi", _storage.ReadText(SaveService.CorruptName(Backup, 1)));
+            Assert.AreEqual(SaveWriteResult.Saved, _service.Save(result.Data));
+        }
+
+        [Test]
+        public void Save_ValidPrimaryAndCorruptBackupWithoutLoad_QuarantinesInsteadOfDeleting()
+        {
+            SaveSample(250);
+            _storage.WriteText(Backup, "damaged backup");
+
+            SaveSample(300);
+
+            Assert.AreEqual("damaged backup", _storage.ReadText(SaveService.CorruptName(Backup, 1)));
+            bool migrated;
+            Assert.AreEqual(250, SaveSerializer.Deserialize(_storage.ReadText(Backup), out migrated).Coins);
+            Assert.AreEqual(300, _service.Load().Data.Coins);
         }
 
         // ---------- BUG-023: CanSave відповідає поведінці Save ----------
