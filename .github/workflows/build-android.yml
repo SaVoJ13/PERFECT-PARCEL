@@ -2,6 +2,11 @@ name: Build Android APK (Game-CI)
 
 on:
   workflow_dispatch:
+    inputs:
+      buildAab:
+        description: 'Зібрати також AAB (на push у main AAB збирається завжди)'
+        type: boolean
+        default: false
   push:
     branches:
       - main
@@ -9,16 +14,117 @@ on:
       - '.github/workflows/activation.yml'
       - 'README.md'
       - 'docs/**'
+  # Не pull_request_target: код PR виконується без доступу до секретів із форків.
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - '.github/workflows/activation.yml'
+      - 'README.md'
+      - 'docs/**'
+
+# Новий коміт у PR скасовує застарілий запуск цього PR; запуски main і ручні не скасовуються.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
 
 env:
   # Та сама версія, що в ProjectSettings/ProjectVersion.txt і docs/architecture/TECH_STACK.md
   UNITY_VERSION: 6000.3.28f1
 
 jobs:
+  testEditMode:
+    name: EditMode tests
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-EditMode-${{ env.UNITY_VERSION }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-EditMode-${{ env.UNITY_VERSION }}-
+
+      - name: Run EditMode tests
+        uses: game-ci/unity-test-runner@v4.3.1
+        id: tests
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          testMode: editmode
+          customParameters: -nographics -DisableDirectoryMonitor
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: KebabStreet-EditMode-TestResults
+          path: ${{ steps.tests.outputs.artifactsPath }}
+          retention-days: 14
+
+      # Тести мають реально виконатися: нуль тестів — це помилка, а не успіх.
+      - name: Summarize Test Results
+        if: always()
+        run: |
+          XML=$(find "${{ steps.tests.outputs.artifactsPath }}" -name '*.xml' 2>/dev/null | head -1)
+          if [ -z "$XML" ]; then
+            echo "::error::Файл результатів тестів не знайдено"
+            exit 1
+          fi
+          TOTAL=$(grep -o '<test-run [^>]*' "$XML" | grep -o ' total="[0-9]*"' | grep -o '[0-9]*')
+          PASSED=$(grep -o '<test-run [^>]*' "$XML" | grep -o ' passed="[0-9]*"' | grep -o '[0-9]*')
+          FAILED=$(grep -o '<test-run [^>]*' "$XML" | grep -o ' failed="[0-9]*"' | grep -o '[0-9]*')
+          echo "Тестів: $TOTAL; пройдено: $PASSED; провалено: $FAILED"
+          echo "Виконані тести:"
+          grep -o '<test-case [^>]*' "$XML" | grep -o ' fullname="[^"]*"\| result="[^"]*"' | paste - - | sed 's/^/  /'
+          {
+            echo "### Тести EditMode"
+            echo "Тестів: **$TOTAL**, пройдено: **$PASSED**, провалено: **$FAILED**"
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -z "$TOTAL" ] || [ "$TOTAL" -eq 0 ]; then
+            echo "::error::Виконано 0 тестів"
+            exit 1
+          fi
+
+      # Редактор не має створювати чи змінювати файли проєкту (усі .meta закомічені).
+      # Packages виключено лише в цьому job: редактор Unity на Linux сам дописує в manifest.json і
+      # packages-lock.json службові пакети sysroot (com.unity.sdk.linux-*, com.unity.toolchain.linux-*);
+      # це не налаштування проєкту. Пакети перевіряє job збірки Android (там вони не змінюються).
+      - name: Verify Project Files Are Committed
+        run: |
+          git diff --stat -- Packages || true
+          CHANGES=$(git status --porcelain --untracked-files=all -- Assets ProjectSettings)
+          if [ -n "$CHANGES" ]; then
+            echo "::error::Редактор Unity створив або змінив файли проєкту, яких немає в коміті"
+            echo "$CHANGES"
+            git diff -- Assets ProjectSettings | head -80
+            exit 1
+          fi
+          echo "Файли проєкту (Assets, ProjectSettings) збігаються з комітом."
+
   buildAndroid:
     name: Build Android APK
     runs-on: ubuntu-22.04
     timeout-minutes: 120
+    env:
+      # На push у main AAB збирається завжди; на гілці — за ручним параметром buildAab.
+      BUILD_AAB: ${{ github.event_name == 'push' || inputs.buildAab == true }}
+      # Збірки з PR підписуються debug-ключем (секрети keystore не передаються);
+      # релізний ключ — лише для main і ручних запусків.
+      USE_RELEASE_KEY: ${{ github.event_name != 'pull_request' }}
 
     steps:
       - name: Free Disk Space
@@ -38,6 +144,7 @@ jobs:
           lfs: true
 
       - name: Cache Library
+        id: cache-library
         uses: actions/cache@v4
         with:
           path: Library
@@ -45,7 +152,15 @@ jobs:
           restore-keys: |
             Library-Android-${{ env.UNITY_VERSION }}-
 
-      - name: Build Android APK
+      # BUG-011: відновлений кеш не повинен містити даних підпису. Лише кількість і імена файлів.
+      - name: Scan Restored Cache For Signing Data
+        env:
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+        run: bash .github/workflows/scripts/scan-signing-data.sh report Library
+
+      - name: Build Android
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
@@ -54,16 +169,36 @@ jobs:
         with:
           targetPlatform: Android
           unityVersion: ${{ env.UNITY_VERSION }}
-          buildMethod: KebabStreet.Editor.BuildScript.BuildAndroidApk
+          buildMethod: ${{ env.BUILD_AAB == 'true' && 'KebabStreet.Editor.BuildScript.BuildAndroidApkAndAab' || 'KebabStreet.Editor.BuildScript.BuildAndroidApk' }}
           versioning: None
           buildName: KebabStreet
           androidExportType: androidPackage
-          androidKeystoreName: release.keystore
-          androidKeystoreBase64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          androidKeystorePass: ${{ secrets.ANDROID_KEYSTORE_PASS }}
-          androidKeyaliasName: ${{ secrets.ANDROID_KEYALIAS_NAME }}
-          androidKeyaliasPass: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+          androidKeystoreName: ${{ env.USE_RELEASE_KEY == 'true' && 'release.keystore' || '' }}
+          androidKeystoreBase64: ${{ env.USE_RELEASE_KEY == 'true' && secrets.ANDROID_KEYSTORE_BASE64 || '' }}
+          androidKeystorePass: ${{ env.USE_RELEASE_KEY == 'true' && secrets.ANDROID_KEYSTORE_PASS || '' }}
+          androidKeyaliasName: ${{ env.USE_RELEASE_KEY == 'true' && secrets.ANDROID_KEYALIAS_NAME || '' }}
+          androidKeyaliasPass: ${{ env.USE_RELEASE_KEY == 'true' && secrets.ANDROID_KEYALIAS_PASS || '' }}
           customParameters: -nographics -DisableDirectoryMonitor
+
+      # BUG-011: Unity пише дані підпису в Library/Bee (Gradle-проєкт, графи збірки) під час збірки з ключем.
+      # Перед збереженням кешу такі файли видаляються (повторна генерація дешева), потім запобіжник перевіряє результат.
+      - name: Remove Signing Data From Library (before cache save)
+        if: always()
+        env:
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+        run: bash .github/workflows/scripts/scan-signing-data.sh report Library
+
+      # BUG-011, постійний запобіжник: після збірки (до збереження кешу в кроці post) у Library не має бути
+      # даних підпису. Знахідка = червоний CI, кеш не зберігається.
+      - name: Scan Library For Signing Data (guard before cache save)
+        if: always()
+        env:
+          ANDROID_KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASS }}
+          ANDROID_KEYALIAS_NAME: ${{ secrets.ANDROID_KEYALIAS_NAME }}
+          ANDROID_KEYALIAS_PASS: ${{ secrets.ANDROID_KEYALIAS_PASS }}
+        run: bash .github/workflows/scripts/scan-signing-data.sh enforce Library
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
@@ -73,6 +208,10 @@ jobs:
           path: build/Android
           retention-days: 14
 
+      - name: List Build Outputs
+        if: always()
+        run: ls -l build/Android
+
       # Довідка в журналі: ідентифікатор, min/target API і архітектури з готового APK.
       - name: Print APK Info
         run: |
@@ -81,16 +220,21 @@ jobs:
             AAPT2=$(find /opt/unity/Editor/Data/PlaybackEngines/AndroidPlayer/SDK/build-tools -name aapt2 | sort | tail -1)
             "$AAPT2" dump badging /apk/KebabStreet.apk | grep -E "^(package|sdkVersion|minSdkVersion|targetSdkVersion|native-code)"'
 
+      - name: Verify AAB Was Built
+        if: env.BUILD_AAB == 'true'
+        run: test -s build/Android/KebabStreet.aab && echo "AAB є." || { echo "::error::AAB не створено"; exit 1; }
+
       # Після чистого checkout редактор не має створювати чи змінювати файли проєкту:
       # усі .meta і налаштування мають бути закомічені (файли редактора генерує лише CI).
+      # Службові шляхи game-ci (Assets/Editor) і PerformanceTestRun* — у .gitignore.
       - name: Verify Project Files Are Committed
         run: |
-          CHANGES=$(git status --porcelain --untracked-files=all -- Assets/_Project Packages ProjectSettings)
+          CHANGES=$(git status --porcelain --untracked-files=all -- Assets Packages ProjectSettings)
           if [ -n "$CHANGES" ]; then
             echo "::error::Редактор Unity створив або змінив файли проєкту, яких немає в коміті"
             echo "$CHANGES"
-            git diff --stat -- Assets/_Project Packages ProjectSettings
-            git diff -- Assets/_Project Packages ProjectSettings | sed -E 's/(Android(Keystore|Keyalias)Name: ).+/\1<приховано>/' | head -200
+            git diff --stat -- Assets Packages ProjectSettings
+            git diff -- Assets Packages ProjectSettings | sed -E 's/(Android(Keystore|Keyalias)Name: ).+/\1<приховано>/' | head -200
             exit 1
           fi
           echo "Файли проєкту збігаються з комітом."

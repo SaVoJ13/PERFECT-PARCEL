@@ -1,0 +1,47 @@
+E0-04 / PR #8 — докази CI, зібрані Агентом 5 (qa-release) 2026-11-10
+Значення секретів не виводились; секрети в журналах класифіковано («замасковано ***» / «інше, довжина N»).
+Посилання: https://github.com/SaVoJ13/PERFECT-PARCEL/actions/runs/<id>
+
+Запуск      Подія              Коміт    Висновок  Job тестів  Job збірки  Тести      Підпис       Артефакти
+42888179643 workflow_dispatch  b2d4e6f  failure   failure     failure     3/3        release      (перший запуск; guard знайшов 26 збігів → кеш не збережено)
+42890146940 workflow_dispatch  85287ef  failure   failure*    success     3/3        release      apk+aab (62 118 875 B)   *Verify Project Files: Packages (sysroot)
+42892230667 pull_request       74577df  success   success     success     3/3        debug        apk; тести 167 928 B
+42894080682 pull_request       9ea70d6  failure   failure**   success     2/3        debug        apk; тести 15 945 B      **Run EditMode tests: exit 2, Services_ReferenceCore Failed (рядок 44)
+42895773257 pull_request       e172592  success   success     success     3/3        debug        apk 31 021 853 B; тести 15 296 B
+42897382820 pull_request       bca9ba5  cancelled (скасовано concurrency новим пушем)
+42897537802 pull_request       218f8ba  success   success     success     3/3        debug        apk
+42897737655 workflow_dispatch  218f8ba  success   success     success     3/3        release      apk 31 982 520 B + aab 31 893 764 B  (запустив Агент 5, buildAab=true)
+
+Код e172592 == 218f8ba (git diff --stat e172592..218f8ba: лише docs/governance/OWNER_INBOX.md, TASK_BOARD.md, docs/tasks/E0-04.md).
+85287ef → e172592: змінено лише job тестів (виключення Packages) + документи; job збірки ідентичний.
+74577df → e172592: Assets ідентичні (тест відновлено повністю). 74577df → 9ea70d6: одна зміна, рядок 44 ("KebabStreet.Core" → "KebabStreet.НавмисноЗламано").
+
+Тести (42895773257, 42897537802, 42897737655): Тестів: 3; пройдено: 3; провалено: 0
+  KebabStreet.Tests.EditMode.ArchitectureSmokeTests.Core_DoesNotReferenceUnityEngine  Passed
+  KebabStreet.Tests.EditMode.ArchitectureSmokeTests.Services_ReferenceCore            Passed
+  KebabStreet.Tests.EditMode.ArchitectureSmokeTests.TestAssembly_SeesCoreAndServices  Passed
+Артефакт тестів: editmode-results.xml (4 928 B) + editmode.log; у журналі редактора паролів/email/серійних номерів не знайдено.
+
+Скан Library (BUG-011), лише кількість файлів:
+  42890146940 restore: 9 (KEYSTORE_PASS 7, KEYALIAS_NAME 2) → видалено; після збірки: 10 → видалено; guard: 0; кеш 10317229728 збережено
+  42892230667 restore: 9 → видалено; після збірки (debug): 0; guard: 0; кеш 10317793062 (refs/pull/8/merge) збережено
+  42894080682/42895773257/42897537802 restore: 0; guard: 0
+  42897737655 restore: 0; після збірки з release-ключем: 10 (KEYSTORE_PASS 8, KEYALIAS_NAME 2) → видалено; guard: 0; кеш не зберігався (cache hit)
+  42888179643 (до виправлення) guard: KEYSTORE_PASS 8, KEYALIAS_NAME 10, KEYALIAS_PASS 8 → enforce exit 1, Post Cache пропущено
+  Примітка: у режимі report файли видаляються після кожного секрету, тому KEYALIAS_PASS = 0 означає «ті самі файли вже видалено», а не «пароля ключа немає».
+
+actions/cache@v4 action.yml: post-if: "success()" — зберігання кешу лише при успіху job (підтверджено: «Post Cache Library: skipped» у job, що впав).
+
+Секрети в журналах (класифікація): усі значення ANDROID_KEYSTORE_PASS / ANDROID_KEYALIAS_NAME / ANDROID_KEYALIAS_PASS / ANDROID_KEYSTORE_BASE64 у 6 перевірених журналах — «***»; androidKeystoreName = нетаємна назва файлу (16 символів). У запусках pull_request входи androidKeystore*/androidKeyalias* збирача не передаються (порожні).
+
+APK з PR (42895773257): apksigner — v2, 1 підписант, сертифікат «Android Debug»; aapt2: com.savoj.kebabstreet, min 25, target 36, arm64-v8a.
+APK з ручного запуску (42897737655): apksigner verify rc=0, сертифікат НЕ debug. AAB: BundleConfig.pb, base/manifest/AndroidManifest.xml, base/lib/arm64-v8a/libil2cpp.so, META-INF/*.SF/*.RSA/MANIFEST.MF.
+
+gh cache list (2026-11-10 ~20:55Z):
+  10311011251 refs/heads/main                     2026-11-10T17:58Z  Library-Android-…491c36…  — старий, з даними підпису (restore-скан 9)
+  10308144177 refs/heads/task/E0-03-unity-project 2026-11-10T17:03Z  Library-Android-…491c36…  — старий, з даними підпису (той самий ключ)
+  10317229728 refs/heads/task/E0-04-ci-pr-tests-aab 20:07Z  Library-Android-…9ebcfe…  — після очищення, guard 0
+  10317793062 refs/pull/8/merge 20:18Z  Library-Android-…9ebcfe…  — debug, guard 0
+  10318325053 refs/pull/8/merge 20:28Z  Library-Android-…2f49c7…  — debug, guard 0
+  10317544872 refs/pull/8/merge 20:13Z  Library-EditMode-…9ebcfe… — job тестів (без підпису)
+  10307595974, 10203754782 — у списку вже НЕМАЄ (витіснено GitHub). Нічого не видалялось Агентом 5.

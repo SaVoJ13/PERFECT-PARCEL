@@ -22,7 +22,7 @@
 | Ідентифікатор застосунку | `com.savoj.kebabstreet` (робочий, до D-08) | картка E0-03 | Назва продукту `Kebab Street`, компанія `SaVoJ` |
 | Gradle / Android Gradle Plugin | 9.3.1 / 9.1.1 (у складі образу редактора) | журнал CI («Gradle Version: '9.3.1' Android Plugin Version: '9.1.1'») | Таблиця сумісності в довіднику Unity 6.3 на дату доступу показує інші числа — НЕ ПЕРЕВІРЕНО, чому; діє факт із журналу CI |
 | JDK / NDK / Android SDK | вбудовані в образ редактора (`…/PlaybackEngines/AndroidPlayer/{OpenJDK,NDK,SDK}`) | журнал CI | Точні версії JDK і NDK — НЕ ПЕРЕВІРЕНО (у журналі збірки не друкуються) |
-| CI | GitHub Actions, `ubuntu-22.04`; `game-ci/unity-builder@v4`; `actions/checkout@v4`, `actions/cache@v4`, `actions/upload-artifact@v4`; `jlumbroso/free-disk-space@v1.3.1` | `.github/workflows/build-android.yml`; https://game.ci/docs/github/activation/ («Licenses are not tied to a specific Unity version or platform») | Ліцензія Personal (`UNITY_LICENSE`) активує 6000.3.28f1 — перевірено в E0-03. Найновіша `unity-builder` — v6.0.0; оновлення — окрема картка |
+| CI | GitHub Actions, `ubuntu-22.04`; `game-ci/unity-builder@v4`; `game-ci/unity-test-runner@v4.3.1` (EditMode, зафіксована точна версія; є v4.4.0 від 2026-09-09, не обрано — не перевірялась);  `actions/checkout@v4`, `actions/cache@v4`, `actions/upload-artifact@v4`; `jlumbroso/free-disk-space@v1.3.1` | `.github/workflows/build-android.yml`; https://game.ci/docs/github/activation/ («Licenses are not tied to a specific Unity version or platform») | Ліцензія Personal (`UNITY_LICENSE`) активує 6000.3.28f1 — перевірено в E0-03. Найновіша `unity-builder` — v6.0.0; оновлення — окрема картка |
 
 ## Монетизація і сервіси (Етап 3)
 | Компонент | Версія | Ліцензія | Навіщо | Вплив на розмір |
