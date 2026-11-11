@@ -16,7 +16,7 @@ namespace KebabStreet.Game
             if (GameContext.Current == null)
             {
                 GameContext.Install(new GameContext(
-                    new FileSaveStorage(Application.persistentDataPath), new SystemClock(), new PlaceholderLocalizer()));
+                    new FileSaveStorage(Application.persistentDataPath), new SystemClock(), JsonLocalizer.CreateForSystemLanguage()));
             }
 
             GameContext context = GameContext.Current;
