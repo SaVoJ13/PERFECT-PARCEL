@@ -14,7 +14,7 @@
 | E0-03 | Новий проєкт Unity 6.3 LTS (2D, URP), точний патч у `TECH_STACK.md`; target API 36, min API за D-02; збірки asmdef і папки за `ARCHITECTURE.md` | platform-engineer | E0-02 | L1 | Done (PR #6, `3c08d41`; CI на `main` — запуск 42867369466) |
 | E0-04 | CI: на кожен PR — APK + автотести EditMode; на `main` — APK + AAB; артефакти зберігаються; + BUG-011 (перевірити кеш `Library` на дані підпису), BUG-010 (перевірка файлів у корені `Assets/`, `.gitignore` для `Assets/Editor/**`) | platform-engineer | E0-03 | L1 | QA Verified (PR #8, чекає злиття Власником) |
 | E0-05 | Каркас гри: bootstrap → завантаження → меню → порожня сцена зміни; UI за D-03; сцени створюються Editor-скриптом | gameplay-developer | E0-04, D-03 | L1 | Backlog |
-| E0-06 | `KebabStreet.Core`: `ShiftSimulation` з тактом і seed, таймер зміни; перші тести EditMode | gameplay-developer | E0-04 | L2 | Backlog (🔥 ВАЖКЕ, Fable) |
+| E0-06 | `KebabStreet.Core`: `ShiftSimulation` з тактом і seed, таймер зміни; перші тести EditMode | gameplay-developer | E0-04 | L2 | QA Verified (PR #9, чекає злиття Власником після PR #8) |
 | E0-07 | Збереження зі `schemaVersion`, резервною копією, відновленням; `IClock`; тести | gameplay-developer | E0-06 | L2 | Backlog (🔥 ВАЖКЕ, Fable) |
 | E0-08 | Локалізація за ключами (EN/UK/PL, поки кілька рядків меню) + тест «усі ключі є в усіх мовах» | gameplay-developer + ui-art-designer | E0-05 | L2 | Backlog |
 | E0-09 | Інтерфейси `IAdsService`, `IPurchaseService`, `IAnalyticsService` + заглушки лише для Editor/тестів; у релізі кнопки реклами/покупок приховані до Етапу 3 | platform-engineer | E0-06 | L2 | Backlog |
