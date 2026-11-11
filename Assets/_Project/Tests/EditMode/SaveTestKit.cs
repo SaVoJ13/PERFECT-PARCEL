@@ -42,6 +42,59 @@ namespace KebabStreet.Tests.EditMode
     }
 
     /// <summary>
+    /// Сховище, у якому вказані файли існують, але не читаються (BUG-019): ReadText кидає IOException
+    /// або UnauthorizedAccessException. Решта операцій ідуть у справжнє сховище без змін.
+    /// </summary>
+    internal sealed class UnreadableStorage : ISaveStorage
+    {
+        private readonly ISaveStorage _inner;
+        private readonly bool _accessDenied;
+        private readonly string[] _unreadableNames;
+
+        public UnreadableStorage(ISaveStorage inner, bool accessDenied, params string[] unreadableNames)
+        {
+            _inner = inner;
+            _accessDenied = accessDenied;
+            _unreadableNames = unreadableNames;
+        }
+
+        public bool Exists(string name)
+        {
+            return _inner.Exists(name);
+        }
+
+        public string ReadText(string name)
+        {
+            if (System.Array.IndexOf(_unreadableNames, name) >= 0)
+            {
+                if (_accessDenied)
+                {
+                    throw new System.UnauthorizedAccessException("Імітація: немає доступу до " + name);
+                }
+
+                throw new IOException("Імітація: файл не читається " + name);
+            }
+
+            return _inner.ReadText(name);
+        }
+
+        public void WriteText(string name, string text)
+        {
+            _inner.WriteText(name, text);
+        }
+
+        public void Move(string fromName, string toName)
+        {
+            _inner.Move(fromName, toName);
+        }
+
+        public void Delete(string name)
+        {
+            _inner.Delete(name);
+        }
+    }
+
+    /// <summary>
     /// Сховище зі збоєм. Модель аварії: операції до номера failFrom виконуються, операція failFrom
     /// і всі наступні кидають IOException (процес «загинув»). tornWrite — запис, на якому стався збій,
     /// встигає записати половину тексту. SilentTruncation — запис без помилки, але на носій потрапляє половина.

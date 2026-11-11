@@ -16,6 +16,12 @@ namespace KebabStreet.Services
 
         /// <summary>Збереження створене новішою версією гри: дані не прочитано, запис заборонено.</summary>
         NewerVersion,
+
+        /// <summary>
+        /// Файл збереження існує, але сховище не дало його прочитати (помилка вводу-виводу, немає доступу).
+        /// Це не втрата прогресу: файли не зачеплено, запис заборонено; завантаження варто повторити пізніше.
+        /// </summary>
+        Unavailable,
     }
 
     /// <summary>Підсумок запису.</summary>
@@ -27,16 +33,31 @@ namespace KebabStreet.Services
         /// <summary>На носії збереження новішої версії гри: нічого не змінено.</summary>
         RejectedNewerSave,
 
-        /// <summary>Запис не вдався; попереднє збереження лишилося придатним.</summary>
+        /// <summary>
+        /// Запис не вдався через сховище (помилка вводу-виводу або наявний файл не читається);
+        /// попереднє збереження не зачеплено, спробу можна повторити.
+        /// </summary>
         Failed,
+
+        /// <summary>
+        /// Самі дані не можна зберегти: після запису вони не прочиталися б назад (значення поза схемою,
+        /// рядок, який не кодується в UTF-8). Повторювати без зміни даних марно; на носії нічого не змінено.
+        /// </summary>
+        RejectedInvalidData,
     }
 
     /// <summary>Явний підсумок завантаження: прогрес ніколи не скидається мовчки.</summary>
     public sealed class SaveLoadResult
     {
         public SaveLoadResult(
-            SaveData data, SaveLoadSource source, bool migrated, bool progressReset, int corruptFilesFound)
+            SaveData data,
+            SaveLoadSource source,
+            bool migrated,
+            bool progressReset,
+            int corruptFilesFound,
+            bool canSave)
         {
+            CanSave = canSave;
             Data = data;
             Source = source;
             Migrated = migrated;
@@ -44,7 +65,7 @@ namespace KebabStreet.Services
             CorruptFilesFound = corruptFilesFound;
         }
 
-        /// <summary>Дані для гри (ніколи не null; для NewProfile і NewerVersion — чистий профіль).</summary>
+        /// <summary>Дані для гри (ніколи не null; для NewProfile, NewerVersion і Unavailable — чистий профіль).</summary>
         public SaveData Data { get; }
 
         /// <summary>Звідки взято дані.</summary>
@@ -59,10 +80,11 @@ namespace KebabStreet.Services
         /// <summary>Скільки пошкоджених файлів знайдено й відкладено вбік (0–2).</summary>
         public int CorruptFilesFound { get; }
 
-        /// <summary>Чи можна зберігати поверх наявних файлів (ні — якщо вони від новішої версії гри).</summary>
-        public bool CanSave
-        {
-            get { return Source != SaveLoadSource.NewerVersion; }
-        }
+        /// <summary>
+        /// Чи прийняв би Save запис у стані, який побачило завантаження. false — якщо основний або резервний
+        /// файл від новішої версії гри чи не читається (навіть коли дані взято з основного файла).
+        /// Це знімок на мить завантаження: Save щоразу перевіряє файли заново.
+        /// </summary>
+        public bool CanSave { get; }
     }
 }

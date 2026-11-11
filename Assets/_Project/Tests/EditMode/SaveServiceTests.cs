@@ -286,8 +286,10 @@ namespace KebabStreet.Tests.EditMode
 
             SaveLoadResult result = _service.Load();
 
+            // BUG-020: раніше відкладений файл не затирається — новий іде в наступне вільне місце.
             Assert.AreEqual(SaveLoadSource.Backup, result.Source);
-            Assert.AreEqual("second damage", _storage.ReadText(PrimaryCorrupt));
+            Assert.AreEqual("first damage", _storage.ReadText(PrimaryCorrupt));
+            Assert.AreEqual("second damage", _storage.ReadText(SaveService.CorruptName(Primary, 2)));
         }
 
         [Test]
@@ -429,7 +431,9 @@ namespace KebabStreet.Tests.EditMode
             SaveData broken = SaveTestKit.Sample(999);
             broken.Coins = -1;
 
-            Assert.AreEqual(SaveWriteResult.Failed, _service.Save(broken));
+            // BUG-022: непридатні дані — окремий результат, а не Failed (який означає тимчасову помилку сховища).
+            Assert.AreEqual(SaveWriteResult.RejectedInvalidData, _service.Save(broken));
+            AssertMissing(Temp);
 
             SaveLoadResult loaded = _service.Load();
             Assert.AreEqual(SaveLoadSource.Primary, loaded.Source);
