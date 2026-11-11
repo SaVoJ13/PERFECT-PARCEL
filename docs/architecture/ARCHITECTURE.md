@@ -21,6 +21,10 @@
 | `KebabStreet.Editor` | Game, збірки URP (для `ProjectSetup`) | Збірка, генерація сцен/префабів, валідація ресурсів |
 | `KebabStreet.Tests.EditMode` | Core, Services | Автотести логіки, бот-тест рівнів, тести міграцій збереження |
 
+**Сервіси реклами, покупок і аналітики (E0-09).** `IAdsService`, `IPurchaseService`, `IAnalyticsService` (`Services/Ads`, `Purchases`, `Analytics`) — контракти без прив'язки до SDK; асинхронність виражена колбеками (`Action<AdResult>`, `Action<PurchaseResult>`), кожен колбек викликається рівно один раз. Кожен сервіс має `IsAvailable`: UI показує кнопку реклами чи покупки лише коли він `true`. У релізі до Етапу 3 `GameContext` використовує заглушки `NullAdsService`/`NullPurchaseService`/`NullAnalyticsService` (живуть у `KebabStreet.Services`: нічого не показують, покупки `Unavailable`, нагороди ніколи). `Fake*`-реалізації (програмовані відповіді, журнал викликів) лежать у `Tests/EditMode/Fakes`: збірка тестів має `includePlatforms: ["Editor"]` і `UNITY_INCLUDE_TESTS`, тому в плеєр (APK/AAB) вони не потрапляють; це перевіряє тест `PlatformServicesTests`.
+
+Етап 3 додає в `KebabStreet.Platform` справжні реалізації (AdMob, UMP, Unity IAP, Firebase) і підставляє їх у композицію (`GameContext`) лише в Android-збірці; до цього не потрібно змінювати ні UI, ні Core. Продукти беруться з `iap_catalog.json`, частота реклами — з `ad_pacing.json`.
+
 ## 3. Структура папок
 ```
 Assets/_Project/
