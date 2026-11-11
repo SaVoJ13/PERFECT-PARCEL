@@ -68,3 +68,7 @@
 - **Модель збою для збережень має включати збої ЧИТАННЯ, а не лише «процес загинув під час запису».** `catch (Exception)` навколо читання файла плутає «файл тимчасово недоступний» (`IOException`, `UnauthorizedAccessException`) з «файл пошкоджений» і веде до карантину справних даних та хибного скидання (BUG-019). Обгортка сховища зі збоєм має вміти кидати виняток у `ReadText` під час `Load`.
 - **NUL у текстовому файлі + `core.autocrlf=true` = CRLF в історії.** Git вважає файл із нульовим байтом двійковим і не нормалізує кінці рядків під час коміту; diff у PR показує «Binary file». Перед комітом документів перевіряй: жодного байта менше 0x20, крім табуляції й переходу рядка (BUG-021).
 - **Атомарний запис зручно доводити поза Unity:** невелика модель на Node.js (порт семантики сховища в пам'яті) перебирає всі початкові стани файлів x кожну точку збою за секунди; див. `docs/qa/evidence/E0-07/independent_save_model.js`.
+
+## UI Toolkit у headless-збірці (E0-05, 2026-11-11)
+- **`ScriptableObject.CreateInstance<PanelSettings>()` + `CreateAsset` змушує Unity створити `Assets/UI Toolkit/UnityThemes/UnityDefaultRuntimeTheme.tss` (+.meta) у корені Assets.** Крок CI «Verify Project Files Are Committed» бачить це як нові файли. Рішення в E0-05: сцени й PanelSettings генеруються перед збіркою, після збірки `SceneSetup.Cleanup()` видаляє їх, а шляхи додано в `.gitignore`.
+- **Сцени в APK (Unity 6, Android, IL2CPP) лежать як `assets/bin/Data/level0..N`;** BuildScript рахує їх у готовому APK (`System.IO.Compression.ZipFile` працює в Editor-збірці).

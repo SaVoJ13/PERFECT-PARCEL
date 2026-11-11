@@ -17,6 +17,8 @@ namespace KebabStreet.Editor
     public static class SceneSetup
     {
         public const string GeneratedFolder = "Assets/_Project/Generated";
+        // Unity сам створює тему за замовчуванням для PanelSettings у корені Assets; вона теж тимчасова.
+        public const string AutoThemeFolder = "Assets/UI Toolkit";
         public const string PanelSettingsPath = GeneratedFolder + "/PanelSettings.asset";
 
         private static readonly Vector2Int ReferenceResolution = new Vector2Int(1080, 1920);
@@ -64,6 +66,11 @@ namespace KebabStreet.Editor
             if (AssetDatabase.IsValidFolder(GeneratedFolder))
             {
                 AssetDatabase.DeleteAsset(GeneratedFolder);
+            }
+
+            if (AssetDatabase.IsValidFolder(AutoThemeFolder))
+            {
+                AssetDatabase.DeleteAsset(AutoThemeFolder);
             }
         }
 

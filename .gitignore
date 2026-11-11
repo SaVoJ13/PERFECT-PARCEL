@@ -40,3 +40,5 @@ create_alf.log
 # Сцени каркаса генеруються Editor-скриптом перед збіркою (E0-05), не комітяться
 /Assets/_Project/Generated/
 /Assets/_Project/Generated.meta
+/Assets/UI Toolkit/
+/Assets/UI Toolkit.meta
