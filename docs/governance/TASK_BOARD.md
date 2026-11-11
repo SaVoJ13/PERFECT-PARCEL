@@ -15,7 +15,7 @@
 | E0-04 | CI: на кожен PR — APK + автотести EditMode; на `main` — APK + AAB; артефакти зберігаються; + BUG-011 (перевірити кеш `Library` на дані підпису), BUG-010 (перевірка файлів у корені `Assets/`, `.gitignore` для `Assets/Editor/**`) | platform-engineer | E0-03 | L1 | QA Verified (PR #8, чекає злиття Власником) |
 | E0-05 | Каркас гри: bootstrap → завантаження → меню → порожня сцена зміни; UI за D-03; сцени створюються Editor-скриптом | gameplay-developer | E0-04, D-03 | L1 | Backlog |
 | E0-06 | `KebabStreet.Core`: `ShiftSimulation` з тактом і seed, таймер зміни; перші тести EditMode | gameplay-developer | E0-04 | L2 | QA Verified (PR #9, чекає злиття Власником після PR #8) |
-| E0-07 | Збереження зі `schemaVersion`, резервною копією, відновленням; `IClock`; тести | gameplay-developer | E0-06 | L2 | Backlog (🔥 ВАЖКЕ, Fable) |
+| E0-07 | Збереження зі `schemaVersion`, резервною копією, відновленням; `IClock`; тести | gameplay-developer | E0-06 | L2 | QA Verified (PR #10, чекає злиття Власником після PR #8 і #9) |
 | E0-08 | Локалізація за ключами (EN/UK/PL, поки кілька рядків меню) + тест «усі ключі є в усіх мовах» | gameplay-developer + ui-art-designer | E0-05 | L2 | Backlog |
 | E0-09 | Інтерфейси `IAdsService`, `IPurchaseService`, `IAnalyticsService` + заглушки лише для Editor/тестів; у релізі кнопки реклами/покупок приховані до Етапу 3 | platform-engineer | E0-06 | L2 | Backlog |
 | E0-10 | `docs/design/GAME_DESIGN.md` і `LEVEL_DESIGN.md` для рівнів 1–5 (специфікація станцій, рецептів, клієнтів, конфіги-чернетки) — підготовка Етапу 1 | game-designer | E0-01 | L0 + QA | Done |
@@ -23,6 +23,7 @@
 | E0-12 | Встановити APK на Samsung через `adb`, скриншоти меню і порожньої зміни, logcat без `Exception` | qa-release | E0-05 | L3 | Backlog |
 | E0-13 | Ворота Етапу 0 (`/phase-gate 0`) + Власник сам запускає гру | qa-release + Власник | усі вище | L4 | Backlog |
 | E0-14 | Зміцнення CI: BUG-013 (тести на тому ж образі, що й збірка; повернути перевірку `Packages`), BUG-014 (сторонні дії закріпити SHA коміту), BUG-015 (AAB не вивантажувати публічним артефактом або визнати псевдонім нетаємним) | platform-engineer | E0-04 | L1 | Backlog |
+| E0-15 | Збереження: BUG-025 (сервіс сам блокує `Save` після `Unavailable`/`NewerVersion` до наступного успішного `Load`, тест), BUG-026 (пошкоджений `.bak` при справному основному — у карантин). **До E0-05** | gameplay-developer | E0-07 | L2 | Backlog |
 
 ## Етап 1 (картки створюються після `Owner Approved` Етапу 0)
 Кандидати: гриль і стан м'яса; піта, салат, соуси, видача; клієнти з терпінням і черга; особливі прохання; рівні 1–5 у конфігах; бот-тест; екран результату й зірки; навчання; плейсхолдер-графіка і звуки; плейтест.

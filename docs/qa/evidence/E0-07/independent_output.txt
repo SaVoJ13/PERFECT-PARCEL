@@ -1,0 +1,29 @@
+== A. Зафіксовані тексти
+OK   V1Text -> міграція -> V1MigratedToV2Text
+OK   GoldenText (v2) round-trip без міграції
+OK   новий профіль = зафіксований текст
+OK   порядковий (Ordinal) порядок ключів рівнів
+OK   NewerVersionText -> TooNew(3)
+== B. Розбирач
+OK   round-trip довільних id (лапки, \, юнікод, сурогатна пара, керівні, U+2028) і long.MaxValue
+     "+5" як coins (не JSON) -> ПРИЙНЯТО, coins=5
+     провідні нулі "007" -> ПРИЙНЯТО, coins=7
+     "-0" -> ПРИЙНЯТО, coins=0
+     дублікат ключа coins (1, потім 9) -> ПРИЙНЯТО, coins=9
+     schemaVersion відсутній -> SaveFormatException (field schemaVersion)
+     schemaVersion 1e400 -> SaveFormatException (field schemaVersion)
+     schemaVersion 99999999999999999999 (поза long) -> SaveFormatException (field schemaVersion)
+     BOM на початку тексту (у пам'яті) -> SaveFormatException (bad number "")
+     вкладеність 34 рівні -> SaveFormatException (depth)
+     вкладеність 32 рівні -> ПРИЙНЯТО, coins=1
+     id з одиноким сурогатом: текст після запису/читання UTF-8 ІНШИЙ -> перевірка в Save поверне Failed щоразу
+== C. Перебір точок збою Save
+OK   усі 652 комбінацій (P x B x tmp x P.corrupt x torn x точка збою): після збою Load повертає попередній або новий стан, без хибного скидання; наступний Save працює
+== D. Тимчасова помилка ЧИТАННЯ (IOException/UnauthorizedAccessException) під час Load
+     обидва справні файли тимчасово не читаються -> Source=NewProfile, ProgressReset=true, CorruptFilesFound=2
+     файли після Load: save.json.corrupt, save.json.bak.corrupt
+     гра продовжила з чистим профілем, 2 збереження -> Load: Primary, coins=3; справжній прогрес (coins 250/100) лише в *.corrupt, які гра не читає
+     лише основний тимчасово не читається -> Source=Backup, coins=100 (останній стан coins=250 відкладено в save.json.corrupt), ProgressReset=false
+     пізніше справжнє пошкодження основного -> save.json.corrupt тепер "garbage": відкладений справний стан coins=250 затерто
+
+ПІДСУМОК: A-C без порушень; сценарій D — див. BUG-019
