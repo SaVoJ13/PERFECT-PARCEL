@@ -44,14 +44,14 @@ namespace KebabStreet.Editor
         public static string[] Generate()
         {
             EnsureFolder(GeneratedFolder);
-            PanelSettings panelSettings = EnsurePanelSettings();
+            EnsurePanelSettings();
 
             var paths = new string[SceneNames.Length];
             var buildScenes = new EditorBuildSettingsScene[SceneNames.Length];
             for (int i = 0; i < SceneNames.Length; i++)
             {
                 paths[i] = GeneratedFolder + "/" + SceneNames[i] + ".unity";
-                CreateScene(paths[i], panelSettings, ControllerTypeOf(SceneNames[i]));
+                CreateScene(paths[i], ControllerTypeOf(SceneNames[i]));
                 buildScenes[i] = new EditorBuildSettingsScene(paths[i], true);
             }
 
@@ -112,7 +112,7 @@ namespace KebabStreet.Editor
             return settings;
         }
 
-        private static void CreateScene(string path, PanelSettings panelSettings, Type controllerType)
+        private static void CreateScene(string path, Type controllerType)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -124,7 +124,9 @@ namespace KebabStreet.Editor
 
             var ui = new GameObject("UI");
             var document = ui.AddComponent<UIDocument>();
-            document.panelSettings = panelSettings;
+            // Ресурс перезавантажується щоразу: NewScene вивантажує невикористані ресурси, і посилання,
+            // отримане до цього, стає знищеним (BUG-029: у сценах після Boot panelSettings був null).
+            document.panelSettings = AssetDatabase.LoadAssetAtPath<PanelSettings>(PanelSettingsPath);
             ui.AddComponent(controllerType);
 
             EditorSceneManager.SaveScene(scene, path);
