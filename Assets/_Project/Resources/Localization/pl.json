@@ -1,0 +1,15 @@
+{
+  "game.title": "Kebab Street",
+  "boot.loading": "Ładowanie...",
+  "menu.play": "Graj",
+  "menu.settings": "Ustawienia",
+  "menu.settings_soon": "Ustawienia pojawią się wkrótce",
+  "shift.time_left": "Pozostały czas: {0}",
+  "shift.finished": "Zmiana zakończona",
+  "shift.exit": "Wyjdź",
+  "notice.progress_reset": "Nie udało się przywrócić zapisanego postępu, więc został zresetowany.",
+  "notice.update_game": "Zapis został utworzony przez nowszą wersję gry. Zaktualizuj grę. Postęp nie będzie zapisywany.",
+  "notice.storage_unavailable": "Nie można teraz odczytać zapisanych danych. Postęp nie będzie zapisywany. Uruchom grę ponownie.",
+  "notice.save_disabled": "Zapisywanie postępu jest wyłączone z powodu problemu z zapisanymi danymi.",
+  "notice.save_failed": "Nie udało się zapisać postępu. Spróbuj ponownie później."
+}
