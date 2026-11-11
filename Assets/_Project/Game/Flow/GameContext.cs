@@ -10,10 +10,19 @@ namespace KebabStreet.Game
     /// </summary>
     public sealed class GameContext
     {
-        public GameContext(ISaveStorage storage, IClock clock, ILocalizer text)
+        public GameContext(
+            ISaveStorage storage,
+            IClock clock,
+            ILocalizer text,
+            IAdsService ads = null,
+            IPurchaseService purchases = null,
+            IAnalyticsService analytics = null)
         {
             Clock = clock ?? throw new ArgumentNullException(nameof(clock));
             Text = text ?? throw new ArgumentNullException(nameof(text));
+            Ads = ads ?? new NullAdsService();
+            Purchases = purchases ?? new NullPurchaseService();
+            Analytics = analytics ?? new NullAnalyticsService();
             Saves = new SaveService(storage, clock);
             Profile = new ProfileSession(Saves);
             Flow = new GameFlow();
@@ -25,6 +34,14 @@ namespace KebabStreet.Game
         public IClock Clock { get; }
 
         public ILocalizer Text { get; }
+
+        /// <summary>Реклама; до Етапу 3 — заглушка Null. UI показує кнопку лише коли <c>Ads.IsAvailable</c>.</summary>
+        public IAdsService Ads { get; }
+
+        /// <summary>Покупки; до Етапу 3 — заглушка Null. UI показує кнопку лише коли <c>Purchases.IsAvailable</c>.</summary>
+        public IPurchaseService Purchases { get; }
+
+        public IAnalyticsService Analytics { get; }
 
         public SaveService Saves { get; }
 
