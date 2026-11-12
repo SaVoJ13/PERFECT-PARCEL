@@ -1,0 +1,11 @@
+{
+  "draft": true,
+  "customers": [
+    { "id": "olya", "nameKey": "customer.olya.name", "patienceSec": 45, "payMultiplier": 1.0,
+      "tipRule": { "maxPercent": 10, "minPatiencePercent": 0 }, "always": [], "exclude": [], "firstLevel": 1 },
+    { "id": "marko", "nameKey": "customer.marko.name", "patienceSec": 20, "payMultiplier": 1.2,
+      "tipRule": { "maxPercent": 30, "minPatiencePercent": 30 }, "always": ["sauce_hot"], "exclude": [], "firstLevel": 3 },
+    { "id": "hanna", "nameKey": "customer.hanna.name", "patienceSec": 40, "payMultiplier": 1.3,
+      "tipRule": { "maxPercent": 10, "minPatiencePercent": 0 }, "always": [], "exclude": ["onion"], "firstLevel": 4 }
+  ]
+}

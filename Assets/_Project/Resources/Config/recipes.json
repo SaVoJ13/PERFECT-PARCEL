@@ -1,0 +1,16 @@
+{
+  "draft": true,
+  "ingredients": [
+    { "id": "pita", "nameKey": "ingredient.pita", "station": "bread", "extraPriceCoins": 0 },
+    { "id": "meat", "nameKey": "ingredient.meat", "station": "grill", "extraPriceCoins": 0 },
+    { "id": "salad", "nameKey": "ingredient.salad", "station": "salad", "extraPriceCoins": 3 },
+    { "id": "onion", "nameKey": "ingredient.onion", "station": "salad", "extraPriceCoins": 1 },
+    { "id": "sauce_garlic", "nameKey": "ingredient.sauce_garlic", "station": "sauce", "extraPriceCoins": 2 },
+    { "id": "sauce_hot", "nameKey": "ingredient.sauce_hot", "station": "sauce", "extraPriceCoins": 2 }
+  ],
+  "recipes": [
+    { "id": "kebab_pita", "nameKey": "recipe.kebab_pita.name",
+      "steps": ["pita", "meat"], "optional": ["salad", "onion", "sauce_garlic", "sauce_hot"],
+      "price": 12, "unlockLevel": 1 }
+  ]
+}

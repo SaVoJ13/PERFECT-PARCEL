@@ -1,0 +1,13 @@
+{
+  "draft": true,
+  "ticksPerSecond": 60,
+  "maxCatchUpTicks": 600,
+  "continueBonusSec": 30,
+  "actionQueueMax": 3,
+  "boardClearPenaltyCoins": 1,
+  "comboWindowSec": 6,
+  "comboStepPercent": 10,
+  "comboMaxSteps": 5,
+  "wrongDishPatienceSec": 8,
+  "extraOptionalIsWrong": true
+}
