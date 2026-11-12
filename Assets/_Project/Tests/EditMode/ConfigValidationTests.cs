@@ -82,7 +82,7 @@ namespace KebabStreet.Tests.EditMode
             yield return C("Level_DurationIsString", "L01", t => t["durationSec"] = "90", "levels/L01.json: durationSec", "очікувалось ціле число");
             yield return C("Level_WavesNotArray", "L01", t => t["waves"] = "x", "levels/L01.json: waves", "очікувався масив");
             yield return C("Level_GoalNotObject", "L01", t => t["goal"] = 3L, "levels/L01.json: goal", "очікувався об'єкт");
-            yield return C("Level_BoolIsString", "L01", t => Map(t, "lose")["countLostCustomers"] = "no", "lose.countLostCustomers", "true або false");
+            yield return C("Level_BoolIsString", "L01", t => Map(t, "lose")["countLostCustomers"] = "no", "levels/L01.json: lose.countLostCustomers", "true або false");
 
             // --- рівні: нульові, від'ємні й завеликі числа
             yield return C("Level_DurationZero", "L01", t => t["durationSec"] = 0L, "levels/L01.json: durationSec=0", "дозволено 1..");
@@ -104,16 +104,16 @@ namespace KebabStreet.Tests.EditMode
             yield return C("Level_ComboValueTooSmall", "L05", t => Map(Map(t, "stars"), "three")["value"] = 1L, "stars.three.value=1");
 
             // --- рівні: посилання на неіснуюче
-            yield return C("Level_UnknownCustomer", "L02", t => Wave(t, 0)["customer"] = "ghost", "levels/L02.json: shift: waves[0].customer=ghost", "такого типу клієнта немає");
-            yield return C("Level_UnknownRecipe", "L02", t => Map(Wave(t, 2), "order")["recipe"] = "pizza", "levels/L02.json: shift: waves[2].order.recipe=pizza", "такого рецепта немає");
-            yield return C("Level_UnknownOrderIngredient", "L04", t => Map(Wave(t, 1), "order")["optional"] = new List<object> { "cheese" }, "levels/L04.json: shift: waves[1].order.optional", "cheese");
-            yield return C("Level_WavesOutOfOrder", "L01", t => Wave(t, 1)["atSec"] = 1L, "levels/L01.json: shift: waves[1].atMs=1000", "раніше за попередній");
+            yield return C("Level_UnknownCustomer", "L02", t => Wave(t, 0)["customer"] = "ghost", "levels/L02.json: waves[0].customer=ghost", "такого типу клієнта немає");
+            yield return C("Level_UnknownRecipe", "L02", t => Map(Wave(t, 2), "order")["recipe"] = "pizza", "levels/L02.json: waves[2].order.recipe=pizza", "такого рецепта немає");
+            yield return C("Level_UnknownOrderIngredient", "L04", t => Map(Wave(t, 1), "order")["optional"] = new List<object> { "cheese" }, "levels/L04.json: waves[1].order.optional", "cheese");
+            yield return C("Level_WavesOutOfOrder", "L01", t => Wave(t, 1)["atSec"] = 1L, "levels/L01.json: waves[1].atMs=1000", "раніше за попередній");
 
             // --- рівні: unlockLevel вище рівня
             yield return C("Level_CustomerBeforeFirstLevel", "L02", t => Wave(t, 0)["customer"] = "marko", "levels/L02.json: waves[0].customer=marko", "з'являється з рівня 3");
             yield return C("Level_HannaOnLevelThree", "L03", t => Wave(t, 1)["customer"] = "hanna", "levels/L03.json: waves[1].customer=hanna", "з'являється з рівня 4");
-            yield return C("Level_SaladBeforeItsStation", "L01", t => Map(Wave(t, 0), "order")["optional"] = new List<object> { "salad" }, "levels/L01.json: shift: waves[0].order.optional", "недоступний на рівні 1");
-            yield return C("Level_SauceBeforeItsStation", "L02", t => Map(Wave(t, 0), "order")["optional"] = new List<object> { "sauce_garlic" }, "levels/L02.json: shift: waves[0].order.optional", "недоступний на рівні 2");
+            yield return C("Level_SaladBeforeItsStation", "L01", t => Map(Wave(t, 0), "order")["optional"] = new List<object> { "salad" }, "levels/L01.json: waves[0].order.optional", "недоступний на рівні 1");
+            yield return C("Level_SauceBeforeItsStation", "L02", t => Map(Wave(t, 0), "order")["optional"] = new List<object> { "sauce_garlic" }, "levels/L02.json: waves[0].order.optional", "недоступний на рівні 2");
 
             // --- рівні: ідентифікатор, ціль, зірки, поразка
             yield return C("Level_IdDiffersFromFileName", "L02", t => t["id"] = "L07", "levels/L02.json: id=L07", "має збігатися");
@@ -145,8 +145,8 @@ namespace KebabStreet.Tests.EditMode
             yield return C("Stations_GrillMissingEverywhere", Stations, t => Map(Station(t, "grill"), "grill").Remove("cookSec"), "levels/L03.json: grill.cookSec", "не задано");
             yield return C("Stations_GrillUnlockAboveLevel", Stations, t => Station(t, "grill")["unlockLevel"] = 3L, "levels/L01.json: grill", "доступна з рівня 3");
             yield return C("Stations_CounterUnlockAboveLevel", Stations, t => Station(t, "counter")["unlockLevel"] = 2L, "levels/L01.json: counterSlots", "counter доступна з рівня 2");
-            yield return C("Stations_SauceUnlockedTooLate", Stations, t => Station(t, "sauce")["unlockLevel"] = 5L, "levels/L03.json: shift:", "sauce_hot", "недоступний на рівні 3");
-            yield return C("Stations_BoardUnlockedTooLate", Stations, t => Station(t, "board")["unlockLevel"] = 2L, "levels/L01.json: shift:", "дошка має бути доступна на рівні 1");
+            yield return C("Stations_SauceUnlockedTooLate", Stations, t => Station(t, "sauce")["unlockLevel"] = 5L, "levels/L03.json: ", "sauce_hot", "недоступний на рівні 3");
+            yield return C("Stations_BoardUnlockedTooLate", Stations, t => Station(t, "board")["unlockLevel"] = 2L, "levels/L01.json: ", "дошка має бути доступна на рівні 1");
 
             // --- рецепти й інгредієнти
             yield return C("Recipes_UnknownStepIngredient", Recipes, t => Item(Arr(t, "recipes"), 0)["steps"] = new List<object> { "pita", "pork" }, "recipes.json: recipes[0].steps[1]=pork", "невідомий інгредієнт");
@@ -155,14 +155,14 @@ namespace KebabStreet.Tests.EditMode
             yield return C("Recipes_PriceZero", Recipes, t => Item(Arr(t, "recipes"), 0)["price"] = 0L, "recipes.json: recipes[0].price=0");
             yield return C("Recipes_PriceNegative", Recipes, t => Item(Arr(t, "recipes"), 0)["price"] = -3L, "recipes.json: recipes[0].price=-3");
             yield return C("Recipes_UnlockZero", Recipes, t => Item(Arr(t, "recipes"), 0)["unlockLevel"] = 0L, "recipes.json: recipes[0].unlockLevel=0");
-            yield return C("Recipes_UnlockAboveAllLevels", Recipes, t => Item(Arr(t, "recipes"), 0)["unlockLevel"] = 6L, "levels/L01.json: shift:", "жоден рецепт не доступний на рівні 1");
+            yield return C("Recipes_UnlockAboveAllLevels", Recipes, t => Item(Arr(t, "recipes"), 0)["unlockLevel"] = 6L, "levels/L01.json: ", "жоден рецепт не доступний на рівні 1");
             yield return C("Recipes_UnknownKey", Recipes, t => Item(Arr(t, "recipes"), 0)["special"] = "x", "recipes.json: recipes[0].special", "невідомий ключ");
             yield return C("Recipes_MissingNameKey", Recipes, t => Item(Arr(t, "recipes"), 0).Remove("nameKey"), "recipes.json: recipes[0].nameKey", "обов'язкове");
             yield return C("Recipes_NameKeyIsText", Recipes, t => Item(Arr(t, "recipes"), 0)["nameKey"] = "Кебаб у піті", "recipes.json: recipes[0].nameKey", "ключ локалізації");
             yield return C("Ingredients_UnknownStation", Recipes, t => Item(Arr(t, "ingredients"), 0)["station"] = "fryer", "recipes.json: ingredients[0].station=fryer", "невідома станція");
             yield return C("Ingredients_ExtraPriceNegative", Recipes, t => Item(Arr(t, "ingredients"), 2)["extraPriceCoins"] = -1L, "recipes.json: ingredients[2].extraPriceCoins=-1");
             yield return C("Ingredients_NameKeyIsText", Recipes, t => Item(Arr(t, "ingredients"), 1)["nameKey"] = "М'ясо", "recipes.json: ingredients[1].nameKey", "ключ локалізації");
-            yield return C("Ingredients_Duplicate", Recipes, t => Arr(t, "ingredients").Add(new Dictionary<string, object>(Item(Arr(t, "ingredients"), 0))), "shift: ingredients[6].id=pita", "назва повторюється");
+            yield return C("Ingredients_Duplicate", Recipes, t => Arr(t, "ingredients").Add(new Dictionary<string, object>(Item(Arr(t, "ingredients"), 0))), "ingredients[6].id=pita", "назва повторюється");
 
             // --- клієнти
             yield return C("Customers_UnknownAlwaysIngredient", Customers, t => Arr(Customer(t, "marko"), "always")[0] = "ghost", "customers.json: customers[1].always[0]=ghost", "невідомий інгредієнт");
@@ -176,7 +176,7 @@ namespace KebabStreet.Tests.EditMode
             yield return C("Customers_MinPatienceAboveHundred", Customers, t => Map(Customer(t, "marko"), "tipRule")["minPatiencePercent"] = 101L, "customers[1].tipRule.minPatiencePercent=101");
             yield return C("Customers_FirstLevelZero", Customers, t => Customer(t, "hanna")["firstLevel"] = 0L, "customers.json: customers[2].firstLevel=0");
             yield return C("Customers_UnknownKey", Customers, t => Customer(t, "marko")["special"] = "alwaysHotSauce", "customers.json: customers[1].special", "невідомий ключ");
-            yield return C("Customers_DuplicateId", Customers, t => Customer(t, "hanna")["id"] = "olya", "shift: customers[2].id=olya", "назва повторюється");
+            yield return C("Customers_DuplicateId", Customers, t => Customer(t, "hanna")["id"] = "olya", "customers[2].id=olya", "назва повторюється");
             yield return C("Customers_NameKeyIsText", Customers, t => Customer(t, "olya")["nameKey"] = "Студентка Оля", "customers.json: customers[0].nameKey", "ключ локалізації");
 
             // --- правила
