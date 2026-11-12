@@ -127,15 +127,16 @@ namespace KebabStreet.Tests.EditMode
         [Test]
         public void ExpertBot_Level1_GivesExactHandCheckedResult()
         {
-            // Точні значення, перевірені вручну: 4 клієнти по 12 монет + 1 монета чайових (10% від 12, округлено)
-            // = 52; перша дія — покласти м'ясо (0,5 с), піта (0,5 с), м'ясо готове за 5 с, зняти (0,5 с), видати;
+            // Точні значення, перевірені вручну (S1-06: зміна кінчається на 3-му клієнті): клієнт = 12 монет + 1 монета чайових (10% від 12, округлено)
+            // = 13; перша дія — покласти м'ясо (0,5 с), піта (0,5 с), м'ясо готове за 5 с, зняти (0,5 с), видати;
             // третій клієнт приходить на 45-й секунді (2700-й такт), страву видано на 3061-му такті.
             BotResult r = BotRunner.Run(ConfigTestKit.Level(1), SeedAt(0), BotProfile.Expert);
             Assert.AreEqual(BotOutcome.Won, r.Outcome);
             Assert.AreEqual(3061L, r.GoalTick, "ціль (3 клієнти) виконано на 3061-му такті");
             Assert.AreEqual(3061L, r.EndTick, "ціль «обслужити 3» — зміна завершується достроково на 3061-му такті (S1-06)");
             Assert.AreEqual(3L, r.Served);
-            Report("BOTGOLDEN L1 coins=" + r.Coins + " fp=" + r.Fingerprint());
+            Assert.AreEqual(39L, r.Coins, "3 клієнти по 13 монет (12 + 1 чайових); бот дає ★ (поріг ★★ = 40)");
+            Assert.AreEqual(1, r.Result.Stars);
             Assert.AreEqual(0L, r.Lost);
             Assert.AreEqual(0L, r.WrongDishes);
             Assert.AreEqual(0L, r.Burnt);
@@ -159,12 +160,11 @@ namespace KebabStreet.Tests.EditMode
         public void Bot_Level3Novice_Seed3_PinnedResult()
         {
             BotResult r = BotRunner.Run(ConfigTestKit.Level(3), SeedAt(3), BotProfile.Novice);
-            Report("BOTGOLDEN L3N " + r.Fingerprint() + " stars=" + r.Result.Stars);
-            // ВРЕМЕННО (S1-06): точне значення буде закріплено за виводом BOTGOLDEN після першого запуску в CI.
-            Assert.AreEqual(BotOutcome.Won, r.Outcome);
-            Assert.AreEqual(4942L, r.GoalTick);
-            Assert.AreEqual(4942L, r.EndTick, "дострокове завершення: кінець зміни = такт виконання цілі");
-            Assert.AreEqual(8L, r.Served);
+            // Золоте значення (S1-06: через дострокове завершення зміна кінчається на такті цілі; значення за виводом CI 43303799740).
+            Assert.AreEqual(
+                "L03/20284958/novice: Won goalTick=4942 endTick=4942 served=8 coins=125 lost=0 left=0 wrong=1 burnt=0 combo=2 mistakes=47 done=52 ignored=1",
+                r.Fingerprint());
+            Assert.AreEqual(3, r.Result.Stars);
         }
 
         [Test]
