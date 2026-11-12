@@ -61,7 +61,23 @@ namespace KebabStreet.Core
                 Board = new Board(config.Board, config.TicksPerSecond);
             }
 
-            _dishReceiver = dishReceiver;
+            if (config.Counter != null)
+            {
+                if (dishReceiver != null)
+                {
+                    throw new ArgumentException(
+                        "Зміна з клієнтами сама приймає страви: окремий отримувач не потрібен.",
+                        nameof(dishReceiver));
+                }
+
+                // Запізнення приходів беруться з генератора зміни один раз, тут.
+                Counter = new Counter(config.Counter, config.Board, config.TicksPerSecond, _random);
+                _dishReceiver = Counter;
+            }
+            else
+            {
+                _dishReceiver = dishReceiver;
+            }
 
             State = ShiftState.Intro;
         }
@@ -92,6 +108,43 @@ namespace KebabStreet.Core
 
         /// <summary>Робоча дошка зміни (лише читання); null — у зміні немає дошки.</summary>
         public Board Board { get; }
+
+        /// <summary>Прилавок і клієнти зміни (лише читання); null — у зміні немає клієнтів.</summary>
+        public Counter Counter { get; }
+
+        /// <summary>Дохід від клієнтів за зміну: плата за страви, чайові, надбавка комбо, монет.</summary>
+        public long IncomeCoins => Counter == null ? 0L : Counter.IncomeCoins;
+
+        /// <summary>Усі штрафи зміни: викинуте пригоріле (гриль) і очищення дошки, монет.</summary>
+        public long PenaltyCoins
+        {
+            get
+            {
+                long penalty = Grill == null ? 0L : Grill.PenaltyCoins;
+                return Board == null ? penalty : penalty + Board.PenaltyCoins;
+            }
+        }
+
+        /// <summary>
+        /// Монети зміни (coinsEarned; GAME_DESIGN.md, розд. 7): дохід мінус штрафи, але не
+        /// менше нуля.
+        /// </summary>
+        public long CoinsEarned => Math.Max(0L, IncomeCoins - PenaltyCoins);
+
+        /// <summary>Скільки клієнтів обслужено (servedCount).</summary>
+        public long ServedCount => Counter == null ? 0L : Counter.ServedCount;
+
+        /// <summary>Скільки втрачених клієнтів зараховано (lostCustomers; ADR-020 — параметр конфіга).</summary>
+        public long LostCustomers => Counter == null ? 0L : Counter.LostCustomers;
+
+        /// <summary>Скільки хибних страв запропоновано клієнтам (wrongDishes).</summary>
+        public long WrongDishes => Counter == null ? 0L : Counter.WrongDishes;
+
+        /// <summary>Скільки шматків м'яса пригоріло (burntCount).</summary>
+        public long BurntCount => Grill == null ? 0L : Grill.BurntCount;
+
+        /// <summary>Найбільше комбо за зміну (maxCombo).</summary>
+        public long MaxCombo => Counter == null ? 0L : Counter.MaxCombo;
 
         /// <summary>Скільки дій гравця в черзі (разом із тією, що виконується).</summary>
         public int QueuedActionCount => _actionCount;
@@ -262,6 +315,13 @@ namespace KebabStreet.Core
                 Grill.Advance();
             }
 
+            if (Counter != null)
+            {
+                // Спершу терпіння, приходи й черга, потім дії гравця: клієнтові, що став у слот
+                // на цьому такті, вже можна видати страву, а тому, хто на цьому такті пішов, — ні.
+                Counter.Advance(ElapsedTicks);
+            }
+
             RunActions();
 
             if (ElapsedTicks >= _endTick)
@@ -342,7 +402,8 @@ namespace KebabStreet.Core
                     IgnoredActionCount,
                     LastAction,
                     LastActionResult),
-                Board == null ? default(BoardSnapshot) : Board.CaptureSnapshot());
+                Board == null ? default(BoardSnapshot) : Board.CaptureSnapshot(),
+                Counter == null ? default(CounterSnapshot) : Counter.CaptureSnapshot());
         }
 
         private bool Enqueue(ShiftActionType type, int slot)

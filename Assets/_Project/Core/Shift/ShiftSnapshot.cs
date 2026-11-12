@@ -61,7 +61,33 @@ namespace KebabStreet.Core
             GrillSnapshot grill,
             ActionQueueSnapshot actions,
             BoardSnapshot board)
+            : this(
+                state,
+                elapsedTicks,
+                remainingTicks,
+                pendingSubTicks,
+                continueUsed,
+                randomState,
+                grill,
+                actions,
+                board,
+                default(CounterSnapshot))
         {
+        }
+
+        public ShiftSnapshot(
+            ShiftState state,
+            long elapsedTicks,
+            long remainingTicks,
+            long pendingSubTicks,
+            bool continueUsed,
+            ulong randomState,
+            GrillSnapshot grill,
+            ActionQueueSnapshot actions,
+            BoardSnapshot board,
+            CounterSnapshot counter)
+        {
+            Counter = counter;
             State = state;
             ElapsedTicks = elapsedTicks;
             RemainingTicks = remainingTicks;
@@ -100,6 +126,9 @@ namespace KebabStreet.Core
         /// <summary>Стан дошки; значення за замовчуванням — дошки немає або вона ще не використовувалась.</summary>
         public BoardSnapshot Board { get; }
 
+        /// <summary>Стан прилавка і клієнтів; значення за замовчуванням — клієнтів у зміні немає.</summary>
+        public CounterSnapshot Counter { get; }
+
         public bool Equals(ShiftSnapshot other)
         {
             return State == other.State
@@ -110,7 +139,8 @@ namespace KebabStreet.Core
                 && RandomState == other.RandomState
                 && Grill.Equals(other.Grill)
                 && Actions.Equals(other.Actions)
-                && Board.Equals(other.Board);
+                && Board.Equals(other.Board)
+                && Counter.Equals(other.Counter);
         }
 
         public override bool Equals(object obj)
@@ -131,6 +161,7 @@ namespace KebabStreet.Core
                 hash = (hash * 397) ^ Grill.GetHashCode();
                 hash = (hash * 397) ^ Actions.GetHashCode();
                 hash = (hash * 397) ^ Board.GetHashCode();
+                hash = (hash * 397) ^ Counter.GetHashCode();
                 return hash;
             }
         }
@@ -144,14 +175,23 @@ namespace KebabStreet.Core
 
             // Зміна без гриля і без дій друкується так само, як до появи станцій.
             bool noBoard = Board.Equals(default(BoardSnapshot));
-            if (Grill.Equals(default(GrillSnapshot)) && Actions.Equals(default(ActionQueueSnapshot)) && noBoard)
+            bool noCounter = Counter.Equals(default(CounterSnapshot));
+            if (Grill.Equals(default(GrillSnapshot))
+                && Actions.Equals(default(ActionQueueSnapshot))
+                && noBoard
+                && noCounter)
             {
                 return text;
             }
 
-            // Зміна без дошки друкується так само, як до її появи.
+            // Зміна без дошки і без клієнтів друкується так само, як до їх появи.
             text = text + " grill=" + Grill + " actions=" + Actions;
-            return noBoard ? text : text + " board=" + Board;
+            if (!noBoard || !noCounter)
+            {
+                text = text + " board=" + Board;
+            }
+
+            return noCounter ? text : text + " counter=" + Counter;
         }
     }
 }

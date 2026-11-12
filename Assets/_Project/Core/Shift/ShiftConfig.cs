@@ -54,6 +54,23 @@ namespace KebabStreet.Core
             int actionQueueMax,
             GrillConfig grill,
             BoardConfig board)
+            : this(ticksPerSecond, maxCatchUpTicks, durationSec, continueBonusSec, actionQueueMax, grill, board, null)
+        {
+        }
+
+        /// <summary>
+        /// Зміна з чергою дій, грилем, дошкою і клієнтами прилавка; null — такої частини в зміні
+        /// немає. Клієнтам потрібна дошка.
+        /// </summary>
+        public ShiftConfig(
+            int ticksPerSecond,
+            int maxCatchUpTicks,
+            int durationSec,
+            int continueBonusSec,
+            int actionQueueMax,
+            GrillConfig grill,
+            BoardConfig board,
+            CounterConfig counter)
         {
             TicksPerSecond = ticksPerSecond;
             MaxCatchUpTicks = maxCatchUpTicks;
@@ -62,6 +79,7 @@ namespace KebabStreet.Core
             ActionQueueMax = actionQueueMax;
             Grill = grill;
             Board = board;
+            Counter = counter;
         }
 
         /// <summary>Частота тактів симуляції, тактів за секунду.</summary>
@@ -88,6 +106,9 @@ namespace KebabStreet.Core
         /// <summary>Параметри збирання страви на дошці; null — у зміні немає дошки.</summary>
         public BoardConfig Board { get; }
 
+        /// <summary>Параметри прилавка і клієнтів; null — у зміні немає клієнтів.</summary>
+        public CounterConfig Counter { get; }
+
         /// <summary>Тривалість зміни в тактах.</summary>
         public long DurationTicks => (long)DurationSec * TicksPerSecond;
 
@@ -112,9 +133,17 @@ namespace KebabStreet.Core
                 errors.AddRange(Grill.GetErrors(TicksPerSecond));
             }
 
+            bool boardIsValid = false;
             if (Board != null)
             {
-                errors.AddRange(Board.GetErrors(Grill != null));
+                IReadOnlyList<string> boardErrors = Board.GetErrors(Grill != null);
+                boardIsValid = boardErrors.Count == 0;
+                errors.AddRange(boardErrors);
+            }
+
+            if (Counter != null)
+            {
+                errors.AddRange(Counter.GetErrors(Board, boardIsValid, TicksPerSecond));
             }
 
             return errors;
