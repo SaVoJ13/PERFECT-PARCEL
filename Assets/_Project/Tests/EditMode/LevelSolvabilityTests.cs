@@ -125,6 +125,33 @@ namespace KebabStreet.Tests.EditMode
         }
 
         [Test]
+        public void ExpertBot_Level1_GivesExactHandCheckedResult()
+        {
+            // Точні значення, перевірені вручну: 4 клієнти по 12 монет + 1 монета чайових (10% від 12, округлено)
+            // = 52; перша дія — покласти м'ясо (0,5 с), піта (0,5 с), м'ясо готове за 5 с, зняти (0,5 с), видати;
+            // третій клієнт приходить на 45-й секунді (2700-й такт), страву видано на 3061-му такті.
+            BotResult r = BotRunner.Run(ConfigTestKit.Level(1), SeedAt(0), BotProfile.Expert);
+            Assert.AreEqual(BotOutcome.Won, r.Outcome);
+            Assert.AreEqual(3061L, r.GoalTick, "ціль (3 клієнти) виконано на 3061-му такті");
+            Assert.AreEqual(5400L, r.EndTick, "зміна 90 с = 5400 тактів, бот грає до кінця");
+            Assert.AreEqual(4L, r.Served);
+            Assert.AreEqual(52L, r.Coins);
+            Assert.AreEqual(0L, r.Lost);
+            Assert.AreEqual(0L, r.WrongDishes);
+            Assert.AreEqual(0L, r.Burnt);
+            Assert.AreEqual(1L, r.MaxCombo);
+            Assert.AreEqual(16L, r.ExecutedActions, "по 4 дії на страву: м'ясо, піта, зняти, видати");
+            Assert.AreEqual(0L, r.IgnoredActions);
+        }
+
+        [Test]
+        public void Bot_Fingerprints_AreReportedForGoldenPinning()
+        {
+            Report("BOTGOLDEN " + BotRunner.Run(ConfigTestKit.Level(5), SeedAt(3), BotProfile.Expert).Fingerprint());
+            Report("BOTGOLDEN " + BotRunner.Run(ConfigTestKit.Level(3), SeedAt(3), BotProfile.Novice).Fingerprint());
+        }
+
+        [Test]
         public void Bot_DifferentSeeds_ChangeTheRunOnJitteredLevel()
         {
             // L05 має запізнення приходів (jitterSec): різний seed дає різні знімки; ключі теста — що seed справді впливає.
