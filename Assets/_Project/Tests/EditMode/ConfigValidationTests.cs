@@ -94,14 +94,14 @@ namespace KebabStreet.Tests.EditMode
             yield return C("Level_GrillCookNegative", "L01", t => Map(t, "grill")["cookSec"] = -1L, "levels/L01.json: grill.cookSec=-1");
             yield return C("Level_GrillSlotsZero", "L02", t => Map(t, "grill")["slots"] = 0L, "levels/L02.json: grill.slots=0");
             yield return C("Level_GrillSlotsTooMany", "L02", t => Map(t, "grill")["slots"] = 100L, "levels/L02.json: grill.slots=100");
-            yield return C("Level_GrillPenaltyNegative", "L02", t => Map(t, "grill")["burntPenaltyCoins"] = -1L, "grill.burntPenaltyCoins=-1");
+            yield return C("Level_GrillPenaltyNegative", "L02", t => Map(t, "grill")["burntPenaltyCoins"] = -1L, "levels/L02.json: grill.burntPenaltyCoins=-1");
             yield return C("Level_StarsTwoZero", "L01", t => Map(Map(t, "stars"), "two")["value"] = 0L, "levels/L01.json: stars.two.value=0");
             yield return C("Level_WaveTimeNegative", "L01", t => Wave(t, 0)["atSec"] = -1L, "levels/L01.json: waves[0].atSec=-1");
             yield return C("Level_WaveTimeTooPrecise", "L01", t => Wave(t, 0)["atSec"] = 0.0004, "levels/L01.json: waves[0].atSec", "занадто точне");
             yield return C("Level_WaveGraceTooLong", "L01", t => Wave(t, 0)["graceSec"] = 700L, "levels/L01.json: waves[0].graceSec=700");
             yield return C("Level_WaveJitterNegative", "L05", t => Wave(t, 8)["jitterSec"] = -2L, "levels/L05.json: waves[8].jitterSec=-2");
             yield return C("Level_WaveListEmpty", "L01", t => t["waves"] = new List<object>(), "levels/L01.json: waves.count=0");
-            yield return C("Level_ComboValueTooSmall", "L05", t => Map(Map(t, "stars"), "three")["value"] = 1L, "stars.three.value=1");
+            yield return C("Level_ComboValueTooSmall", "L05", t => Map(Map(t, "stars"), "three")["value"] = 1L, "levels/L05.json: stars.three.value=1");
 
             // --- рівні: посилання на неіснуюче
             yield return C("Level_UnknownCustomer", "L02", t => Wave(t, 0)["customer"] = "ghost", "levels/L02.json: waves[0].customer=ghost", "такого типу клієнта немає");
@@ -173,7 +173,7 @@ namespace KebabStreet.Tests.EditMode
             yield return C("Customers_PayMultiplierTooPrecise", Customers, t => Customer(t, "olya")["payMultiplier"] = 1.005, "customers.json: customers[0].payMultiplier", "занадто точне");
             yield return C("Customers_MissingTipRule", Customers, t => Customer(t, "olya").Remove("tipRule"), "customers.json: customers[0].tipRule", "обов'язкове");
             yield return C("Customers_TipPercentNegative", Customers, t => Map(Customer(t, "marko"), "tipRule")["maxPercent"] = -1L, "customers.json: customers[1].tipRule.maxPercent=-1");
-            yield return C("Customers_MinPatienceAboveHundred", Customers, t => Map(Customer(t, "marko"), "tipRule")["minPatiencePercent"] = 101L, "customers[1].tipRule.minPatiencePercent=101");
+            yield return C("Customers_MinPatienceAboveHundred", Customers, t => Map(Customer(t, "marko"), "tipRule")["minPatiencePercent"] = 101L, "customers.json: customers[1].tipRule.minPatiencePercent=101");
             yield return C("Customers_FirstLevelZero", Customers, t => Customer(t, "hanna")["firstLevel"] = 0L, "customers.json: customers[2].firstLevel=0");
             yield return C("Customers_UnknownKey", Customers, t => Customer(t, "marko")["special"] = "alwaysHotSauce", "customers.json: customers[1].special", "невідомий ключ");
             yield return C("Customers_DuplicateId", Customers, t => Customer(t, "hanna")["id"] = "olya", "customers[2].id=olya", "назва повторюється");
