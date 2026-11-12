@@ -145,10 +145,23 @@ namespace KebabStreet.Tests.EditMode
         }
 
         [Test]
-        public void Bot_Fingerprints_AreReportedForGoldenPinning()
+        public void Bot_Level5Expert_Seed3_PinnedResult()
         {
-            Report("BOTGOLDEN " + BotRunner.Run(ConfigTestKit.Level(5), SeedAt(3), BotProfile.Expert).Fingerprint());
-            Report("BOTGOLDEN " + BotRunner.Run(ConfigTestKit.Level(3), SeedAt(3), BotProfile.Novice).Fingerprint());
+            // Золоте значення: зафіксовано за виводом CI (перший запуск після реалізації бота); будь-яка зміна
+            // правил симуляції, конфігу L05 або політики бота змінить число і потребує усвідомленого оновлення.
+            BotResult r = BotRunner.Run(ConfigTestKit.Level(5), SeedAt(3), BotProfile.Expert);
+            Assert.AreEqual(
+                "L05/20284958/expert: Won goalTick=4864 endTick=9000 served=20 coins=380 lost=0 left=0 wrong=0 burnt=0 combo=3 mistakes=0 done=99 ignored=0",
+                r.Fingerprint());
+        }
+
+        [Test]
+        public void Bot_Level3Novice_Seed3_PinnedResult()
+        {
+            BotResult r = BotRunner.Run(ConfigTestKit.Level(3), SeedAt(3), BotProfile.Novice);
+            Assert.AreEqual(
+                "L03/20284958/novice: Won goalTick=4942 endTick=7200 served=10 coins=153 lost=0 left=0 wrong=1 burnt=0 combo=2 mistakes=68 done=63 ignored=1",
+                r.Fingerprint());
         }
 
         [Test]
