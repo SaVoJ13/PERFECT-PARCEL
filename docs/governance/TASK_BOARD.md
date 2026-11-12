@@ -36,5 +36,5 @@
 | S1-03 | Клієнти: терпіння, черга, прохання, оплата | gameplay-developer (fable) | QA Verified (PR #24 Draft; 944 тести) |
 | S1-04 | Рівні 1–5 у JSON, завантажувач, валідація | gameplay-developer (sonnet) | QA Verified (PR #25 Draft; 1105 тестів) |
 | S1-05 | Бот-тест: рівні 1–5 розв'язні, детерміновано | gameplay-developer (sonnet) | QA Verified (PR #26 Draft; 1124 тести, 5 рівнів розв'язні) |
-| S1-06 | Результат зміни й зірки в Core | gameplay-developer (sonnet) | Backlog |
+| S1-06 | Результат зміни й зірки в Core | gameplay-developer (sonnet) | QA Verified (PR #27 Draft) |
 Кандидати: гриль і стан м'яса; піта, салат, соуси, видача; клієнти з терпінням і черга; особливі прохання; рівні 1–5 у конфігах; бот-тест; екран результату й зірки; навчання; плейсхолдер-графіка і звуки; плейтест.
