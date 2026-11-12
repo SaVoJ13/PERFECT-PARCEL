@@ -24,12 +24,30 @@ namespace KebabStreet.Core
         /// <summary>Найбільший додатковий час продовження, секунд.</summary>
         public const int MaxContinueBonusSec = 600;
 
+        /// <summary>Найбільша довжина черги дій гравця.</summary>
+        public const int MaxActionQueue = 32;
+
+        /// <summary>Зміна без станцій і без черги дій (лише таймер).</summary>
         public ShiftConfig(int ticksPerSecond, int maxCatchUpTicks, int durationSec, int continueBonusSec)
+            : this(ticksPerSecond, maxCatchUpTicks, durationSec, continueBonusSec, 0, null)
+        {
+        }
+
+        /// <summary>Зміна з чергою дій і грилем; grill = null — зміна без гриля.</summary>
+        public ShiftConfig(
+            int ticksPerSecond,
+            int maxCatchUpTicks,
+            int durationSec,
+            int continueBonusSec,
+            int actionQueueMax,
+            GrillConfig grill)
         {
             TicksPerSecond = ticksPerSecond;
             MaxCatchUpTicks = maxCatchUpTicks;
             DurationSec = durationSec;
             ContinueBonusSec = continueBonusSec;
+            ActionQueueMax = actionQueueMax;
+            Grill = grill;
         }
 
         /// <summary>Частота тактів симуляції, тактів за секунду.</summary>
@@ -43,6 +61,15 @@ namespace KebabStreet.Core
 
         /// <summary>Додатковий час продовження після поразки, секунд; 0 — продовження вимкнено.</summary>
         public int ContinueBonusSec { get; }
+
+        /// <summary>
+        /// Скільки дій гравця вміщує черга разом із тією, що виконується (rules.actionQueueMax);
+        /// 0 — команди станцій не приймаються.
+        /// </summary>
+        public int ActionQueueMax { get; }
+
+        /// <summary>Параметри гриля; null — у зміні немає гриля.</summary>
+        public GrillConfig Grill { get; }
 
         /// <summary>Тривалість зміни в тактах.</summary>
         public long DurationTicks => (long)DurationSec * TicksPerSecond;
@@ -61,6 +88,12 @@ namespace KebabStreet.Core
             CheckRange(errors, "maxCatchUpTicks", MaxCatchUpTicks, 1, MaxCatchUpTicksLimit);
             CheckRange(errors, "durationSec", DurationSec, 1, MaxDurationSec);
             CheckRange(errors, "continueBonusSec", ContinueBonusSec, 0, MaxContinueBonusSec);
+            CheckRange(errors, "actionQueueMax", ActionQueueMax, Grill == null ? 0 : 1, MaxActionQueue);
+            if (Grill != null)
+            {
+                errors.AddRange(Grill.GetErrors(TicksPerSecond));
+            }
+
             return errors;
         }
 
