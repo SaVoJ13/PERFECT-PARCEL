@@ -20,6 +20,18 @@ namespace KebabStreet.Core
 
         /// <summary>Викинути пригоріле м'ясо у смітник.</summary>
         DiscardBurntMeat = 3,
+
+        /// <summary>Покласти на дошку інгредієнт зі станції (піта, салат, соус); Slot — номер інгредієнта.</summary>
+        AddIngredient = 4,
+
+        /// <summary>Зняти інгредієнт із дошки; Slot — місце на дошці або <see cref="BoardTarget.TopItem"/>.</summary>
+        RemoveIngredient = 5,
+
+        /// <summary>Очистити дошку у смітник (штраф).</summary>
+        ClearBoard = 6,
+
+        /// <summary>Видати готову страву; Slot — кому або <see cref="BoardTarget.AnyCustomer"/>.</summary>
+        ServeDish = 7,
     }
 
     /// <summary>
@@ -57,9 +69,33 @@ namespace KebabStreet.Core
 
         /// <summary>Викинути без номера слота: пригорілого м'яса немає.</summary>
         NoBurntMeat = 9,
+
+        /// <summary>Покласти на дошку (інгредієнт або м'ясо з гриля): дошка заповнена.</summary>
+        BoardFull = 10,
+
+        /// <summary>Зняти, очистити або видати: дошка порожня.</summary>
+        BoardEmpty = 11,
+
+        /// <summary>Зняти інгредієнт: на названому місці дошки нічого немає.</summary>
+        NoSuchItem = 12,
+
+        /// <summary>Видати: обов'язкові кроки рецепта ще не всі.</summary>
+        DishIncomplete = 13,
+
+        /// <summary>Видати: порядок інгредієнтів хибний.</summary>
+        DishWrongOrder = 14,
+
+        /// <summary>Видати: на дошці зайвий інгредієнт.</summary>
+        DishExtraIngredient = 15,
+
+        /// <summary>Видати: страву нікому забрати (отримувач відмовив), вона лишається на дошці.</summary>
+        DishNotAccepted = 16,
     }
 
-    /// <summary>Дія гравця в черзі: вид і номер слота (<see cref="GrillSlot.Any"/> — без номера).</summary>
+    /// <summary>
+    /// Дія гравця в черзі: вид і число-адреса. Для гриля це номер слота (<see cref="GrillSlot.Any"/> —
+    /// без номера), для дошки — номер інгредієнта, місце на дошці або отримувач страви.
+    /// </summary>
     public readonly struct ShiftAction : IEquatable<ShiftAction>
     {
         public ShiftAction(ShiftActionType type, int slot)

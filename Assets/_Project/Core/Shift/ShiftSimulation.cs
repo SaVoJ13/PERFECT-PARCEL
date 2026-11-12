@@ -16,6 +16,7 @@ namespace KebabStreet.Core
 
         private readonly IShiftGoal _goal;
         private readonly SplitMix64Random _random;
+        private readonly IDishReceiver _dishReceiver;
         private readonly ShiftAction[] _actions;
         private long _endTick;
         private long _pendingSubTicks;
@@ -26,6 +27,15 @@ namespace KebabStreet.Core
         /// з переліком помилок (див. <see cref="ShiftConfig.GetErrors"/>).
         /// </summary>
         public ShiftSimulation(ShiftConfig config, ulong seed, IShiftGoal goal)
+            : this(config, seed, goal, null)
+        {
+        }
+
+        /// <summary>
+        /// Створює зміну з отримувачем виданих страв (клієнти прилавка). dishReceiver = null —
+        /// видана страва просто зникає з дошки і рахується виданою.
+        /// </summary>
+        public ShiftSimulation(ShiftConfig config, ulong seed, IShiftGoal goal, IDishReceiver dishReceiver)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             _goal = goal ?? throw new ArgumentNullException(nameof(goal));
@@ -45,6 +55,13 @@ namespace KebabStreet.Core
             {
                 Grill = new Grill(config.Grill, config.TicksPerSecond);
             }
+
+            if (config.Board != null)
+            {
+                Board = new Board(config.Board, config.TicksPerSecond);
+            }
+
+            _dishReceiver = dishReceiver;
 
             State = ShiftState.Intro;
         }
@@ -72,6 +89,9 @@ namespace KebabStreet.Core
 
         /// <summary>Гриль зміни (лише читання); null — у зміні немає гриля.</summary>
         public Grill Grill { get; }
+
+        /// <summary>Робоча дошка зміни (лише читання); null — у зміні немає дошки.</summary>
+        public Board Board { get; }
 
         /// <summary>Скільки дій гравця в черзі (разом із тією, що виконується).</summary>
         public int QueuedActionCount => _actionCount;
@@ -116,6 +136,8 @@ namespace KebabStreet.Core
         /// <summary>
         /// Команда гравця «зняти готове м'ясо» (на дошку): з названого слота або (GrillSlot.Any)
         /// те, що найближче до пригорання. Сире й пригоріле зняти не можна — дія ігнорується.
+        /// Якщо в зміні є дошка, зняте м'ясо лягає на неї; на заповнену дошку м'ясо не знімається
+        /// (лишається на грилі).
         /// </summary>
         public bool TakeMeat(int slot = GrillSlot.Any)
         {
@@ -129,6 +151,46 @@ namespace KebabStreet.Core
         public bool DiscardBurntMeat(int slot = GrillSlot.Any)
         {
             return Enqueue(ShiftActionType.DiscardBurntMeat, slot);
+        }
+
+        /// <summary>
+        /// Команда гравця «покласти на дошку інгредієнт зі станції» (піта, салат, соус);
+        /// ingredient — номер інгредієнта в конфігу. false: зміна не в Running, дошки немає,
+        /// такого інгредієнта немає, його станція недоступна на цьому рівні, це м'ясо
+        /// (воно береться лише з гриля) або черга повна — тоді нічого не змінюється.
+        /// </summary>
+        public bool AddIngredient(int ingredient)
+        {
+            return EnqueueBoard(ShiftActionType.AddIngredient, ingredient, Board != null && Board.CanAdd(ingredient));
+        }
+
+        /// <summary>
+        /// Команда гравця «зняти інгредієнт із дошки» (без штрафу): за місцем на дошці або
+        /// (BoardTarget.TopItem) останній покладений.
+        /// </summary>
+        public bool RemoveIngredient(int position = BoardTarget.TopItem)
+        {
+            return EnqueueBoard(
+                ShiftActionType.RemoveIngredient, position, Board != null && Board.IsValidPosition(position));
+        }
+
+        /// <summary>
+        /// Команда гравця «очистити дошку у смітник»: штраф rules.boardClearPenaltyCoins.
+        /// false також, якщо смітник недоступний на цьому рівні.
+        /// </summary>
+        public bool ClearBoard()
+        {
+            return EnqueueBoard(ShiftActionType.ClearBoard, 0, Board != null && Board.IsBinAvailable);
+        }
+
+        /// <summary>
+        /// Команда гравця «видати страву»: target — кому (номер слота прилавка) або
+        /// (BoardTarget.AnyCustomer) без названого клієнта. Видається лише правильна повна страва.
+        /// </summary>
+        public bool ServeDish(int target = BoardTarget.AnyCustomer)
+        {
+            return EnqueueBoard(
+                ShiftActionType.ServeDish, target, Board != null && target >= BoardTarget.AnyCustomer);
         }
 
         /// <summary>
@@ -198,8 +260,9 @@ namespace KebabStreet.Core
                 // Спершу таймери м'яса, потім дії гравця: м'ясо, покладене на цьому такті,
                 // має вік 0, а зняти можна вже на такті, коли воно стало готовим.
                 Grill.Advance();
-                RunActions();
             }
+
+            RunActions();
 
             if (ElapsedTicks >= _endTick)
             {
@@ -278,7 +341,8 @@ namespace KebabStreet.Core
                     ExecutedActionCount,
                     IgnoredActionCount,
                     LastAction,
-                    LastActionResult));
+                    LastActionResult),
+                Board == null ? default(BoardSnapshot) : Board.CaptureSnapshot());
         }
 
         private bool Enqueue(ShiftActionType type, int slot)
@@ -294,6 +358,35 @@ namespace KebabStreet.Core
             _actions[_actionCount] = new ShiftAction(type, slot);
             _actionCount++;
             return true;
+        }
+
+        private bool EnqueueBoard(ShiftActionType type, int argument, bool valid)
+        {
+            if (State != ShiftState.Running || !valid || _actionCount >= _actions.Length)
+            {
+                return false;
+            }
+
+            _actions[_actionCount] = new ShiftAction(type, argument);
+            _actionCount++;
+            return true;
+        }
+
+        /// <summary>Тривалість дії в тактах: за станцією, на якій вона виконується.</summary>
+        private long ActionTicksOf(ShiftAction action)
+        {
+            switch (action.Type)
+            {
+                case ShiftActionType.AddIngredient:
+                    return Board.AddActionTicks(action.Slot);
+                case ShiftActionType.RemoveIngredient:
+                case ShiftActionType.ServeDish:
+                    return Board.BoardActionTicks;
+                case ShiftActionType.ClearBoard:
+                    return Board.BinActionTicks;
+                default:
+                    return Grill.ActionTicks;
+            }
         }
 
         private void RemoveAction(int index)
@@ -321,7 +414,8 @@ namespace KebabStreet.Core
             bool workSpent = false;
             while (_actionCount > 0)
             {
-                if (HeadActionProgressTicks < Grill.ActionTicks)
+                long actionTicks = ActionTicksOf(_actions[0]);
+                if (HeadActionProgressTicks < actionTicks)
                 {
                     if (workSpent)
                     {
@@ -330,7 +424,7 @@ namespace KebabStreet.Core
 
                     HeadActionProgressTicks++;
                     workSpent = true;
-                    if (HeadActionProgressTicks < Grill.ActionTicks)
+                    if (HeadActionProgressTicks < actionTicks)
                     {
                         return;
                     }
@@ -351,10 +445,22 @@ namespace KebabStreet.Core
                     result = Grill.Place(action.Slot);
                     break;
                 case ShiftActionType.TakeMeat:
-                    result = Grill.Take(action.Slot);
+                    result = TakeMeatToBoard(action.Slot);
+                    break;
+                case ShiftActionType.DiscardBurntMeat:
+                    result = Grill.Discard(action.Slot);
+                    break;
+                case ShiftActionType.AddIngredient:
+                    result = Board.Add(action.Slot);
+                    break;
+                case ShiftActionType.RemoveIngredient:
+                    result = Board.Remove(action.Slot);
+                    break;
+                case ShiftActionType.ClearBoard:
+                    result = Board.Clear();
                     break;
                 default:
-                    result = Grill.Discard(action.Slot);
+                    result = Board.Serve(_dishReceiver, action.Slot);
                     break;
             }
 
@@ -368,6 +474,31 @@ namespace KebabStreet.Core
             {
                 IgnoredActionCount++;
             }
+        }
+
+        /// <summary>
+        /// Зняти готове м'ясо з гриля. З дошкою: м'ясо лягає на неї, а на заповнену дошку
+        /// не знімається взагалі (гриль не змінюється). Без дошки — як у зміні лише з грилем.
+        /// </summary>
+        private ShiftActionResult TakeMeatToBoard(int slot)
+        {
+            if (Board == null)
+            {
+                return Grill.Take(slot);
+            }
+
+            if (Board.IsFull)
+            {
+                return ShiftActionResult.BoardFull;
+            }
+
+            ShiftActionResult result = Grill.Take(slot);
+            if (result == ShiftActionResult.Done)
+            {
+                Board.Add(Board.MeatIngredient);
+            }
+
+            return result;
         }
 
         private bool Transition(ShiftState from, ShiftState to)

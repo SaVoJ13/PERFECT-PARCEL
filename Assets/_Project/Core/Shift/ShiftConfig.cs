@@ -41,6 +41,19 @@ namespace KebabStreet.Core
             int continueBonusSec,
             int actionQueueMax,
             GrillConfig grill)
+            : this(ticksPerSecond, maxCatchUpTicks, durationSec, continueBonusSec, actionQueueMax, grill, null)
+        {
+        }
+
+        /// <summary>Зміна з чергою дій, грилем і дошкою; null — такої станції в зміні немає.</summary>
+        public ShiftConfig(
+            int ticksPerSecond,
+            int maxCatchUpTicks,
+            int durationSec,
+            int continueBonusSec,
+            int actionQueueMax,
+            GrillConfig grill,
+            BoardConfig board)
         {
             TicksPerSecond = ticksPerSecond;
             MaxCatchUpTicks = maxCatchUpTicks;
@@ -48,6 +61,7 @@ namespace KebabStreet.Core
             ContinueBonusSec = continueBonusSec;
             ActionQueueMax = actionQueueMax;
             Grill = grill;
+            Board = board;
         }
 
         /// <summary>Частота тактів симуляції, тактів за секунду.</summary>
@@ -71,6 +85,9 @@ namespace KebabStreet.Core
         /// <summary>Параметри гриля; null — у зміні немає гриля.</summary>
         public GrillConfig Grill { get; }
 
+        /// <summary>Параметри збирання страви на дошці; null — у зміні немає дошки.</summary>
+        public BoardConfig Board { get; }
+
         /// <summary>Тривалість зміни в тактах.</summary>
         public long DurationTicks => (long)DurationSec * TicksPerSecond;
 
@@ -88,10 +105,16 @@ namespace KebabStreet.Core
             CheckRange(errors, "maxCatchUpTicks", MaxCatchUpTicks, 1, MaxCatchUpTicksLimit);
             CheckRange(errors, "durationSec", DurationSec, 1, MaxDurationSec);
             CheckRange(errors, "continueBonusSec", ContinueBonusSec, 0, MaxContinueBonusSec);
-            CheckRange(errors, "actionQueueMax", ActionQueueMax, Grill == null ? 0 : 1, MaxActionQueue);
+            CheckRange(
+                errors, "actionQueueMax", ActionQueueMax, Grill == null && Board == null ? 0 : 1, MaxActionQueue);
             if (Grill != null)
             {
                 errors.AddRange(Grill.GetErrors(TicksPerSecond));
+            }
+
+            if (Board != null)
+            {
+                errors.AddRange(Board.GetErrors(Grill != null));
             }
 
             return errors;
