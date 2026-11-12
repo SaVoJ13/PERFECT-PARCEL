@@ -49,6 +49,9 @@ namespace KebabStreet.Tests.EditMode
         public long ExecutedActions;
         public long IgnoredActions;
 
+        /// <summary>Результат зміни за спільними правилами Core (ShiftEvaluator): зірки, причина поразки.</summary>
+        public ShiftResult Result;
+
         /// <summary>Повний знімок симуляції на кінці гри (для перевірки детермінізму).</summary>
         public ShiftSnapshot FinalSnapshot;
 

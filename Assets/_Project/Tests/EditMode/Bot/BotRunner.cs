@@ -15,20 +15,26 @@ namespace KebabStreet.Tests.EditMode
 
         public static BotResult Run(LevelDefinition level, ulong seed, BotProfile profile)
         {
-            var goal = new BotGoal(level.Goal, level.Lose);
-            var sim = new ShiftSimulation(level.Shift, seed, goal);
+            // Правила цілі, зірок і поразки — спільні з грою (ShiftEvaluator у Core), без локальних копій.
+            ShiftEvaluator evaluator = ShiftEvaluator.ForLevel(level);
+            var sim = new ShiftSimulation(level.Shift, seed, evaluator);
             var bot = new BotPlayer(sim, profile, seed ^ BotSeedMask);
+            long goalTick = -1L;
             sim.Start();
-            while (sim.State == ShiftState.Running && !goal.Failed)
+            while (sim.State == ShiftState.Running)
             {
                 bot.Step();
                 sim.Tick();
-                goal.Observe(sim);
+                if (goalTick < 0L && evaluator.IsGoalReached(sim))
+                {
+                    goalTick = sim.ElapsedTicks;
+                }
             }
 
-            BotOutcome outcome = goal.Achieved
+            ShiftResult shiftResult = evaluator.Evaluate(sim);
+            BotOutcome outcome = shiftResult.Won
                 ? BotOutcome.Won
-                : (goal.Failed ? BotOutcome.TooManyLost : BotOutcome.TimeUp);
+                : (shiftResult.LoseReason == LoseReasons.CustomersLeft ? BotOutcome.TooManyLost : BotOutcome.TimeUp);
 
             var result = new BotResult();
             result.LevelId = level.Id;
@@ -40,7 +46,7 @@ namespace KebabStreet.Tests.EditMode
             result.MaxLost = level.Lose.MaxLostCustomers;
             result.TicksPerSecond = level.Shift.TicksPerSecond;
             result.DurationTicks = level.Shift.DurationTicks;
-            result.GoalTick = goal.AchievedTick;
+            result.GoalTick = (shiftResult.Won ? goalTick : -1L);
             result.EndTick = sim.ElapsedTicks;
             result.Served = sim.ServedCount;
             result.Coins = sim.CoinsEarned;
@@ -52,6 +58,7 @@ namespace KebabStreet.Tests.EditMode
             result.Mistakes = bot.MistakeCount;
             result.ExecutedActions = sim.ExecutedActionCount;
             result.IgnoredActions = sim.IgnoredActionCount;
+            result.Result = shiftResult;
             result.FinalSnapshot = sim.CaptureSnapshot();
             return result;
         }

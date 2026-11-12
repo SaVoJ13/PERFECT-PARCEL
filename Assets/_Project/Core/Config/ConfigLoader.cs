@@ -284,8 +284,9 @@ namespace KebabStreet.Core
                     break;
             }
 
+            bool endOnGoal = node.OptBool("endOnGoal", goalType == GoalType.Serve);
             node.Done();
-            return new LevelGoal(goalType, target);
+            return new LevelGoal(goalType, target, endOnGoal);
         }
 
         private static LevelStars ParseStars(ConfigObject node)

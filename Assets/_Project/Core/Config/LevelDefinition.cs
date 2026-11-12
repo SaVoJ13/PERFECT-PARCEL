@@ -17,15 +17,27 @@ namespace KebabStreet.Core
     public sealed class LevelGoal
     {
         public LevelGoal(GoalType type, int target)
+            : this(type, target, type == GoalType.Serve)
+        {
+        }
+
+        public LevelGoal(GoalType type, int target, bool endOnGoal)
         {
             Type = type;
             Target = target;
+            EndOnGoal = endOnGoal;
         }
 
         public GoalType Type { get; }
 
         /// <summary>Скільки клієнтів обслужити (Serve) або монет заробити (Coins).</summary>
         public int Target { get; }
+
+        /// <summary>
+        /// Чи завершується зміна достроково, щойно ціль виконано (GAME_DESIGN.md, розд. 1, Q4).
+        /// За замовчуванням true для цілі «обслужити N» і false для «заробити N» (levels/Lxx.json → goal.endOnGoal).
+        /// </summary>
+        public bool EndOnGoal { get; }
     }
 
     /// <summary>Додаткова умова третьої зірки (levels/Lxx.json → stars.three.condition).</summary>
@@ -70,9 +82,26 @@ namespace KebabStreet.Core
     public sealed class LevelLose
     {
         public LevelLose(int? maxLostCustomers)
+            : this(maxLostCustomers, null, null)
+        {
+        }
+
+        /// <summary>
+        /// Із додатковими межами поразки (розд. 9: пригоріле, хибні страви). У JSON рівнів 1–5 цих
+        /// ключів ще немає: вони з'являться разом з рівнями, що їх потребують.
+        /// </summary>
+        public LevelLose(int? maxLostCustomers, int? maxBurnt, int? maxWrongDishes)
         {
             MaxLostCustomers = maxLostCustomers;
+            MaxBurnt = maxBurnt;
+            MaxWrongDishes = maxWrongDishes;
         }
+
+        /// <summary>Скільки шматків можна спалити; null — без межі.</summary>
+        public int? MaxBurnt { get; }
+
+        /// <summary>Скільки хибних страв можна видати; null — без межі.</summary>
+        public int? MaxWrongDishes { get; }
 
         /// <summary>Скільки клієнтів можна втратити; null — втрата клієнтів не веде до поразки (рівні 1–2, ADR-020).</summary>
         public int? MaxLostCustomers { get; }

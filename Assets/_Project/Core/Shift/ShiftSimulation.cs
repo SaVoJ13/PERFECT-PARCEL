@@ -15,6 +15,7 @@ namespace KebabStreet.Core
         private const long SubTicksPerTick = 1000000L;
 
         private readonly IShiftGoal _goal;
+        private readonly IShiftEarlyEnd _earlyEnd;
         private readonly SplitMix64Random _random;
         private readonly IDishReceiver _dishReceiver;
         private readonly ShiftAction[] _actions;
@@ -39,6 +40,7 @@ namespace KebabStreet.Core
         {
             Config = config ?? throw new ArgumentNullException(nameof(config));
             _goal = goal ?? throw new ArgumentNullException(nameof(goal));
+            _earlyEnd = goal as IShiftEarlyEnd;
 
             var errors = config.GetErrors();
             if (errors.Count > 0)
@@ -145,6 +147,12 @@ namespace KebabStreet.Core
 
         /// <summary>Найбільше комбо за зміну (maxCombo).</summary>
         public long MaxCombo => Counter == null ? 0L : Counter.MaxCombo;
+
+        /// <summary>Лічильники зміни для підрахунку результату (<see cref="ShiftEvaluator"/>).</summary>
+        public ShiftCounters CaptureCounters()
+        {
+            return new ShiftCounters(CoinsEarned, ServedCount, LostCustomers, WrongDishes, BurntCount, MaxCombo);
+        }
 
         /// <summary>Скільки дій гравця в черзі (разом із тією, що виконується).</summary>
         public int QueuedActionCount => _actionCount;
@@ -324,7 +332,7 @@ namespace KebabStreet.Core
 
             RunActions();
 
-            if (ElapsedTicks >= _endTick)
+            if (ElapsedTicks >= _endTick || (_earlyEnd != null && _earlyEnd.ShouldEndEarly(this)))
             {
                 _pendingSubTicks = 0;
                 State = ShiftState.Resolving;

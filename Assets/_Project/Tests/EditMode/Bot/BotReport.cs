@@ -33,6 +33,9 @@ namespace KebabStreet.Tests.EditMode
             long comboSum = 0;
             long comboMax = 0;
             long mistakesSum = 0;
+            int stars1 = 0;
+            int stars2 = 0;
+            int stars3 = 0;
             for (int i = 0; i < n; i++)
             {
                 BotResult r = results[i];
@@ -61,6 +64,9 @@ namespace KebabStreet.Tests.EditMode
                 comboSum += r.MaxCombo;
                 comboMax = r.MaxCombo > comboMax ? r.MaxCombo : comboMax;
                 mistakesSum += r.Mistakes;
+                stars1 += r.Result.Stars == 1 ? 1 : 0;
+                stars2 += r.Result.Stars == 2 ? 1 : 0;
+                stars3 += r.Result.Stars == 3 ? 1 : 0;
             }
 
             var b = new StringBuilder();
@@ -82,6 +88,7 @@ namespace KebabStreet.Tests.EditMode
             b.Append("; хибних страв сер. ").Append(F((double)wrongSum / n));
             b.Append("; пригоріло сер. ").Append(F((double)burntSum / n)).Append(" (макс. ").Append(burntMax).Append(')');
             b.Append("; комбо сер. ").Append(F((double)comboSum / n)).Append(" (макс. ").Append(comboMax).Append(')');
+            b.Append("; зірки 1/2/3: ").Append(stars1).Append('/').Append(stars2).Append('/').Append(stars3);
             if (mistakesSum > 0)
             {
                 b.Append("; помилок бота сер. ").Append(F((double)mistakesSum / n));
