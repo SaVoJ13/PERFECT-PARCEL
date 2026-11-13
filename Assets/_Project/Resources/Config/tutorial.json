@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "draft": true,
+  "speaker": "uncle_ali",
+  "skip": {
+    "allowSkipStep": true,
+    "allowSkipAll": true,
+    "skipStepButtonKey": "ui.tutorial.next",
+    "skipAllButtonKey": "ui.tutorial.skip",
+    "rememberSkipAll": true
+  },
+  "display": {
+    "maxConcurrent": 1,
+    "minGapSec": 2,
+    "pauseSimulation": false,
+    "oncePerProfile": true
+  },
+  "levels": [
+    {
+      "level": "L01",
+      "steps": [
+        { "id": "l01.step1", "textKey": "tutorial.l01.step1", "anchor": "grill.slot1",
+          "showWhen": { "event": "ShiftStarted" },
+          "completeWhen": { "event": "PlaceMeat" }, "autoHideSec": null, "skippable": true },
+        { "id": "l01.step2", "textKey": "tutorial.l01.step2", "anchor": "grill.slot1",
+          "showWhen": { "event": "PlaceMeat", "afterStep": "l01.step1" },
+          "completeWhen": { "event": "MeatDone" }, "autoHideSec": null, "skippable": true },
+        { "id": "l01.step3", "textKey": "tutorial.l01.step3", "anchor": "grill.slot1",
+          "showWhen": { "event": "MeatDone", "afterStep": "l01.step2" },
+          "completeWhen": { "event": "TakeMeat" }, "autoHideSec": null, "skippable": true },
+        { "id": "l01.step4", "textKey": "tutorial.l01.step4", "anchor": "board.pita",
+          "showWhen": { "event": "TakeMeat", "afterStep": "l01.step3" },
+          "completeWhen": { "event": "AddIngredient", "ingredient": "pita" }, "autoHideSec": null, "skippable": true },
+        { "id": "l01.step5", "textKey": "tutorial.l01.step5", "anchor": "counter.customer",
+          "showWhen": { "event": "AddIngredient", "ingredient": "pita", "afterStep": "l01.step4" },
+          "completeWhen": { "event": "ServeDish" }, "autoHideSec": null, "skippable": true }
+      ]
+    },
+    {
+      "level": "L02",
+      "steps": [
+        { "id": "l02.burnt", "textKey": "tutorial.l02.burnt", "anchor": "grill.burntSlot",
+          "showWhen": { "event": "MeatBurnt", "firstTimeInProfile": true },
+          "completeWhen": { "event": "DiscardBurntMeat" }, "autoHideSec": 8, "skippable": true,
+          "penaltyFree": true, "alsoOnLevels": ["L01"] }
+      ]
+    },
+    {
+      "level": "L03",
+      "steps": [
+        { "id": "l03.patience", "textKey": "tutorial.l03.patience", "anchor": "customer.patience",
+          "showWhen": { "event": "CustomerArrived", "firstTimeInProfile": true },
+          "completeWhen": null, "autoHideSec": 6, "skippable": true },
+        { "id": "l03.sauce", "textKey": "tutorial.l03.sauce", "anchor": "sauce.garlic",
+          "showWhen": { "event": "OrderShown", "orderOptional": "sauce_garlic" },
+          "completeWhen": { "event": "AddIngredient", "ingredient": "sauce_garlic" }, "autoHideSec": 8, "skippable": true }
+      ]
+    },
+    {
+      "level": "L04",
+      "steps": [
+        { "id": "l04.salad", "textKey": "tutorial.l04.salad", "anchor": "saladbar",
+          "showWhen": { "event": "OrderShown", "orderOptional": "salad" },
+          "completeWhen": { "event": "AddIngredient", "ingredient": "salad" }, "autoHideSec": 8, "skippable": true },
+        { "id": "l04.request", "textKey": "tutorial.l04.request", "anchor": "customer.request",
+          "showWhen": { "event": "CustomerArrived", "customer": "hanna" },
+          "completeWhen": { "event": "ServeDish", "customer": "hanna" }, "autoHideSec": 8, "skippable": true }
+      ]
+    },
+    {
+      "level": "L05",
+      "steps": []
+    }
+  ]
+}

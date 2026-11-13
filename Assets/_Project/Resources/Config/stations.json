@@ -1,0 +1,13 @@
+{
+  "draft": true,
+  "stations": [
+    { "id": "grill", "unlockLevel": 1, "actionTimeSec": 0.5,
+      "grill": { "slots": 3, "cookSec": 6, "burnAfterDoneSec": 8, "warnBeforeBurnSec": 3, "burntPenaltyCoins": 2 } },
+    { "id": "bread", "unlockLevel": 1, "actionTimeSec": 0.5 },
+    { "id": "sauce", "unlockLevel": 3, "actionTimeSec": 0.5 },
+    { "id": "salad", "unlockLevel": 4, "actionTimeSec": 0.5 },
+    { "id": "counter", "unlockLevel": 1 },
+    { "id": "board", "unlockLevel": 1, "actionTimeSec": 0 },
+    { "id": "bin", "unlockLevel": 1, "actionTimeSec": 0.5 }
+  ]
+}
