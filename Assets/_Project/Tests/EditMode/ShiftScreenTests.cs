@@ -68,10 +68,11 @@ namespace KebabStreet.Tests.EditMode
             Assert.IsFalse(screen.PausePanelVisible);
             Assert.IsFalse(screen.ResultPanelVisible);
             Assert.IsNotNull(screen.CounterZone, "зона прилавка");
-            Assert.IsNotNull(screen.AssemblyZone, "порожня зона збирання (S1-09c)");
+            Assert.IsNotNull(screen.AssemblyZone, "зона збирання");
             Assert.AreEqual(1, screen.CounterZone.childCount, "S1-09b: у зоні прилавка — панель клієнтів");
             Assert.AreSame(screen.Counter.Root, screen.CounterZone[0]);
-            Assert.AreEqual(0, screen.AssemblyZone.childCount);
+            Assert.AreEqual(1, screen.AssemblyZone.childCount, "S1-09c: у зоні збирання — станція збирання");
+            Assert.AreSame(screen.Assembly.Root, screen.AssemblyZone[0]);
 
             driver.Frame(1.0);
             screen.Refresh();

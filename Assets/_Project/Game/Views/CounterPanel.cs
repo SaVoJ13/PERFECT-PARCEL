@@ -18,8 +18,10 @@ namespace KebabStreet.Game
         /// <summary>Ім'я кореня прилавка в дереві UI.</summary>
         public const string PanelName = "counter-panel";
 
+        /// <summary>Найбільше карток в одному рядку (12 слотів — 3 рядки по 4; картка ≈ 210 px логічної ширини).</summary>
+        public const int MaxCardsPerRow = 4;
+
         // Референс 1080x1920 (ART_STYLE_GUIDE 4.1): зона дотику ≥ 144 px, сердечка по 48 px, текст ≥ 28 px.
-        private const float CardWidth = 300f;
         private const float CardMinHeight = 240f;
         private const float CardGap = 16f;
         private const float CardBorder = 6f;
@@ -52,6 +54,7 @@ namespace KebabStreet.Game
         private static readonly Color WarningColor = new Color(0.96f, 0.62f, 0.04f);
 
         private readonly ShiftDriver _driver;
+        private readonly ShiftInput _input;
         private readonly CounterFeed _feed;
         private readonly int _hearts;
         private readonly string _freeText;
@@ -67,12 +70,12 @@ namespace KebabStreet.Game
         private readonly Card[] _cards;
         private int _shownQueue = -1;
 
-        public CounterPanel(VisualElement parent, ShiftDriver driver, ILocalizer text)
-            : this(parent, driver, text, CounterView.DefaultHearts)
+        public CounterPanel(VisualElement parent, ShiftInput input, ILocalizer text)
+            : this(parent, input, text, CounterView.DefaultHearts)
         {
         }
 
-        public CounterPanel(VisualElement parent, ShiftDriver driver, ILocalizer text, int hearts)
+        public CounterPanel(VisualElement parent, ShiftInput input, ILocalizer text, int hearts)
         {
             if (parent == null)
             {
@@ -89,7 +92,9 @@ namespace KebabStreet.Game
                 throw new ArgumentOutOfRangeException(nameof(hearts));
             }
 
-            _driver = driver ?? throw new ArgumentNullException(nameof(driver));
+            _input = input ?? throw new ArgumentNullException(nameof(input));
+            ShiftDriver driver = input.Driver;
+            _driver = driver;
             _hearts = hearts;
             _feed = new CounterFeed(driver.Simulation);
             _freeText = text.Get(TextKeys.CounterSlotFree);
@@ -129,19 +134,37 @@ namespace KebabStreet.Game
             _queue.style.display = DisplayStyle.None;
             Root.Add(_queue);
 
-            var row = new VisualElement { name = "counter-slots" };
-            row.style.flexDirection = FlexDirection.Row;
-            row.style.flexWrap = Wrap.Wrap;
-            row.style.justifyContent = Justify.Center;
-            row.style.alignItems = Align.FlexStart;
-            Root.Add(row);
-
+            // BUG-040: ширина картки — частка ширини зони (рядок без переносу, картки ділять його порівну),
+            // а не стала: 3 картки вміщаються в один рядок на 1080x2340, 12 слотів — 3 рядки по 4.
             int slots = counter == null ? 0 : counter.Slots.Count;
+            int perRow = CardsPerRow(slots);
             _cards = new Card[slots];
+            VisualElement row = null;
+            int rows = 0;
             for (int i = 0; i < slots; i++)
             {
+                if (i % perRow == 0)
+                {
+                    row = new VisualElement { name = "counter-slots-" + (i / perRow) };
+                    row.style.flexDirection = FlexDirection.Row;
+                    row.style.flexWrap = Wrap.NoWrap;
+                    row.style.alignItems = Align.FlexStart;
+                    Root.Add(row);
+                    rows++;
+                }
+
                 _cards[i] = new Card(row, i, hearts, this);
             }
+
+            // Неповний останній рядок: порожні місця тримають ширину карток такою ж, як у повних рядках.
+            for (int i = slots; row != null && i % perRow != 0; i++)
+            {
+                var spacer = new VisualElement { pickingMode = PickingMode.Ignore };
+                Grow(spacer);
+                row.Add(spacer);
+            }
+
+            RowCount = rows;
 
             Refresh();
         }
@@ -151,6 +174,15 @@ namespace KebabStreet.Game
 
         /// <summary>Скільки слотів показано (counterSlots рівня).</summary>
         public int SlotCount => _cards.Length;
+
+        /// <summary>Скільки рядків карток.</summary>
+        public int RowCount { get; }
+
+        /// <summary>Скільки карток у рядку: усі в одному, якщо їх не більше за <see cref="MaxCardsPerRow"/>.</summary>
+        public static int CardsPerRow(int slots)
+        {
+            return slots < 1 ? 1 : Math.Min(slots, MaxCardsPerRow);
+        }
 
         /// <summary>Напис кількості клієнтів у черзі (порожньо — черги немає).</summary>
         public string QueueText => _queue.text;
@@ -201,19 +233,12 @@ namespace KebabStreet.Game
         }
 
         /// <summary>
-        /// Тап по клієнту: «видати страву цьому клієнту» йде в <see cref="ShiftDriver.Tap"/>.
-        /// true — команду прийнято до черги.
+        /// Тап по клієнту: «видати страву цьому клієнту» йде через <see cref="ShiftInput"/> у
+        /// <see cref="ShiftDriver.Tap"/>. true — команду прийнято до черги.
         /// </summary>
         public bool TapSlot(int slot)
         {
-            if (slot < 0 || slot >= _cards.Length)
-            {
-                return false;
-            }
-
-            ShiftTap tap;
-            CustomerSlotView view = CounterView.FromSimulation(_driver.Simulation, slot, _hearts);
-            return CounterView.TryGetTap(view, out tap) && _driver.Tap(tap, slot);
+            return slot >= 0 && slot < _cards.Length && _input.TapCustomer(slot);
         }
 
         /// <summary>Оновлює чергу, слоти й події, що змінились. Викликається щокадру; сміття не створює.</summary>
@@ -266,6 +291,19 @@ namespace KebabStreet.Game
                 default:
                     return string.Empty;
             }
+        }
+
+        /// <summary>Картка (або порожнє місце) ділить ширину рядка порівну з іншими.</summary>
+        private static void Grow(VisualElement element)
+        {
+            element.style.flexGrow = 1;
+            element.style.flexShrink = 1;
+            element.style.flexBasis = 0;
+            element.style.minWidth = 0;
+            element.style.marginLeft = CardGap / 2f;
+            element.style.marginRight = CardGap / 2f;
+            element.style.marginTop = CardGap / 2f;
+            element.style.marginBottom = CardGap / 2f;
         }
 
         private static void SetBorder(VisualElement element, float width, Color color)
@@ -322,12 +360,8 @@ namespace KebabStreet.Game
             {
                 _owner = owner;
                 _button = new Button(() => owner.TapSlot(index)) { name = "counter-slot-" + index };
-                _button.style.width = CardWidth;
+                Grow(_button);
                 _button.style.minHeight = CardMinHeight;
-                _button.style.marginLeft = CardGap / 2f;
-                _button.style.marginRight = CardGap / 2f;
-                _button.style.marginTop = CardGap / 2f;
-                _button.style.marginBottom = CardGap / 2f;
                 _button.style.flexDirection = FlexDirection.Column;
                 _button.style.alignItems = Align.Center;
                 _button.style.justifyContent = Justify.FlexStart;
