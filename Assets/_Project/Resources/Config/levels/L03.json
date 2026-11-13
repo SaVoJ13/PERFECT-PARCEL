@@ -6,7 +6,7 @@
   "durationSec": 120,
   "counterSlots": 2,
   "goal": { "type": "serve", "count": 8 },
-  "stars": { "two": { "type": "coins", "value": 120 }, "three": { "condition": "noLostCustomers" } },
+  "stars": { "two": { "type": "coins", "value": 110 }, "three": { "condition": "noLostCustomers" } },
   "lose": { "maxLostCustomers": 1, "countLostCustomers": true },
   "waves": [
     { "atSec": 4, "customer": "olya", "order": { "recipe": "kebab_pita" } },
