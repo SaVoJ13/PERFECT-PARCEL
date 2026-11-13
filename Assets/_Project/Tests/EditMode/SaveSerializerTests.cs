@@ -12,15 +12,16 @@ namespace KebabStreet.Tests.EditMode
     public sealed class SaveSerializerTests
     {
         private const string GoldenText =
-            "{\"schemaVersion\":2,\"coins\":120,\"gems\":5,\"levelStars\":{\"loc1_01\":3,\"loc1_02\":1},"
-            + "\"lastSavedUnixSec\":1700000000,\"lastKnownUnixSec\":1700000500}";
+            "{\"schemaVersion\":3,\"coins\":120,\"gems\":5,\"levelStars\":{\"loc1_01\":3,\"loc1_02\":1},"
+            + "\"lastSavedUnixSec\":1700000000,\"lastKnownUnixSec\":1700000500,"
+            + "\"tutorialSkipAll\":false,\"tutorialSeen\":[]}";
 
         private const string MinimalV2 =
             "{\"schemaVersion\":2,\"coins\":1,\"gems\":1,\"levelStars\":{\"a\":1},"
             + "\"lastSavedUnixSec\":1,\"lastKnownUnixSec\":1}";
 
         /// <summary>Зафіксовані тексти старих версій: індекс 0 — схема 1, індекс 1 — схема 2 (коли з'явиться схема 3) і так далі.</summary>
-        private static readonly string[] OldVersionSamples = { SaveTestKit.V1Text };
+        private static readonly string[] OldVersionSamples = { SaveTestKit.V1Text, SaveTestKit.V2Text };
 
         /// <summary>Пошкоджені тексти: назва випадку і текст. У назвах тестів — лише назва (без керівних символів).</summary>
         private static readonly string[][] MalformedCases =
@@ -103,7 +104,8 @@ namespace KebabStreet.Tests.EditMode
         public void Serialize_NewProfile_MatchesFixedText()
         {
             Assert.AreEqual(
-                "{\"schemaVersion\":2,\"coins\":0,\"gems\":0,\"levelStars\":{},\"lastSavedUnixSec\":0,\"lastKnownUnixSec\":0}",
+                "{\"schemaVersion\":3,\"coins\":0,\"gems\":0,\"levelStars\":{},\"lastSavedUnixSec\":0,\"lastKnownUnixSec\":0,"
+                + "\"tutorialSkipAll\":false,\"tutorialSeen\":[]}",
                 SaveSerializer.Serialize(new SaveData()));
         }
 
@@ -300,7 +302,55 @@ namespace KebabStreet.Tests.EditMode
             Assert.AreEqual(1, data.LevelStars["loc1_02"]);
             Assert.AreEqual(1700000000, data.LastSavedUnixSec);
             Assert.AreEqual(1700000000, data.LastKnownUnixSec, "Нове поле схеми 2 береться з часу останнього збереження");
-            Assert.AreEqual(SaveTestKit.V1MigratedToV2Text, SaveSerializer.Serialize(data));
+            Assert.IsFalse(data.TutorialSkipAll);
+            Assert.AreEqual(0, data.TutorialSeen.Count, "Нові поля схеми 3 для старого профілю порожні");
+            Assert.AreEqual(SaveTestKit.V1MigratedToCurrentText, SaveSerializer.Serialize(data));
+        }
+
+        [Test]
+        public void Migration_V2ToV3_FixedText_AddsEmptyTutorialState()
+        {
+            bool migrated;
+            SaveData data = SaveSerializer.Deserialize(SaveTestKit.V2Text, out migrated);
+
+            Assert.IsTrue(migrated);
+            Assert.AreEqual(120, data.Coins);
+            Assert.AreEqual(1700000500, data.LastKnownUnixSec);
+            Assert.IsFalse(data.TutorialSkipAll);
+            Assert.AreEqual(0, data.TutorialSeen.Count);
+            Assert.AreEqual(GoldenText, SaveSerializer.Serialize(data));
+        }
+
+        [Test]
+        public void TutorialState_RoundTrips_SortedAndDeterministic()
+        {
+            SaveData data = Golden();
+            data.TutorialSkipAll = true;
+            data.TutorialSeen.Add("l01.step2");
+            data.TutorialSeen.Add("l01.step1");
+
+            string text = SaveSerializer.Serialize(data);
+
+            StringAssert.EndsWith("\"tutorialSkipAll\":true,\"tutorialSeen\":[\"l01.step1\",\"l01.step2\"]}", text);
+            SaveTestKit.AssertSame(data, Read(text));
+        }
+
+        [Test]
+        public void Deserialize_V3_TutorialFieldsMissingOrWrong_Throws()
+        {
+            string noFlag = "{\"schemaVersion\":3,\"coins\":1,\"gems\":1,\"levelStars\":{},\"lastSavedUnixSec\":1,"
+                + "\"lastKnownUnixSec\":1,\"tutorialSeen\":[]}";
+            string flagAsNumber = "{\"schemaVersion\":3,\"coins\":1,\"gems\":1,\"levelStars\":{},\"lastSavedUnixSec\":1,"
+                + "\"lastKnownUnixSec\":1,\"tutorialSkipAll\":1,\"tutorialSeen\":[]}";
+            string seenNotArray = "{\"schemaVersion\":3,\"coins\":1,\"gems\":1,\"levelStars\":{},\"lastSavedUnixSec\":1,"
+                + "\"lastKnownUnixSec\":1,\"tutorialSkipAll\":false,\"tutorialSeen\":{}}";
+            string seenNotString = "{\"schemaVersion\":3,\"coins\":1,\"gems\":1,\"levelStars\":{},\"lastSavedUnixSec\":1,"
+                + "\"lastKnownUnixSec\":1,\"tutorialSkipAll\":false,\"tutorialSeen\":[5]}";
+
+            Assert.Throws<SaveFormatException>(() => Read(noFlag));
+            Assert.Throws<SaveFormatException>(() => Read(flagAsNumber));
+            Assert.Throws<SaveFormatException>(() => Read(seenNotArray));
+            Assert.Throws<SaveFormatException>(() => Read(seenNotString));
         }
 
         [Test]
@@ -324,7 +374,7 @@ namespace KebabStreet.Tests.EditMode
             }
         }
 
-        [TestCase(3L)]
+        [TestCase(4L)]
         [TestCase(100L)]
         [TestCase(long.MaxValue)]
         public void Deserialize_NewerVersion_ThrowsTooNewWithFoundVersion(long version)

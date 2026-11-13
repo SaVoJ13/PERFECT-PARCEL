@@ -31,6 +31,8 @@ namespace KebabStreet.Core
         private const string LevelStarsKey = "levelStars";
         private const string LastSavedKey = "lastSavedUnixSec";
         private const string LastKnownKey = "lastKnownUnixSec";
+        private const string TutorialSkipAllKey = "tutorialSkipAll";
+        private const string TutorialSeenKey = "tutorialSeen";
 
         /// <summary>Текст збереження поточної схеми. Однакові дані завжди дають однаковий текст.</summary>
         public static string Serialize(SaveData data)
@@ -61,8 +63,24 @@ namespace KebabStreet.Core
 
             builder.Append("},");
             AppendNumber(builder, LastSavedKey, data.LastSavedUnixSec).Append(',');
-            AppendNumber(builder, LastKnownKey, data.LastKnownUnixSec);
-            builder.Append('}');
+            AppendNumber(builder, LastKnownKey, data.LastKnownUnixSec).Append(',');
+            SaveJson.AppendString(builder, TutorialSkipAllKey);
+            builder.Append(':').Append(data.TutorialSkipAll ? "true" : "false").Append(',');
+            SaveJson.AppendString(builder, TutorialSeenKey);
+            builder.Append(":[");
+            bool firstSeen = true;
+            foreach (string id in data.TutorialSeen)
+            {
+                if (!firstSeen)
+                {
+                    builder.Append(',');
+                }
+
+                firstSeen = false;
+                SaveJson.AppendString(builder, id);
+            }
+
+            builder.Append("]}");
             return builder.ToString();
         }
 
@@ -106,6 +124,26 @@ namespace KebabStreet.Core
                 LastKnownUnixSec = GetNonNegative(root, LastKnownKey),
             };
 
+            data.TutorialSkipAll = GetBool(root, TutorialSkipAllKey);
+            object seenValue;
+            root.TryGetValue(TutorialSeenKey, out seenValue);
+            var seen = seenValue as List<object>;
+            if (seen == null)
+            {
+                throw new SaveFormatException("поле " + TutorialSeenKey + " відсутнє або не є масивом");
+            }
+
+            foreach (object item in seen)
+            {
+                var id = item as string;
+                if (string.IsNullOrEmpty(id))
+                {
+                    throw new SaveFormatException("поле " + TutorialSeenKey + " містить не рядок або порожній рядок");
+                }
+
+                data.TutorialSeen.Add(id);
+            }
+
             object starsValue;
             root.TryGetValue(LevelStarsKey, out starsValue);
             var stars = starsValue as Dictionary<string, object>;
@@ -136,6 +174,9 @@ namespace KebabStreet.Core
                 case 1:
                     MigrateV1ToV2(root);
                     break;
+                case 2:
+                    MigrateV2ToV3(root);
+                    break;
                 default:
                     throw new SaveFormatException(
                         "немає міграції з версії " + fromVersion.ToString(CultureInfo.InvariantCulture));
@@ -151,6 +192,24 @@ namespace KebabStreet.Core
         private static void MigrateV1ToV2(Dictionary<string, object> root)
         {
             root[LastKnownKey] = GetLong(root, LastSavedKey);
+        }
+
+        /// <summary>Схема 3: додано стан навчання. Для старого профілю навчання ще не пройдено.</summary>
+        private static void MigrateV2ToV3(Dictionary<string, object> root)
+        {
+            root[TutorialSkipAllKey] = false;
+            root[TutorialSeenKey] = new List<object>();
+        }
+
+        private static bool GetBool(Dictionary<string, object> source, string key)
+        {
+            object value;
+            if (!source.TryGetValue(key, out value) || !(value is bool))
+            {
+                throw new SaveFormatException("поле " + key + " відсутнє або не є true/false");
+            }
+
+            return (bool)value;
         }
 
         private static long GetLong(Dictionary<string, object> source, string key)

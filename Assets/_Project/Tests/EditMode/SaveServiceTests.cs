@@ -458,7 +458,7 @@ namespace KebabStreet.Tests.EditMode
             Assert.AreEqual(SaveLoadSource.Primary, result.Source);
             Assert.IsTrue(result.Migrated);
             Assert.IsFalse(result.ProgressReset);
-            Assert.AreEqual(SaveTestKit.V1MigratedToV2Text, SaveSerializer.Serialize(result.Data));
+            Assert.AreEqual(SaveTestKit.V1MigratedToCurrentText, SaveSerializer.Serialize(result.Data));
             Assert.AreEqual(SaveTestKit.V1Text, _storage.ReadText(Primary), "Завантаження не переписує файл");
         }
 
@@ -471,7 +471,7 @@ namespace KebabStreet.Tests.EditMode
             Assert.AreEqual(SaveWriteResult.Saved, _service.Save(migrated));
 
             Assert.AreEqual(SaveTestKit.V1Text, _storage.ReadText(Backup), "Старий файл лишається резервною копією");
-            StringAssert.StartsWith("{\"schemaVersion\":2,", _storage.ReadText(Primary));
+            StringAssert.StartsWith("{\"schemaVersion\":3,", _storage.ReadText(Primary));
             SaveLoadResult result = _service.Load();
             Assert.IsFalse(result.Migrated);
             Assert.AreEqual(120, result.Data.Coins);

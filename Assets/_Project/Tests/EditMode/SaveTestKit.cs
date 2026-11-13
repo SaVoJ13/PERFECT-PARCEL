@@ -13,14 +13,20 @@ namespace KebabStreet.Tests.EditMode
             "{\"schemaVersion\":1,\"coins\":120,\"gems\":5,\"levelStars\":{\"loc1_01\":3,\"loc1_02\":1},"
             + "\"lastSavedUnixSec\":1700000000}";
 
-        /// <summary>Той самий прогрес у схемі 2 після міграції.</summary>
-        public const string V1MigratedToV2Text =
+        /// <summary>Зафіксований текст збереження схеми 2 (без стану навчання). Не змінювати: це «старий файл гравця».</summary>
+        public const string V2Text =
             "{\"schemaVersion\":2,\"coins\":120,\"gems\":5,\"levelStars\":{\"loc1_01\":3,\"loc1_02\":1},"
-            + "\"lastSavedUnixSec\":1700000000,\"lastKnownUnixSec\":1700000000}";
+            + "\"lastSavedUnixSec\":1700000000,\"lastKnownUnixSec\":1700000500}";
+
+        /// <summary>Той самий прогрес зі схеми 1 у поточній схемі після міграції.</summary>
+        public const string V1MigratedToCurrentText =
+            "{\"schemaVersion\":3,\"coins\":120,\"gems\":5,\"levelStars\":{\"loc1_01\":3,\"loc1_02\":1},"
+            + "\"lastSavedUnixSec\":1700000000,\"lastKnownUnixSec\":1700000000,"
+            + "\"tutorialSkipAll\":false,\"tutorialSeen\":[]}";
 
         /// <summary>Збереження «з майбутнього»: версія схеми, якої ця гра ще не знає.</summary>
         public const string NewerVersionText =
-            "{\"schemaVersion\":3,\"coins\":777,\"futureField\":{\"a\":[1,2.5,\"x\"]}}";
+            "{\"schemaVersion\":4,\"coins\":777,\"futureField\":{\"a\":[1,2.5,\"x\"]}}";
 
         public static SaveData Sample(long coins)
         {
@@ -38,6 +44,8 @@ namespace KebabStreet.Tests.EditMode
             Assert.AreEqual(expected.LastSavedUnixSec, actual.LastSavedUnixSec, "LastSavedUnixSec");
             Assert.AreEqual(expected.LastKnownUnixSec, actual.LastKnownUnixSec, "LastKnownUnixSec");
             CollectionAssert.AreEqual(expected.LevelStars, actual.LevelStars, "LevelStars");
+            Assert.AreEqual(expected.TutorialSkipAll, actual.TutorialSkipAll, "TutorialSkipAll");
+            CollectionAssert.AreEqual(expected.TutorialSeen, actual.TutorialSeen, "TutorialSeen");
         }
     }
 
