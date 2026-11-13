@@ -37,13 +37,14 @@ namespace KebabStreet.Game
         private static readonly Color IdleBorder = new Color(0.23f, 0.14f, 0.08f);
 
         private readonly ShiftDriver _driver;
+        private readonly ShiftInput _input;
         private readonly Button[] _buttons;
         private readonly VisualElement[] _bars;
         private readonly GrillSlotView[] _shown;
         private readonly bool[] _drawn;
         private readonly string[] _texts = new string[TextCount];
 
-        public GrillPanel(VisualElement parent, ShiftDriver driver, ILocalizer text)
+        public GrillPanel(VisualElement parent, ShiftInput input, ILocalizer text)
         {
             if (parent == null)
             {
@@ -55,7 +56,8 @@ namespace KebabStreet.Game
                 throw new ArgumentNullException(nameof(text));
             }
 
-            _driver = driver ?? throw new ArgumentNullException(nameof(driver));
+            _input = input ?? throw new ArgumentNullException(nameof(input));
+            _driver = input.Driver;
 
             _texts[(int)GrillSlotDisplay.Empty] = text.Get(TextKeys.GrillSlotEmpty);
             _texts[(int)GrillSlotDisplay.Raw] = text.Get(TextKeys.GrillSlotRaw);
@@ -71,7 +73,7 @@ namespace KebabStreet.Game
             Root.style.flexShrink = 0;
             parent.Add(Root);
 
-            Grill grill = driver.Simulation.Grill;
+            Grill grill = _driver.Simulation.Grill;
             int count = grill == null ? 0 : grill.SlotCount;
             _buttons = new Button[count];
             _bars = new VisualElement[count];
@@ -104,19 +106,13 @@ namespace KebabStreet.Game
         }
 
         /// <summary>
-        /// Тап по слоту: команда за поточним виглядом слота йде в <see cref="ShiftDriver.Tap"/>.
+        /// Тап по слоту: команда за поточним виглядом слота йде через <see cref="ShiftInput"/> у
+        /// <see cref="ShiftDriver.Tap"/>; тап по м'ясу, що готується, дає підказку (BUG-037).
         /// true — команду прийнято до черги.
         /// </summary>
         public bool TapSlot(int slot)
         {
-            if (slot < 0 || slot >= _buttons.Length)
-            {
-                return false;
-            }
-
-            ShiftTap tap;
-            GrillSlotView view = GrillView.FromSimulation(_driver.Simulation, slot);
-            return GrillView.TryGetTap(view, out tap) && _driver.Tap(tap, slot);
+            return _input.TapGrillSlot(slot);
         }
 
         /// <summary>Оновлює слоти, вигляд яких змінився. Викликається щокадру; сміття не створює.</summary>

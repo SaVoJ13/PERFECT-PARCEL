@@ -7,7 +7,7 @@ namespace KebabStreet.Game
 {
     /// <summary>
     /// Каркас екрана зміни (S1-09a, портрет): верхня смуга (рівень, пауза, таймер, ціль, монети),
-    /// підказка, прилавок із клієнтами (S1-09b), порожня зона збирання (S1-09c), гриль, плашка паузи і
+    /// підказка, прилавок із клієнтами (S1-09b), станція збирання (S1-09c), гриль, плашка паузи і
     /// мінімальний підсумок. Звичайний клас без MonoBehaviour: будує елементи в переданому
     /// контейнері й показує <see cref="ShiftHudView"/>; тексти оновлює, лише коли число змінилось.
     /// Правил гри тут немає. Плейсхолдер без графіки (S1-12).
@@ -99,10 +99,12 @@ namespace KebabStreet.Game
 
             _hint = UiFactory.Notice(root, string.Empty);
 
+            Input = new ShiftInput(driver);
             CounterZone = Zone(root, CounterZoneName);
-            Counter = new CounterPanel(CounterZone, driver, text);
+            Counter = new CounterPanel(CounterZone, Input, text);
             AssemblyZone = Zone(root, AssemblyZoneName);
-            Grill = new GrillPanel(root, driver, text);
+            Assembly = new AssemblyPanel(AssemblyZone, Input, text);
+            Grill = new GrillPanel(root, Input, text);
 
             _pausePanel = Overlay(root, "pause-panel");
             UiFactory.Title(_pausePanel, text.Get(TextKeys.ShiftPaused));
@@ -124,8 +126,14 @@ namespace KebabStreet.Game
         /// <summary>Прилавок: слоти клієнтів, терпіння, замовлення, черга (S1-09b).</summary>
         public CounterPanel Counter { get; }
 
-        /// <summary>Порожня зона збирання страви (наповнює S1-09c).</summary>
+        /// <summary>Зона збирання страви.</summary>
         public VisualElement AssemblyZone { get; }
+
+        /// <summary>Станція збирання: станції, дошка, черга дій, підказки, комбо (S1-09c).</summary>
+        public AssemblyPanel Assembly { get; }
+
+        /// <summary>Усі тапи екрана: панелі шлють команди лише через нього в ShiftDriver.Tap.</summary>
+        public ShiftInput Input { get; }
 
         /// <summary>Гриль зі слотами.</summary>
         public GrillPanel Grill { get; }
@@ -161,7 +169,9 @@ namespace KebabStreet.Game
                 _drawn = true;
             }
 
+            Input.Update();
             Counter.Refresh();
+            Assembly.Refresh();
             Grill.Refresh();
         }
 
