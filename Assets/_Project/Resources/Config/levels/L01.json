@@ -15,6 +15,6 @@
     { "atSec": 45, "customer": "olya", "graceSec": 300, "order": { "recipe": "kebab_pita" } },
     { "atSec": 65, "customer": "olya", "graceSec": 300, "order": { "recipe": "kebab_pita" } }
   ],
-  "tutorialKeys": ["tutorial.l01.step1", "tutorial.l01.step2", "tutorial.l01.step3", "tutorial.l01.step4", "tutorial.l01.step5"],
+  "tutorialKeys": ["tutorial.l01.step1", "tutorial.l01.step2", "tutorial.l01.step3", "tutorial.l01.step4", "tutorial.l02.burnt"],
   "storyKeys": { "intro": "story.l01.intro", "outro": "story.l01.outro" }
 }

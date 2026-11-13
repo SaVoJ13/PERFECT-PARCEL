@@ -78,5 +78,16 @@
   "result.next": "Next level",
   "result.menu": "Menu",
   "menu.level_stars": "Level {0} · {1}/3 stars",
-  "menu.level_locked": "Level {0} · locked"
+  "menu.level_locked": "Level {0} · locked",
+  "tutorial.l01.step1": "Welcome, kid! Tap the grill to put the meat on.",
+  "tutorial.l01.step2": "While it cooks, put a pita on the board first: tap the pita station.",
+  "tutorial.l01.step3": "It is ready! Tap the grill again to take the meat.",
+  "tutorial.l01.step4": "Tap the customer to serve the kebab!",
+  "tutorial.l02.burnt": "It happens, the meat burnt. Tap the grill to throw it away. No penalty this time.",
+  "tutorial.l03.patience": "Watch the hearts: when they run out, the customer leaves.",
+  "tutorial.l03.sauce": "This customer wants garlic sauce. Add it from the sauce station.",
+  "tutorial.l04.salad": "This order needs salad. Take it from the salad bar.",
+  "tutorial.l04.request": "Hanna has a special request. Check her order before you serve.",
+  "ui.tutorial.next": "Next",
+  "ui.tutorial.skip": "Skip all"
 }

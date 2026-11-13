@@ -11,7 +11,7 @@ namespace KebabStreet.Core
     public sealed class SaveData
     {
         /// <summary>Поточна версія схеми. Зміна моделі = нова версія + міграція + тест міграції.</summary>
-        public const int CurrentSchemaVersion = 2;
+        public const int CurrentSchemaVersion = 3;
 
         /// <summary>Версія схеми цього об'єкта (завжди поточна).</summary>
         public int SchemaVersion => CurrentSchemaVersion;
@@ -34,5 +34,14 @@ namespace KebabStreet.Core
         /// Не зменшується, навіть якщо годинник пристрою перевели назад (див. TimeGuard).
         /// </summary>
         public long LastKnownUnixSec { get; set; }
+
+        /// <summary>Гравець вибрав «пропустити все» в навчанні (схема 3): підказки більше не показуються.</summary>
+        public bool TutorialSkipAll { get; set; }
+
+        /// <summary>
+        /// Ідентифікатори кроків навчання, які вже показано або пропущено (схема 3); за oncePerProfile
+        /// такі кроки не повертаються. Порядок — порядковий (Ordinal).
+        /// </summary>
+        public SortedSet<string> TutorialSeen { get; } = new SortedSet<string>(StringComparer.Ordinal);
     }
 }
