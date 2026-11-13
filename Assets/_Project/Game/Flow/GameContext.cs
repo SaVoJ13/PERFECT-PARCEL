@@ -111,6 +111,35 @@ namespace KebabStreet.Game
             return true;
         }
 
+        /// <summary>Чи рівень відкритий за збереженням профілю (S1-10).</summary>
+        public bool IsLevelUnlocked(int number)
+        {
+            return LevelProgress.IsUnlocked(Levels, Profile.Data, number);
+        }
+
+        /// <summary>Наступний рівень після поточного; 0, якщо поточний останній або не обраний.</summary>
+        public int NextLevelNumber => LevelProgress.NextNumber(Levels, SelectedLevelNumber);
+
+        /// <summary>«Ще раз»: той самий рівень, новий seed (його дасть <see cref="NextShiftSeed"/>). false поза зміною.</summary>
+        public bool RetryShift()
+        {
+            return SelectedLevelNumber >= 1 && Flow.Replay();
+        }
+
+        /// <summary>
+        /// «Далі»: наступний рівень. Лише після перемоги, коли наступний є і відкритий; інакше false і нічого не змінюється.
+        /// </summary>
+        public bool AdvanceToNextLevel(bool lastShiftWon)
+        {
+            int next = NextLevelNumber;
+            if (!lastShiftWon || next == 0 || !IsLevelUnlocked(next) || Flow.Current != GameScreen.Shift)
+            {
+                return false;
+            }
+
+            return SelectLevel(next) && Flow.Replay();
+        }
+
         /// <summary>Новий seed для спроби: годинник і лічильник спроб (кожна спроба — інший seed).</summary>
         public ulong NextShiftSeed()
         {

@@ -33,7 +33,8 @@ namespace KebabStreet.Game
 
             _completion = new ShiftCompletion(Context.Profile, level);
             _driver = new ShiftDriver(level, seed, OnShiftFinished);
-            _screen = new ShiftScreen(Container, _driver, Context.Text, OnPauseTap, OnResumeTap, OnExit);
+            _screen = new ShiftScreen(
+                Container, _driver, Context.Text, OnPauseTap, OnResumeTap, OnExit, OnRetry, OnNext, Context.NextLevelNumber != 0);
 
             _driver.Begin();
             ApplyPause();
@@ -89,6 +90,22 @@ namespace KebabStreet.Game
         private void OnShiftFinished(ShiftResult result)
         {
             _completion.Apply(result);
+        }
+
+        private void OnRetry()
+        {
+            if (_driver != null && _driver.IsFinished && Context.RetryShift())
+            {
+                Open(GameFlow.SceneOf(Context.Flow.Current));
+            }
+        }
+
+        private void OnNext()
+        {
+            if (_driver != null && _driver.IsFinished && Context.AdvanceToNextLevel(_driver.Result.Won))
+            {
+                Open(GameFlow.SceneOf(Context.Flow.Current));
+            }
         }
 
         private void OnExit()
