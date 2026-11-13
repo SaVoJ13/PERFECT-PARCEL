@@ -100,3 +100,7 @@
 - Ручно написані `.meta` для PNG-спрайтів не проходять крок CI «Verify Project Files Are Committed»: Unity сам дописує спрайт-секції (`internalIDToNameTable`, `sprites`, `spriteID`, platformSettings Standalone/Android). Для нових PNG бери справжні `.meta` з CI (тимчасовий `upload-artifact`), а не пиши вручну; тимчасовий крок потім прибери й перевір `git diff -- .github` проти бази.
 - Тест «усі файли ресурсів у реєстрі» перевіряй на те, які теки він реально сканує (`Directory.GetFiles` без рекурсії, одна тека).
 - Скретчпад QA не чистий між сесіями: для `gh run download` завжди створюй нову тека з унікальною назвою, інакше порівняєш не ті файли.
+
+## Нові файли = нові .meta (S1-13, 2026-11-13, Агент 2)
+- Кожен новий `.cs` (і тестовий теж) потребує `.cs.meta` (`fileFormatVersion: 2` + `guid: <32 hex>`), інакше крок CI «Verify Project Files Are Committed» падає. Перед пушем: `git status` і перевір, що для кожного нового файлу в `Assets/` є пара `.meta`.
+- Ручні `.meta` для WAV (AudioImporter, serializedVersion 8, loadType 0, compressionFormat 1, quality 1, normalize 1) і для теки ресурсів Unity 6000.3 лишив без змін; для PNG-спрайтів це не так (див. урок вище).

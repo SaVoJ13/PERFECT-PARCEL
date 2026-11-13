@@ -34,6 +34,7 @@ namespace KebabStreet.Game
             GameLog.Info(GetType().Name + ".Start: panelSettings=" + (document.panelSettings != null)
                 + " theme=" + (document.panelSettings != null && document.panelSettings.themeStyleSheet != null)
                 + " root=" + (root != null) + " panel=" + (root != null && root.panel != null));
+            UnitySfxSink.EnsureInstalled();
             Container = UiFactory.Screen(root);
             Build();
             GameLog.Info(GetType().Name + ".Build: дітей у контейнері=" + Container.childCount);
