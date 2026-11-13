@@ -104,14 +104,6 @@ jobs:
 
       # Редактор не має створювати чи змінювати файли проєкту (усі .meta закомічені).
       # Образ тестів збігається з образом збірки, тому Packages перевіряється повністю (BUG-013).
-      - name: TEMP S1-13 upload generated metas
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: s1-13-metas
-          path: |
-            Assets/_Project/Resources/Audio/*.meta
-            Assets/_Project/Resources/Audio.meta
       - name: Verify Project Files Are Committed
         run: |
           CHANGES=$(git status --porcelain --untracked-files=all -- Assets Packages ProjectSettings)
