@@ -42,8 +42,8 @@
 | ID | Завдання | Агент | Статус |
 |---|---|---|---|
 | S1-08 | Game-обв'язка зміни, пауза, №27/№26 | gameplay-developer (sonnet) | QA Verified (PR #32, L2) |
-| S1-09a | Екран зміни: каркас, таймер, гриль | gameplay-developer (fable) | Backlog |
-| S1-09b | Екран зміни: прилавок, клієнти | gameplay-developer (fable) | Backlog |
-| S1-09c | Екран зміни: збирання, видача | gameplay-developer (fable) | Backlog |
+| S1-09a | Екран зміни: каркас, таймер, гриль | gameplay-developer (opus) | Backlog |
+| S1-09b | Екран зміни: прилавок, клієнти | gameplay-developer (opus) | Backlog |
+| S1-09c | Екран зміни: збирання, видача | gameplay-developer (opus) | Backlog |
 
 Далі (картки створюються окремо): екран результату й зірок, навчання (завантажувач `tutorial.json` + UI, BUG-036), Game-обв'язка симуляції з UI зміни, плейсхолдер-графіка і звуки, плейтест, пороги балансу після відповіді Власника (№26, №27).
