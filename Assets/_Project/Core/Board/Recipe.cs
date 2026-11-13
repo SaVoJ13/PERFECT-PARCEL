@@ -12,14 +12,24 @@ namespace KebabStreet.Core
     public sealed class Ingredient
     {
         public Ingredient(string id, StationKind station, int extraPriceCoins)
+            : this(id, null, station, extraPriceCoins)
+        {
+        }
+
+        /// <param name="nameKey">Ключ локалізації назви (лише для показу); null — не задано.</param>
+        public Ingredient(string id, string nameKey, StationKind station, int extraPriceCoins)
         {
             Id = id;
+            NameKey = nameKey;
             Station = station;
             ExtraPriceCoins = extraPriceCoins;
         }
 
         /// <summary>Назва в конфігах («pita», «meat», «sauce_hot»…).</summary>
         public string Id { get; }
+
+        /// <summary>Ключ локалізації назви (ingredients[id].nameKey); null — не задано. На правила не впливає.</summary>
+        public string NameKey { get; }
 
         /// <summary>Станція, з якої береться інгредієнт.</summary>
         public StationKind Station { get; }

@@ -223,7 +223,7 @@ namespace KebabStreet.Core
             foreach (ConfigObject node in root.ObjList("ingredients", 1, BoardConfig.MaxIngredients))
             {
                 string id = node.Str("id");
-                node.Key("nameKey");
+                string nameKey = node.Key("nameKey");
                 string station = node.Str("station");
                 int extra = node.Int("extraPriceCoins", 0, BoardConfig.MaxCoins);
                 StationKind kind = StationKind.None;
@@ -240,7 +240,7 @@ namespace KebabStreet.Core
                         break;
                 }
 
-                Ingredients.Add(new Ingredient(id, kind, extra));
+                Ingredients.Add(new Ingredient(id, nameKey, kind, extra));
                 node.Done();
             }
 
@@ -290,7 +290,7 @@ namespace KebabStreet.Core
             foreach (ConfigObject node in root.ObjList("customers", 1, CounterConfig.MaxTypes))
             {
                 string id = node.Str("id");
-                node.Key("nameKey");
+                string nameKey = node.Key("nameKey");
                 int patienceMs = node.Millis("patienceSec", 1, CounterConfig.MaxPatienceMs);
                 int payPercent = node.Percent("payMultiplier", 1, CounterConfig.MaxPercent);
                 ConfigObject tip = node.Obj("tipRule");
@@ -303,7 +303,7 @@ namespace KebabStreet.Core
                 CheckIngredients(node, "always", always);
                 CheckIngredients(node, "exclude", exclude);
                 Customers.Add(new CustomerType(
-                    id, patienceMs, payPercent, new TipRule(maxPercent, minPatience), always, exclude));
+                    id, nameKey, patienceMs, payPercent, new TipRule(maxPercent, minPatience), always, exclude));
                 CustomerFirstLevels.Add(firstLevel);
                 node.Done();
             }
