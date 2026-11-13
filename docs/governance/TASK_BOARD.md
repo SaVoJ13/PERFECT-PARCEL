@@ -46,6 +46,7 @@
 | S1-09b | Екран зміни: прилавок, клієнти | gameplay-developer (opus) | QA Verified (PR #34, L2) |
 | S1-09c | Екран зміни: збирання, видача | gameplay-developer (opus) | QA Verified (PR #35, L2) |
 | S1-10 | Екран результату і вибір рівнів зі збереженням | gameplay-developer (sonnet) | QA Verified (PR #36, L2) |
-| S1-11 | Навчання від дядька Алі | gameplay-developer (sonnet) | In Progress |
+| S1-11 | Навчання від дядька Алі | gameplay-developer (sonnet) | QA Verified (PR #37, L2) |
+| S1-12 | Тимчасова графіка і реєстр ліцензій | ui-art-designer (sonnet) | In Progress |
 
 Далі (картки створюються окремо): екран результату й зірок, навчання (завантажувач `tutorial.json` + UI, BUG-036), Game-обв'язка симуляції з UI зміни, плейсхолдер-графіка і звуки, плейтест, пороги балансу після відповіді Власника (№26, №27).

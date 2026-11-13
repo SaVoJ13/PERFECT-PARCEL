@@ -14,9 +14,10 @@ namespace KebabStreet.Game
         private const float BodySize = 40f;
         private const float ButtonHeight = 140f;
         private const float Gap = 32f;
-        public static readonly Color Background = new Color(0.16f, 0.12f, 0.10f);
-        private static readonly Color ButtonColor = new Color(0.85f, 0.45f, 0.15f);
-        private static readonly Color NoticeColor = new Color(1f, 0.85f, 0.4f);
+        public static readonly Color Background = new Color(0.169f, 0.106f, 0.180f); // Night Plum #2B1B2E
+        private static readonly Color ButtonColor = new Color(1f, 0.718f, 0.012f); // Saffron #FFB703, текст Espresso (WCAG AA)
+        private static readonly Color ButtonTextColor = new Color(0.231f, 0.137f, 0.078f);
+        private static readonly Color NoticeColor = new Color(1f, 0.718f, 0.012f);
 
         /// <summary>Повноекранний вертикальний контейнер по центру.</summary>
         public static VisualElement Screen(VisualElement root)
@@ -31,6 +32,8 @@ namespace KebabStreet.Game
             container.style.justifyContent = Justify.Center;
             container.style.alignItems = Align.Center;
             container.style.backgroundColor = Background;
+            container.AddToClassList("ks-screen");
+            ArtLibrary.ApplyTheme(root);
             root.Add(container);
             return container;
         }
@@ -57,7 +60,8 @@ namespace KebabStreet.Game
             button.style.width = Length.Percent(70);
             button.style.marginTop = Gap;
             button.style.fontSize = BodySize;
-            button.style.color = Color.white;
+            button.style.color = ButtonTextColor;
+            button.AddToClassList("ks-button");
             button.style.backgroundColor = ButtonColor;
             parent.Add(button);
             return button;

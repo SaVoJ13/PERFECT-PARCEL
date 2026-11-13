@@ -21,6 +21,7 @@ namespace KebabStreet.Game
         private const float SlotGap = 24f;
         private const float SlotFontSize = 34f;
         private const float BarHeight = 28f;
+        private const float IconSize = 88f;
         private const float BorderWidth = 8f;
         private const int WarningTextIndex = 5;
         private const int TextCount = 6;
@@ -40,6 +41,7 @@ namespace KebabStreet.Game
         private readonly ShiftInput _input;
         private readonly Button[] _buttons;
         private readonly VisualElement[] _bars;
+        private readonly VisualElement[] _icons;
         private readonly GrillSlotView[] _shown;
         private readonly bool[] _drawn;
         private readonly string[] _texts = new string[TextCount];
@@ -77,6 +79,7 @@ namespace KebabStreet.Game
             int count = grill == null ? 0 : grill.SlotCount;
             _buttons = new Button[count];
             _bars = new VisualElement[count];
+            _icons = new VisualElement[count];
             _shown = new GrillSlotView[count];
             _drawn = new bool[count];
             for (int i = 0; i < count; i++)
@@ -161,6 +164,19 @@ namespace KebabStreet.Game
             bar.style.backgroundColor = BarColor;
             button.Add(bar);
 
+            // Значок стану м'яса (S1-12): форма різна в кожного стану (пара, галочка, трикутник, хрест).
+            button.style.paddingTop = IconSize;
+            var icon = new VisualElement { name = "grill-slot-icon-" + index };
+            icon.pickingMode = PickingMode.Ignore;
+            icon.style.position = Position.Absolute;
+            icon.style.left = (SlotSize - IconSize) / 2f - BorderWidth;
+            icon.style.top = 0;
+            icon.style.width = IconSize;
+            icon.style.height = IconSize;
+            icon.style.display = DisplayStyle.None;
+            button.Add(icon);
+            _icons[index] = icon;
+
             Root.Add(button);
             _buttons[index] = button;
             _bars[index] = bar;
@@ -179,6 +195,10 @@ namespace KebabStreet.Game
                 bool warning = view.Display == GrillSlotDisplay.Done && view.BurnWarning;
                 button.text = _texts[warning ? WarningTextIndex : (int)view.Display];
                 button.style.backgroundColor = ColorOf(view);
+                string iconName = IconOf(view);
+                _icons[index].style.display = iconName != null && ArtLibrary.Apply(_icons[index], iconName)
+                    ? DisplayStyle.Flex
+                    : DisplayStyle.None;
             }
 
             if (first || view.Display != previous.Display || view.ActionQueued != previous.ActionQueued)
@@ -190,6 +210,23 @@ namespace KebabStreet.Game
                 button.style.borderRightColor = border;
                 button.style.borderTopColor = border;
                 button.style.borderBottomColor = border;
+            }
+        }
+
+        private static string IconOf(GrillSlotView view)
+        {
+            switch (view.Display)
+            {
+                case GrillSlotDisplay.Raw:
+                    return ArtLibrary.MeatRaw;
+                case GrillSlotDisplay.Cooking:
+                    return ArtLibrary.MeatCooking;
+                case GrillSlotDisplay.Done:
+                    return view.BurnWarning ? ArtLibrary.MeatWarning : ArtLibrary.MeatDone;
+                case GrillSlotDisplay.Burnt:
+                    return ArtLibrary.MeatBurnt;
+                default:
+                    return null;
             }
         }
 

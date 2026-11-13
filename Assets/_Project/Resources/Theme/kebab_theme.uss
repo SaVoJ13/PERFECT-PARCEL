@@ -1,0 +1,55 @@
+/* KEBAB STREET theme (S1-12). Palette: docs/design/ART_STYLE_GUIDE.md section 2. Applied to the root element via ThemeLoader. */
+:root {
+    --ks-cream: rgb(255, 243, 214);
+    --ks-sand: rgb(247, 226, 176);
+    --ks-espresso: rgb(59, 35, 20);
+    --ks-cocoa: rgb(107, 70, 48);
+    --ks-saffron: rgb(255, 183, 3);
+    --ks-chili: rgb(194, 65, 12);
+    --ks-mint: rgb(46, 158, 79);
+    --ks-amber: rgb(245, 158, 11);
+    --ks-ember: rgb(214, 40, 40);
+    --ks-plum: rgb(43, 27, 46);
+}
+
+.ks-root {
+    color: var(--ks-cream);
+    font-size: 34px;
+}
+
+.ks-screen {
+    background-color: var(--ks-plum);
+}
+
+.ks-title {
+    color: var(--ks-saffron);
+    -unity-font-style: bold;
+}
+
+.ks-button {
+    background-color: var(--ks-saffron);
+    color: var(--ks-espresso);
+    -unity-font-style: bold;
+    border-radius: 20px;
+    border-width: 4px;
+    border-color: var(--ks-espresso);
+    border-bottom-width: 10px;
+    min-height: 144px;
+}
+
+.ks-button:active {
+    border-bottom-width: 4px;
+    margin-top: 6px;
+}
+
+.ks-panel {
+    background-color: var(--ks-sand);
+    color: var(--ks-espresso);
+    border-radius: 24px;
+    border-width: 4px;
+    border-color: var(--ks-espresso);
+}
+
+.ks-icon {
+    background-size: contain;
+}

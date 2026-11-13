@@ -91,6 +91,7 @@ namespace KebabStreet.Game
             _hintText = text.Get(TextKeys.ShiftGoalDoneStar2);
 
             var root = new VisualElement { name = "shift-screen" };
+            ArtLibrary.Apply(root, ArtLibrary.Background, true);
             root.style.flexGrow = 1;
             root.style.alignSelf = Align.Stretch;
             root.style.flexDirection = FlexDirection.Column;

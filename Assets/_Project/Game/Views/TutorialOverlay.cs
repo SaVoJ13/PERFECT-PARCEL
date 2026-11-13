@@ -26,6 +26,7 @@ namespace KebabStreet.Game
         private static readonly Color PlaqueColor = new Color(0.20f, 0.13f, 0.09f, 0.96f);
         private static readonly Color PlaqueBorder = new Color(1f, 0.85f, 0.4f);
         private static readonly Color HighlightColor = new Color(1f, 0.85f, 0.4f);
+        private const float AliSize = 120f;
         private static readonly Color ButtonColor = new Color(0.85f, 0.45f, 0.15f);
 
         private readonly TutorialDirector _director;
@@ -87,6 +88,16 @@ namespace KebabStreet.Game
             _plaque.style.display = DisplayStyle.None;
             _plaque.pickingMode = PickingMode.Ignore;
             parent.Add(_plaque);
+
+            // Дядько Алі (S1-12): портрет над краєм плашки, праворуч; немає спрайта — просто не показується.
+            var portrait = new VisualElement { name = "tutorial-portrait", pickingMode = PickingMode.Ignore };
+            portrait.style.position = Position.Absolute;
+            portrait.style.top = -AliSize;
+            portrait.style.right = Padding;
+            portrait.style.width = AliSize;
+            portrait.style.height = AliSize;
+            ArtLibrary.Apply(portrait, ArtLibrary.Ali);
+            _plaque.Add(portrait);
 
             _label = new Label(string.Empty);
             _label.style.fontSize = TextSize;

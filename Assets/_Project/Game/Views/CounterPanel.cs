@@ -30,6 +30,7 @@ namespace KebabStreet.Game
         private const float FeedbackFontSize = 34f;
         private const float QueueFontSize = 34f;
         private const float HeartSize = 48f;
+        private const float PortraitSize = 96f;
         private const float HeartGap = 8f;
         private const float HeartBorder = 4f;
         private const float BarHeight = 12f;
@@ -65,6 +66,7 @@ namespace KebabStreet.Game
         private readonly string _paidTipFormat;
         private readonly string[] _typeNames;
         private readonly string[] _ingredientNames;
+        private readonly string[] _portraitNames;
         private readonly OrderIcon[][] _orders;
         private readonly Label _queue;
         private readonly Card[] _cards;
@@ -110,6 +112,12 @@ namespace KebabStreet.Game
             for (int i = 0; i < _typeNames.Length; i++)
             {
                 _typeNames[i] = text.Get(counter.Config.GetCustomerType(i).NameKey);
+            }
+
+            _portraitNames = new string[_typeNames.Length];
+            for (int i = 0; i < _portraitNames.Length; i++)
+            {
+                _portraitNames[i] = ArtLibrary.PortraitName(counter.Config.GetCustomerType(i).NameKey);
             }
 
             _ingredientNames = new string[board == null ? 0 : board.Config.IngredientCount];
@@ -354,6 +362,8 @@ namespace KebabStreet.Game
             private readonly VisualElement _barFrame;
             private readonly VisualElement _bar;
             private readonly VisualElement _order;
+            private readonly VisualElement _portrait;
+            private readonly bool _showPortrait;
             private bool _drawn;
 
             public Card(VisualElement parent, int index, int hearts, CounterPanel owner)
@@ -369,6 +379,14 @@ namespace KebabStreet.Game
                 _button.style.paddingBottom = CardGap / 2f;
                 SetBorder(_button, CardBorder, IdleBorder);
                 parent.Add(_button);
+
+                // Портрет клієнта (S1-12) лише коли слотів небагато (один рядок): інакше картки стають задовгими.
+                _portrait = new VisualElement { name = "counter-portrait-" + index, pickingMode = PickingMode.Ignore };
+                _portrait.style.width = PortraitSize;
+                _portrait.style.height = PortraitSize;
+                _portrait.style.display = DisplayStyle.None;
+                _showPortrait = owner._cards.Length <= MaxCardsPerRow;
+                _button.Add(_portrait);
 
                 Name = AddLabel(_button, "counter-name-" + index, NameFontSize, Color.white);
 
@@ -475,6 +493,9 @@ namespace KebabStreet.Game
                 _button.style.backgroundColor = occupied ? CardColor : FreeCardColor;
                 DisplayStyle shown = occupied ? DisplayStyle.Flex : DisplayStyle.None;
                 _heartsRow.style.display = shown;
+                _portrait.style.display = occupied && _showPortrait && ArtLibrary.Apply(_portrait, _owner._portraitNames[view.TypeIndex])
+                    ? DisplayStyle.Flex
+                    : DisplayStyle.None;
                 _barFrame.style.display = shown;
                 _order.style.display = shown;
 
