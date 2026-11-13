@@ -36,6 +36,23 @@ namespace KebabStreet.Game
         public const string CounterWrongDish = "counter.wrong_dish";
         public const string CounterPaid = "counter.paid";
         public const string CounterPaidTip = "counter.paid_tip";
+        public const string AssemblyBoardEmpty = "assembly.board_empty";
+        public const string AssemblyDishReady = "assembly.dish_ready";
+        public const string AssemblyDishWrong = "assembly.dish_wrong";
+        public const string AssemblyClear = "assembly.clear";
+        public const string AssemblyQueue = "assembly.queue";
+        public const string AssemblyCombo = "assembly.combo";
+        public const string HintMeatNotReady = "hint.meat_not_ready";
+        public const string HintGrillFull = "hint.grill_full";
+        public const string HintBoardFull = "hint.board_full";
+        public const string HintDishIncomplete = "hint.dish_incomplete";
+        public const string HintDishWrong = "hint.dish_wrong";
+        public const string ActionPlaceMeat = "action.place_meat";
+        public const string ActionTakeMeat = "action.take_meat";
+        public const string ActionDiscard = "action.discard";
+        public const string ActionRemove = "action.remove";
+        public const string ActionClear = "action.clear";
+        public const string ActionServe = "action.serve";
 
         // Імена клієнтів і назви інгредієнтів: ці ключі вказані в customers.json / recipes.json (nameKey).
         public const string CustomerOlyaName = "customer.olya.name";
