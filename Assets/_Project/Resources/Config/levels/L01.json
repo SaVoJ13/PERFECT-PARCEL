@@ -5,7 +5,7 @@
   "nameKey": "level.l01.name",
   "durationSec": 90,
   "counterSlots": 1,
-  "goal": { "type": "serve", "count": 3 },
+  "goal": { "type": "serve", "count": 3, "endOnGoal": false },
   "stars": { "two": { "type": "coins", "value": 40 }, "three": { "condition": "noBurnt" } },
   "lose": { "maxLostCustomers": null, "countLostCustomers": false },
   "grill": { "slots": 1, "cookSec": 5, "burnAfterDoneSec": 30, "warnBeforeBurnSec": 5, "burntPenaltyCoins": 0 },
