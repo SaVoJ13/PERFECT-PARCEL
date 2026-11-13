@@ -15,6 +15,7 @@ namespace KebabStreet.Game
         private ShiftDriver _driver;
         private ShiftEnding _ending;
         private ShiftScreen _screen;
+        private SfxDirector _sfx;
         private TutorialDirector _tutorial;
         private bool _userPaused;
         private bool _appPaused;
@@ -34,6 +35,7 @@ namespace KebabStreet.Game
 
             var completion = new ShiftCompletion(Context.Profile, level);
             _driver = new ShiftDriver(level, seed, OnShiftFinished);
+            _sfx = SfxDirector.ForDriver(_driver, SfxHub.Router);
             _tutorial = TutorialDirector.Create(_driver, Context.Tutorial, Context.Profile.Data);
             _ending = new ShiftEnding(completion, Context.Profile, _tutorial.Model);
             _screen = new ShiftScreen(
@@ -52,7 +54,13 @@ namespace KebabStreet.Game
             }
 
             _driver.Frame(Time.unscaledDeltaTime);
+            _sfx.Update(_driver.IsPaused);
             _screen.Refresh();
+        }
+
+        private void OnDestroy()
+        {
+            SfxHub.Router.Paused = false;
         }
 
         private void OnApplicationPause(bool paused)
