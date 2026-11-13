@@ -54,6 +54,24 @@ namespace KebabStreet.Game
         public const string ActionClear = "action.clear";
         public const string ActionServe = "action.serve";
 
+        // Екран результату і вибір рівнів (S1-10). Причини поразки — ключі Core (GAME_DESIGN розд. 9).
+        public const string LostTooSlow = LoseReasons.TooSlow;
+        public const string LostCustomersLeft = LoseReasons.CustomersLeft;
+        public const string LostBurnt = LoseReasons.Burnt;
+        public const string LostWrongDishes = LoseReasons.WrongDishes;
+        public const string ResultShortfallServe = "result.shortfall_serve";
+        public const string ResultShortfallCoins = "result.shortfall_coins";
+        public const string ResultWhyStar2 = "result.why_star2";
+        public const string ResultWhyStar3NoLost = "result.why_star3_no_lost";
+        public const string ResultWhyStar3NoBurnt = "result.why_star3_no_burnt";
+        public const string ResultWhyStar3NoWrong = "result.why_star3_no_wrong";
+        public const string ResultWhyStar3Combo = "result.why_star3_combo";
+        public const string ResultRetry = "result.retry";
+        public const string ResultNext = "result.next";
+        public const string ResultMenu = "result.menu";
+        public const string MenuLevelStars = "menu.level_stars";
+        public const string MenuLevelLocked = "menu.level_locked";
+
         // Імена клієнтів і назви інгредієнтів: ці ключі вказані в customers.json / recipes.json (nameKey).
         public const string CustomerOlyaName = "customer.olya.name";
         public const string CustomerMarkoName = "customer.marko.name";

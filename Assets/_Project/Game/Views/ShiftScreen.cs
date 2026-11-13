@@ -45,6 +45,12 @@ namespace KebabStreet.Game
         private readonly Label _resultTitle;
         private readonly Label _resultStars;
         private readonly Label _resultCoins;
+        private readonly Label _resultReason;
+        private readonly Label _resultShortfall;
+        private readonly Label _resultHint;
+        private readonly Button _nextButton;
+        private readonly Button _retryButton;
+        private readonly bool _hasNextLevel;
         private ShiftHudView _shown;
         private bool _drawn;
 
@@ -52,9 +58,20 @@ namespace KebabStreet.Game
         /// <param name="onPause">Гравець натиснув «Пауза».</param>
         /// <param name="onResume">Гравець натиснув «Продовжити» на плашці паузи.</param>
         /// <param name="onExit">Гравець натиснув «Вийти» (плашка паузи або підсумок).</param>
+        /// <param name="onRetry">«Ще раз» на екрані результату (S1-10); null — кнопки немає.</param>
+        /// <param name="onNext">«Далі» на екрані результату; кнопка видима лише після перемоги й коли <paramref name="hasNextLevel"/>.</param>
         public ShiftScreen(
-            VisualElement container, ShiftDriver driver, ILocalizer text, Action onPause, Action onResume, Action onExit)
+            VisualElement container,
+            ShiftDriver driver,
+            ILocalizer text,
+            Action onPause,
+            Action onResume,
+            Action onExit,
+            Action onRetry = null,
+            Action onNext = null,
+            bool hasNextLevel = false)
         {
+            _hasNextLevel = hasNextLevel;
             if (container == null)
             {
                 throw new ArgumentNullException(nameof(container));
@@ -115,7 +132,17 @@ namespace KebabStreet.Game
             _resultTitle = UiFactory.Title(_resultPanel, string.Empty);
             _resultStars = UiFactory.Body(_resultPanel, string.Empty);
             _resultCoins = UiFactory.Body(_resultPanel, string.Empty);
-            UiFactory.AddButton(_resultPanel, text.Get(TextKeys.ShiftExit), onExit);
+            _resultReason = UiFactory.Notice(_resultPanel, string.Empty);
+            _resultShortfall = UiFactory.Body(_resultPanel, string.Empty);
+            _resultHint = UiFactory.Notice(_resultPanel, string.Empty);
+            _nextButton = UiFactory.AddButton(_resultPanel, text.Get(TextKeys.ResultNext), onNext ?? NoAction);
+            _nextButton.name = "result-next";
+            _nextButton.style.display = DisplayStyle.None;
+            _retryButton = UiFactory.AddButton(_resultPanel, text.Get(TextKeys.ResultRetry), onRetry ?? NoAction);
+            _retryButton.name = "result-retry";
+            _retryButton.style.display = onRetry == null ? DisplayStyle.None : DisplayStyle.Flex;
+            Button menu = UiFactory.AddButton(_resultPanel, text.Get(TextKeys.ResultMenu), onExit);
+            menu.name = "result-menu";
 
             Refresh();
         }
@@ -151,6 +178,21 @@ namespace KebabStreet.Game
         public string ResultStarsText => _resultStars.text;
 
         public string ResultCoinsText => _resultCoins.text;
+
+        public string ResultReasonText => _resultReason.text;
+
+        public string ResultShortfallText => _resultShortfall.text;
+
+        public string ResultStarHintText => _resultHint.text;
+
+        /// <summary>Модель показаного результату; null, поки зміна не завершилась.</summary>
+        public ResultView Result { get; private set; }
+
+        /// <summary>Кнопка «Далі» показана (перемога й наступний рівень є).</summary>
+        public bool NextVisible => _nextButton.style.display.value == DisplayStyle.Flex;
+
+        /// <summary>Кнопка «Ще раз» показана.</summary>
+        public bool RetryVisible => _retryButton.style.display.value != DisplayStyle.None;
 
         /// <summary>Чи показано плашку паузи.</summary>
         public bool PausePanelVisible { get; private set; }
@@ -217,9 +259,19 @@ namespace KebabStreet.Game
 
         private void ShowResult(ShiftResult result)
         {
-            _resultTitle.text = _text.Get(result.Won ? TextKeys.ShiftResultWon : TextKeys.ShiftResultLost);
-            _resultStars.text = string.Format(_text.Get(TextKeys.ShiftResultStars), result.Stars);
-            _resultCoins.text = string.Format(_text.Get(TextKeys.ShiftResultCoins), result.RewardCoins);
+            ResultView view = ResultView.Build(result, _driver.Level, _hasNextLevel);
+            Result = view;
+            _resultTitle.text = _text.Get(view.TitleKey);
+            _resultStars.text = string.Format(_text.Get(TextKeys.ShiftResultStars), view.Stars);
+            _resultCoins.text = string.Format(_text.Get(TextKeys.ShiftResultCoins), view.RewardCoins);
+            _resultReason.text = ResultView.Format(_text, view.Reason);
+            _resultShortfall.text = ResultView.Format(_text, view.Shortfall);
+            _resultHint.text = ResultView.Format(_text, view.StarHint);
+            _nextButton.style.display = view.CanNext ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        private static void NoAction()
+        {
         }
 
         private static VisualElement Row(VisualElement parent)

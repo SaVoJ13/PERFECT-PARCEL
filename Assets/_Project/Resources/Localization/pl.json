@@ -62,5 +62,21 @@
   "notice.update_game": "Zapis został utworzony przez nowszą wersję gry. Zaktualizuj grę. Postęp nie będzie zapisywany.",
   "notice.storage_unavailable": "Nie można teraz odczytać zapisanych danych. Postęp nie będzie zapisywany. Uruchom grę ponownie.",
   "notice.save_disabled": "Zapisywanie postępu jest wyłączone z powodu problemu z zapisanymi danymi.",
-  "notice.save_failed": "Nie udało się zapisać postępu. Spróbuj ponownie później."
+  "notice.save_failed": "Nie udało się zapisać postępu. Spróbuj ponownie później.",
+  "lost.reason.tooSlow": "Obsłużono za mało klientów przed końcem czasu",
+  "lost.reason.customersLeft": "Odeszło zbyt wielu klientów",
+  "lost.reason.burnt": "Przypalono zbyt dużo mięsa",
+  "lost.reason.wrongDishes": "Zbyt wiele błędnych dań",
+  "result.shortfall_serve": "Brakuje klientów: {0}",
+  "result.shortfall_coins": "Brakuje monet: {0}",
+  "result.why_star2": "Do ★★ potrzeba {0} monet w jednej zmianie",
+  "result.why_star3_no_lost": "★★★: nie trać żadnego klienta",
+  "result.why_star3_no_burnt": "★★★: nie przypalaj mięsa",
+  "result.why_star3_no_wrong": "★★★: nie wydawaj błędnych dań",
+  "result.why_star3_combo": "★★★: zdobądź combo x{0}",
+  "result.retry": "Jeszcze raz",
+  "result.next": "Dalej",
+  "result.menu": "Menu",
+  "menu.level_stars": "Poziom {0} · gwiazdki {1}/3",
+  "menu.level_locked": "Poziom {0} · zamknięty"
 }
