@@ -1,36 +1,26 @@
 using KebabStreet.Core;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace KebabStreet.Game
 {
     /// <summary>
-    /// Зміна на реальному часі (S1-08): рівень, обраний у меню, запускається через ShiftDriver.
-    /// Контролер лише передає час кадру й паузу та показує таймер і мінімальний текстовий результат.
-    /// Текст оновлюється, лише коли змінився (секунда, стан), щоб не створювати сміття щокадру.
-    /// Станції й клієнти без графіки: це S1-09.
+    /// Зміна на реальному часі (S1-08, екран S1-09a): рівень, обраний у меню, запускається через
+    /// ShiftDriver. Контролер лише передає час кадру й паузу; показ — <see cref="ShiftScreen"/>,
+    /// тапи по грилю йдуть у <see cref="ShiftDriver.Tap"/>. Правил гри тут немає.
+    /// Пауза гравця (кнопка) і пауза системи (згортання, втрата фокуса) складаються: гра йде, лише
+    /// коли жодної немає.
     /// </summary>
     public sealed class ShiftController : ScreenController
     {
         private ShiftDriver _driver;
         private ShiftCompletion _completion;
-        private Label _timer;
-        private Label _hint;
-        private Label _resultTitle;
-        private Label _resultStars;
-        private Label _resultCoins;
-        private long _shownSeconds = -1;
-        private bool _shownPaused;
-        private bool _shownHint;
+        private ShiftScreen _screen;
+        private bool _userPaused;
         private bool _appPaused;
         private bool _hasFocus = true;
-        private bool _resultShown;
-        private string _timeFormat;
-        private string _pausedText;
 
         protected override void Build()
         {
-            ILocalizer text = Context.Text;
             if (Context.SelectedLevelNumber < 1 && !Context.SelectLevel(1))
             {
                 GameLog.Info("Shift: немає жодного рівня");
@@ -43,19 +33,11 @@ namespace KebabStreet.Game
 
             _completion = new ShiftCompletion(Context.Profile, level);
             _driver = new ShiftDriver(level, seed, OnShiftFinished);
-            _timeFormat = text.Get(TextKeys.ShiftTimeLeft);
-            _pausedText = text.Get(TextKeys.ShiftPaused);
-
-            UiFactory.Title(Container, string.Format(text.Get(TextKeys.ShiftLevelTitle), level.Number));
-            _timer = UiFactory.Body(Container, string.Empty);
-            _hint = UiFactory.Notice(Container, string.Empty);
-            _resultTitle = UiFactory.Title(Container, string.Empty);
-            _resultStars = UiFactory.Body(Container, string.Empty);
-            _resultCoins = UiFactory.Body(Container, string.Empty);
-            UiFactory.AddButton(Container, text.Get(TextKeys.ShiftExit), OnExit);
+            _screen = new ShiftScreen(Container, _driver, Context.Text, OnPauseTap, OnResumeTap, OnExit);
 
             _driver.Begin();
-            Refresh();
+            ApplyPause();
+            _screen.Refresh();
         }
 
         private void Update()
@@ -66,7 +48,7 @@ namespace KebabStreet.Game
             }
 
             _driver.Frame(Time.unscaledDeltaTime);
-            Refresh();
+            _screen.Refresh();
         }
 
         private void OnApplicationPause(bool paused)
@@ -81,50 +63,32 @@ namespace KebabStreet.Game
             ApplyPause();
         }
 
-        private void ApplyPause()
+        private void OnPauseTap()
         {
-            if (_driver != null)
-            {
-                _driver.SetPaused(_appPaused || !_hasFocus);
-            }
+            _userPaused = true;
+            ApplyPause();
         }
 
-        private void Refresh()
+        private void OnResumeTap()
         {
-            ShiftSimulation sim = _driver.Simulation;
-            long seconds = EmptyShift.RemainingSeconds(sim);
-            if (seconds != _shownSeconds || _driver.IsPaused != _shownPaused)
+            _userPaused = false;
+            ApplyPause();
+        }
+
+        private void ApplyPause()
+        {
+            if (_driver == null)
             {
-                _shownSeconds = seconds;
-                _shownPaused = _driver.IsPaused;
-                string clock = string.Format(_timeFormat, EmptyShift.FormatClock(seconds));
-                _timer.text = _driver.IsPaused ? _pausedText + " - " + clock : clock;
+                return;
             }
 
-            if (_driver.GoalDoneStarHint != _shownHint)
-            {
-                _shownHint = _driver.GoalDoneStarHint;
-                _hint.text = _shownHint ? Context.Text.Get(TextKeys.ShiftGoalDoneStar2) : string.Empty;
-            }
-
-            if (_driver.IsFinished && !_resultShown)
-            {
-                _resultShown = true;
-                ShowResult(_driver.Result);
-            }
+            _driver.SetPaused(_userPaused || _appPaused || !_hasFocus);
+            _screen.Refresh();
         }
 
         private void OnShiftFinished(ShiftResult result)
         {
             _completion.Apply(result);
-        }
-
-        private void ShowResult(ShiftResult result)
-        {
-            ILocalizer text = Context.Text;
-            _resultTitle.text = text.Get(result.Won ? TextKeys.ShiftResultWon : TextKeys.ShiftResultLost);
-            _resultStars.text = string.Format(text.Get(TextKeys.ShiftResultStars), result.Stars);
-            _resultCoins.text = string.Format(text.Get(TextKeys.ShiftResultCoins), result.RewardCoins);
         }
 
         private void OnExit()

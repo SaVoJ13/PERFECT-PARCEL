@@ -19,6 +19,17 @@ namespace KebabStreet.Game
         public const string ShiftResultLost = "shift.result_lost";
         public const string ShiftResultStars = "shift.result_stars";
         public const string ShiftResultCoins = "shift.result_coins";
+        public const string ShiftHudGoalServe = "shift.hud_goal_serve";
+        public const string ShiftHudGoalCoins = "shift.hud_goal_coins";
+        public const string ShiftHudCoins = "shift.hud_coins";
+        public const string ShiftPause = "shift.pause";
+        public const string ShiftResume = "shift.resume";
+        public const string GrillSlotEmpty = "grill.slot_empty";
+        public const string GrillSlotRaw = "grill.slot_raw";
+        public const string GrillSlotCooking = "grill.slot_cooking";
+        public const string GrillSlotDone = "grill.slot_done";
+        public const string GrillSlotBurning = "grill.slot_burning";
+        public const string GrillSlotBurnt = "grill.slot_burnt";
         public const string NoticeProgressReset = "notice.progress_reset";
         public const string NoticeUpdateGame = "notice.update_game";
         public const string NoticeStorageUnavailable = "notice.storage_unavailable";
