@@ -1,8 +1,9 @@
+using KebabStreet.Core;
 using UnityEngine.UIElements;
 
 namespace KebabStreet.Game
 {
-    /// <summary>Головне меню: "Грати", "Налаштування" (заглушка) і повідомлення про стан збереження.</summary>
+    /// <summary>Головне меню: вибір рівня (кнопка на кожен рівень каталогу), "Налаштування" (заглушка) і повідомлення про стан збереження.</summary>
     public sealed class MenuController : ScreenController
     {
         private Label _settingsHint;
@@ -18,14 +19,21 @@ namespace KebabStreet.Game
                 UiFactory.Notice(Container, text.Get(noticeKey));
             }
 
-            UiFactory.AddButton(Container, text.Get(TextKeys.MenuPlay), OnPlay);
+            string levelFormat = text.Get(TextKeys.MenuLevel);
+            LevelCatalog levels = Context.Levels;
+            for (int i = 0; i < levels.Count; i++)
+            {
+                int number = levels.Get(i).Number;
+                UiFactory.AddButton(Container, string.Format(levelFormat, number), () => OnPlay(number));
+            }
+
             UiFactory.AddButton(Container, text.Get(TextKeys.MenuSettings), OnSettings);
             _settingsHint = UiFactory.Body(Container, string.Empty);
         }
 
-        private void OnPlay()
+        private void OnPlay(int levelNumber)
         {
-            if (Context.Flow.Play())
+            if (Context.SelectLevel(levelNumber) && Context.Flow.Play())
             {
                 Open(GameFlow.SceneOf(Context.Flow.Current));
             }

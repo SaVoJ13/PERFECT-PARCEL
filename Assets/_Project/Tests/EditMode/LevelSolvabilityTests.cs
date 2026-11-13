@@ -127,21 +127,22 @@ namespace KebabStreet.Tests.EditMode
         [Test]
         public void ExpertBot_Level1_GivesExactHandCheckedResult()
         {
-            // Точні значення, перевірені вручну (S1-06: зміна кінчається на 3-му клієнті): клієнт = 12 монет + 1 монета чайових (10% від 12, округлено)
+            // Точні значення, перевірені вручну (S1-08, №27=Б: L01 має endOnGoal=false, зміна триває до кінця таймера): клієнт = 12 монет + 1 монета чайових (10% від 12, округлено)
             // = 13; перша дія — покласти м'ясо (0,5 с), піта (0,5 с), м'ясо готове за 5 с, зняти (0,5 с), видати;
-            // третій клієнт приходить на 45-й секунді (2700-й такт), страву видано на 3061-му такті.
+            // третій клієнт приходить на 45-й секунді (2700-й такт), страву видано на 3061-му такті (ціль виконано);
+            // четвертий приходить на 65-й секунді (3900-й такт) і теж обслужений до кінця таймера: 4 x 13 = 52 монети (як до S1-06).
             BotResult r = BotRunner.Run(ConfigTestKit.Level(1), SeedAt(0), BotProfile.Expert);
             Assert.AreEqual(BotOutcome.Won, r.Outcome);
             Assert.AreEqual(3061L, r.GoalTick, "ціль (3 клієнти) виконано на 3061-му такті");
-            Assert.AreEqual(3061L, r.EndTick, "ціль «обслужити 3» — зміна завершується достроково на 3061-му такті (S1-06)");
-            Assert.AreEqual(3L, r.Served);
-            Assert.AreEqual(39L, r.Coins, "3 клієнти по 13 монет (12 + 1 чайових); бот дає ★ (поріг ★★ = 40)");
-            Assert.AreEqual(1, r.Result.Stars);
+            Assert.AreEqual(ConfigTestKit.Level(1).Shift.DurationTicks, r.EndTick, "endOnGoal=false: зміна триває до кінця таймера (№27=Б)");
+            Assert.AreEqual(4L, r.Served);
+            Assert.AreEqual(52L, r.Coins, "4 клієнти по 13 монет (12 + 1 чайових); ★★ (поріг 40) взято, ★★★ — без пригорілого");
+            Assert.AreEqual(3, r.Result.Stars);
             Assert.AreEqual(0L, r.Lost);
             Assert.AreEqual(0L, r.WrongDishes);
             Assert.AreEqual(0L, r.Burnt);
             Assert.AreEqual(1L, r.MaxCombo);
-            Assert.AreEqual(12L, r.ExecutedActions, "по 4 дії на 3 страви: м'ясо, піта, зняти, видати");
+            Assert.AreEqual(16L, r.ExecutedActions, "по 4 дії на 4 страви: м'ясо, піта, зняти, видати");
             Assert.AreEqual(0L, r.IgnoredActions);
         }
 

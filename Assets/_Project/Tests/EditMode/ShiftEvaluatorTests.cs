@@ -263,7 +263,9 @@ namespace KebabStreet.Tests.EditMode
         {
             Assert.IsTrue(new LevelGoal(GoalType.Serve, 3).EndOnGoal);
             Assert.IsFalse(new LevelGoal(GoalType.Coins, 100).EndOnGoal);
-            Assert.IsTrue(ConfigTestKit.Level(1).Goal.EndOnGoal);
+            Assert.IsFalse(ConfigTestKit.Level(1).Goal.EndOnGoal, "№27=Б: L01 триває до кінця таймера");
+            Assert.IsFalse(ConfigTestKit.Level(2).Goal.EndOnGoal, "№27=Б: L02 триває до кінця таймера");
+            Assert.IsTrue(ConfigTestKit.Level(3).Goal.EndOnGoal);
             Assert.IsFalse(ConfigTestKit.Level(4).Goal.EndOnGoal);
         }
 
@@ -298,7 +300,11 @@ namespace KebabStreet.Tests.EditMode
         [Test]
         public void Simulation_Level1_EndsOnThirdServed_BeforeTimerEnd()
         {
-            LevelDefinition level = ConfigTestKit.Level(1);
+            // L01 у конфігу має endOnGoal=false (№27=Б), тому правило дострокового кінця перевіряємо з прапором true.
+            ConfigSources early = ConfigTestKit.Mutated("L01", tree =>
+                ConfigTestKit.Map(tree, "goal")["endOnGoal"] = true);
+            LevelDefinition level = Load(early, 1);
+            Assert.IsTrue(level.Goal.EndOnGoal);
             ShiftEvaluator e = ShiftEvaluator.ForLevel(level);
             var sim = new ShiftSimulation(level.Shift, Seed, e);
             var bot = new BotPlayer(sim, BotProfile.Expert, Seed);
