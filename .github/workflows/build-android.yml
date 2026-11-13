@@ -103,6 +103,12 @@ jobs:
           fi
 
       # Редактор не має створювати чи змінювати файли проєкту (усі .meta закомічені).
+      - name: TEMP S1-12 upload generated metas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: s1-12-metas
+          path: Assets/_Project/Resources/Art/*.meta
       # Образ тестів збігається з образом збірки, тому Packages перевіряється повністю (BUG-013).
       - name: Verify Project Files Are Committed
         run: |
