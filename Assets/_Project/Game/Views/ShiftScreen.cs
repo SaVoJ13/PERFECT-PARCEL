@@ -7,7 +7,7 @@ namespace KebabStreet.Game
 {
     /// <summary>
     /// Каркас екрана зміни (S1-09a, портрет): верхня смуга (рівень, пауза, таймер, ціль, монети),
-    /// підказка, порожні зони прилавка (S1-09b) і збирання (S1-09c), гриль, плашка паузи і
+    /// підказка, прилавок із клієнтами (S1-09b), порожня зона збирання (S1-09c), гриль, плашка паузи і
     /// мінімальний підсумок. Звичайний клас без MonoBehaviour: будує елементи в переданому
     /// контейнері й показує <see cref="ShiftHudView"/>; тексти оновлює, лише коли число змінилось.
     /// Правил гри тут немає. Плейсхолдер без графіки (S1-12).
@@ -88,13 +88,19 @@ namespace KebabStreet.Game
             VisualElement hud = Row(root);
             hud.name = "shift-hud";
             hud.style.justifyContent = Justify.SpaceBetween;
+
+            // Вузький екран, польська чи великі числа: написи переносяться на другий рядок, а не обрізаються (QA S1-09a).
+            hud.style.flexWrap = Wrap.Wrap;
             _timer = HudLabel(hud, string.Empty, HudFontSize, Color.white);
             _goal = HudLabel(hud, string.Empty, HudFontSize, Color.white);
             _coins = HudLabel(hud, string.Empty, HudFontSize, CoinColor);
+            _goal.style.marginLeft = Gap;
+            _goal.style.marginRight = Gap;
 
             _hint = UiFactory.Notice(root, string.Empty);
 
             CounterZone = Zone(root, CounterZoneName);
+            Counter = new CounterPanel(CounterZone, driver, text);
             AssemblyZone = Zone(root, AssemblyZoneName);
             Grill = new GrillPanel(root, driver, text);
 
@@ -112,8 +118,11 @@ namespace KebabStreet.Game
             Refresh();
         }
 
-        /// <summary>Порожня зона прилавка з клієнтами (наповнює S1-09b).</summary>
+        /// <summary>Зона прилавка з клієнтами.</summary>
         public VisualElement CounterZone { get; }
+
+        /// <summary>Прилавок: слоти клієнтів, терпіння, замовлення, черга (S1-09b).</summary>
+        public CounterPanel Counter { get; }
 
         /// <summary>Порожня зона збирання страви (наповнює S1-09c).</summary>
         public VisualElement AssemblyZone { get; }
@@ -152,6 +161,7 @@ namespace KebabStreet.Game
                 _drawn = true;
             }
 
+            Counter.Refresh();
             Grill.Refresh();
         }
 
@@ -221,6 +231,8 @@ namespace KebabStreet.Game
             label.style.fontSize = size;
             label.style.color = color;
             label.style.unityTextAlign = TextAnchor.MiddleCenter;
+            label.style.whiteSpace = WhiteSpace.Normal;
+            label.style.flexShrink = 1;
             parent.Add(label);
             return label;
         }

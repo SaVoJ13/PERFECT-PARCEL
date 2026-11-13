@@ -88,3 +88,6 @@
 ## QA ланцюгових PR (S1-09a, 2026-11-13, Агент 5)
 - PR із базою не `main` не має перевірок (`gh pr checks` → «no checks reported»): CI запускають вручну `workflow_dispatch`. Доказ — `gh run view <id> --json headSha,event,conclusion` і звірка `headSha` з останнім комітом із кодом (`git diff --stat <sha> HEAD` — лише docs).
 - «Тестів не менше, ніж на базі» перевіряй не числом, а списком: витягни `fullname` з `editmode-results.xml` бази і PR (`gh run download -n KebabStreet-EditMode-TestResults`), `comm -23 base pr` має бути порожнім.
+
+## QA вигляду UI Toolkit без телефону (S1-09b, 2026-11-13, Агент 5)
+- Логічна ширина панелі `ScaleWithScreenSize` 1080x1920, match 0.5 на телефоні шириною 1080 = 1080 / √(H/1920): 1080x2340 → ≈ 978, 1080x2400 → ≈ 966 (не 1080!). Для рядів з `flexWrap` рахуй суму `width + margin` елементів проти цієї ширини мінус поля і рамки зон — так переповнення видно ще на L0, до скриншота.

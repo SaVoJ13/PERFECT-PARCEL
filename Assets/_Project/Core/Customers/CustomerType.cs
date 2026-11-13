@@ -78,8 +78,22 @@ namespace KebabStreet.Core
             TipRule tip,
             IEnumerable<string> always,
             IEnumerable<string> exclude)
+            : this(id, null, patienceMs, payPercent, tip, always, exclude)
+        {
+        }
+
+        /// <summary>Списки копіюються; null означає порожній список. nameKey — ключ локалізації імені (лише для показу).</summary>
+        public CustomerType(
+            string id,
+            string nameKey,
+            int patienceMs,
+            int payPercent,
+            TipRule tip,
+            IEnumerable<string> always,
+            IEnumerable<string> exclude)
         {
             Id = id;
+            NameKey = nameKey;
             PatienceMs = patienceMs;
             PayPercent = payPercent;
             Tip = tip;
@@ -89,6 +103,12 @@ namespace KebabStreet.Core
 
         /// <summary>Назва в конфігах («olya», «marko», «hanna»).</summary>
         public string Id { get; }
+
+        /// <summary>
+        /// Ключ локалізації імені (customers[id].nameKey); null — не задано (тести без конфіга).
+        /// Лише для показу: на правила гри не впливає.
+        /// </summary>
+        public string NameKey { get; }
 
         /// <summary>Терпіння в слоті прилавка, мс (customers[id].patienceSec).</summary>
         public int PatienceMs { get; }

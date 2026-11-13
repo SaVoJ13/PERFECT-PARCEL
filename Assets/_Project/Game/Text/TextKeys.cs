@@ -30,6 +30,23 @@ namespace KebabStreet.Game
         public const string GrillSlotDone = "grill.slot_done";
         public const string GrillSlotBurning = "grill.slot_burning";
         public const string GrillSlotBurnt = "grill.slot_burnt";
+        public const string CounterSlotFree = "counter.slot_free";
+        public const string CounterQueue = "counter.queue";
+        public const string CounterLeft = "counter.left";
+        public const string CounterWrongDish = "counter.wrong_dish";
+        public const string CounterPaid = "counter.paid";
+        public const string CounterPaidTip = "counter.paid_tip";
+
+        // Імена клієнтів і назви інгредієнтів: ці ключі вказані в customers.json / recipes.json (nameKey).
+        public const string CustomerOlyaName = "customer.olya.name";
+        public const string CustomerMarkoName = "customer.marko.name";
+        public const string CustomerHannaName = "customer.hanna.name";
+        public const string IngredientPita = "ingredient.pita";
+        public const string IngredientMeat = "ingredient.meat";
+        public const string IngredientSalad = "ingredient.salad";
+        public const string IngredientOnion = "ingredient.onion";
+        public const string IngredientSauceGarlic = "ingredient.sauce_garlic";
+        public const string IngredientSauceHot = "ingredient.sauce_hot";
         public const string NoticeProgressReset = "notice.progress_reset";
         public const string NoticeUpdateGame = "notice.update_game";
         public const string NoticeStorageUnavailable = "notice.storage_unavailable";
