@@ -1,3 +1,5 @@
+using KebabStreet.Core;
+
 namespace KebabStreet.Game
 {
     /// <summary>Ключі локалізації екранів каркаса. Видимі тексти в коді не пишуться, лише ці ключі (E0-08 додасть справжні мови).</summary>
