@@ -1,0 +1,37 @@
+# S1-09a — результати EditMode, запуск 43458151857 (workflow_dispatch, коміт 1b4c2ac)
+# База: запуск 43456252680 (task/S1-08-shift-driver, 40f7927)
+run 43458151857: total="1200" passed="1200" failed="0" skipped="0" 
+run 43456252680: total="1181" passed="1181" failed="0" skipped="0" 
+
+## Нові тест-кейси (GrillViewTests, ShiftScreenTests)
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.BurntMeat_ShowsBurnt_AndTapDiscards"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.DoneMeat_InWarningWindow_ShowsBurnWarning_AndTapStillTakesMeat"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.DoneMeat_ShowsDone_WithBurnWindowProgress_AndTapTakesMeat"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.EmptySlot_ShowsEmpty_AndTapPlacesMeat"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.EmptySlotWithQueuedPlace_ShowsRaw_WithActionProgress_AndTapSendsNothing"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.Progress_IsClampedTo0And100"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.QueuedAction_BlocksRepeatedTap(Done,TakeMeat)"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.QueuedAction_BlocksRepeatedTap(Burnt,DiscardBurntMeat)"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.RawMeat_ShowsCooking_WithCookProgress_AndTapSendsNothing"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.RealLevel_SlotGoesThroughAllStates_TapsReachCoreQueue_AndSnapshotAgrees"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.GrillViewTests.TextKeyOf_EveryDisplay_HasItsOwnKey"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.ShiftScreenTests.ExpertShift_ShowsHintBetweenGoalAndTwoStars_ThenResult"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.ShiftScreenTests.GoalText_UsesCoinsTemplate_OnCoinsLevel"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.ShiftScreenTests.Grill_HasSlotPerConfig_AndTapGoesToDriverQueue"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.ShiftScreenTests.Grill_ShowsEveryStateText_AsSlotChanges"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.ShiftScreenTests.Hud_ShowsTimerGoalAndCoins_FromDriver"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.ShiftScreenTests.Pause_ShowsPanel_BlocksTaps_AndResumeHidesIt"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.ShiftScreenTests.ScreenTexts_ComeFromLocalizationKeys"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.ShiftScreenTests.Views_SendTapsOnlyThroughShiftDriver"	result="Passed"
+
+## Локалізація
+fullname="KebabStreet.Tests.EditMode.LocalizationTests.LanguageFile_ContainsEveryTextKey_NonEmpty("en")"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.LocalizationTests.LanguageFile_ContainsEveryTextKey_NonEmpty("uk")"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.LocalizationTests.LanguageFile_ContainsEveryTextKey_NonEmpty("pl")"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.LocalizationTests.LanguageFile_HasNoExtraKeys("en")"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.LocalizationTests.LanguageFile_HasNoExtraKeys("uk")"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.LocalizationTests.LanguageFile_HasNoExtraKeys("pl")"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.LocalizationTests.Localizer_WithRealFiles_ResolvesEveryKeyInEveryLanguage"	result="Passed"
+fullname="KebabStreet.Tests.EditMode.LocalizationTests.Placeholders_AreIdenticalInAllLanguages"	result="Passed"
+
+## Тести з бази, яких немає в PR (очікується порожньо)
