@@ -11,6 +11,7 @@ namespace KebabStreet.Game
     public sealed class GameContext
     {
         private LevelCatalog _levels;
+        private TutorialConfig _tutorial;
 
         public GameContext(
             ISaveStorage storage,
@@ -90,6 +91,20 @@ namespace KebabStreet.Game
                 }
 
                 return _levels;
+            }
+        }
+
+        /// <summary>Кроки навчання з Resources/Config/tutorial.json; завантажуються один раз. Помилка конфігу — виняток (її ловить тест).</summary>
+        public TutorialConfig Tutorial
+        {
+            get
+            {
+                if (_tutorial == null)
+                {
+                    _tutorial = ResourceConfigSource.LoadTutorial().ValueOrThrow();
+                }
+
+                return _tutorial;
             }
         }
 

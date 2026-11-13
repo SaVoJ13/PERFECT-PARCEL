@@ -13,8 +13,9 @@ namespace KebabStreet.Game
     public sealed class ShiftController : ScreenController
     {
         private ShiftDriver _driver;
-        private ShiftCompletion _completion;
+        private ShiftEnding _ending;
         private ShiftScreen _screen;
+        private TutorialDirector _tutorial;
         private bool _userPaused;
         private bool _appPaused;
         private bool _hasFocus = true;
@@ -31,10 +32,12 @@ namespace KebabStreet.Game
             ulong seed = Context.NextShiftSeed();
             GameLog.Info("Shift: " + level.Id + " seed=" + seed + " спроба=" + Context.AttemptCount);
 
-            _completion = new ShiftCompletion(Context.Profile, level);
+            var completion = new ShiftCompletion(Context.Profile, level);
             _driver = new ShiftDriver(level, seed, OnShiftFinished);
+            _tutorial = TutorialDirector.Create(_driver, Context.Tutorial, Context.Profile.Data);
+            _ending = new ShiftEnding(completion, Context.Profile, _tutorial.Model);
             _screen = new ShiftScreen(
-                Container, _driver, Context.Text, OnPauseTap, OnResumeTap, OnExit, OnRetry, OnNext, Context.NextLevelNumber != 0);
+                Container, _driver, Context.Text, OnPauseTap, OnResumeTap, OnExit, OnRetry, OnNext, Context.NextLevelNumber != 0, _tutorial, SaveTutorial);
 
             _driver.Begin();
             ApplyPause();
@@ -55,6 +58,11 @@ namespace KebabStreet.Game
         private void OnApplicationPause(bool paused)
         {
             _appPaused = paused;
+            if (paused)
+            {
+                SaveTutorial();
+            }
+
             ApplyPause();
         }
 
@@ -89,7 +97,20 @@ namespace KebabStreet.Game
 
         private void OnShiftFinished(ShiftResult result)
         {
-            _completion.Apply(result);
+            SaveNotice notice = _ending.OnFinished(result);
+            if (_screen != null)
+            {
+                _screen.ShowSaveNotice(notice);
+            }
+        }
+
+        /// <summary>Зберігає профіль, якщо навчання щось у ньому змінило (крок побачено чи пропущено).</summary>
+        private void SaveTutorial()
+        {
+            if (_ending != null)
+            {
+                _ending.SaveTutorialIfDirty();
+            }
         }
 
         private void OnRetry()
@@ -110,6 +131,7 @@ namespace KebabStreet.Game
 
         private void OnExit()
         {
+            SaveTutorial();
             if (Context.Flow.ExitToMenu())
             {
                 Open(GameFlow.SceneOf(Context.Flow.Current));

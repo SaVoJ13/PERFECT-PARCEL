@@ -48,6 +48,9 @@ namespace KebabStreet.Game
         private readonly Label _resultReason;
         private readonly Label _resultShortfall;
         private readonly Label _resultHint;
+        private readonly Label _resultNotice;
+        private readonly TutorialOverlay _tutorialOverlay;
+        private readonly TutorialDirector _tutorial;
         private readonly Button _nextButton;
         private readonly Button _retryButton;
         private readonly bool _hasNextLevel;
@@ -60,6 +63,8 @@ namespace KebabStreet.Game
         /// <param name="onExit">Гравець натиснув «Вийти» (плашка паузи або підсумок).</param>
         /// <param name="onRetry">«Ще раз» на екрані результату (S1-10); null — кнопки немає.</param>
         /// <param name="onNext">«Далі» на екрані результату; кнопка видима лише після перемоги й коли <paramref name="hasNextLevel"/>.</param>
+        /// <param name="tutorial">Навчання дядька Алі (S1-11); null — без підказок.</param>
+        /// <param name="onTutorialChanged">Профіль навчання змінився кнопкою (наприклад «Пропустити все»): час зберегти.</param>
         public ShiftScreen(
             VisualElement container,
             ShiftDriver driver,
@@ -69,7 +74,9 @@ namespace KebabStreet.Game
             Action onExit,
             Action onRetry = null,
             Action onNext = null,
-            bool hasNextLevel = false)
+            bool hasNextLevel = false,
+            TutorialDirector tutorial = null,
+            Action onTutorialChanged = null)
         {
             _hasNextLevel = hasNextLevel;
             if (container == null)
@@ -123,6 +130,13 @@ namespace KebabStreet.Game
             Assembly = new AssemblyPanel(AssemblyZone, Input, text);
             Grill = new GrillPanel(root, Input, text);
 
+            _tutorial = tutorial;
+            if (tutorial != null)
+            {
+                _tutorialOverlay = new TutorialOverlay(
+                    root, tutorial, text, Grill.Root, AssemblyZone, CounterZone, onTutorialChanged);
+            }
+
             _pausePanel = Overlay(root, "pause-panel");
             UiFactory.Title(_pausePanel, text.Get(TextKeys.ShiftPaused));
             UiFactory.AddButton(_pausePanel, text.Get(TextKeys.ShiftResume), onResume);
@@ -135,6 +149,7 @@ namespace KebabStreet.Game
             _resultReason = UiFactory.Notice(_resultPanel, string.Empty);
             _resultShortfall = UiFactory.Body(_resultPanel, string.Empty);
             _resultHint = UiFactory.Notice(_resultPanel, string.Empty);
+            _resultNotice = UiFactory.Notice(_resultPanel, string.Empty);
             _nextButton = UiFactory.AddButton(_resultPanel, text.Get(TextKeys.ResultNext), onNext ?? NoAction);
             _nextButton.name = "result-next";
             _nextButton.style.display = DisplayStyle.None;
@@ -185,6 +200,12 @@ namespace KebabStreet.Game
 
         public string ResultStarHintText => _resultHint.text;
 
+        /// <summary>Повідомлення про невдале збереження на екрані результату (BUG-043); порожньо, якщо все гаразд.</summary>
+        public string ResultNoticeText => _resultNotice.text;
+
+        /// <summary>Плашка навчання; null, якщо навчання не підключено.</summary>
+        public TutorialOverlay Tutorial => _tutorialOverlay;
+
         /// <summary>Модель показаного результату; null, поки зміна не завершилась.</summary>
         public ResultView Result { get; private set; }
 
@@ -215,6 +236,21 @@ namespace KebabStreet.Game
             Counter.Refresh();
             Assembly.Refresh();
             Grill.Refresh();
+            if (_tutorial != null)
+            {
+                _tutorial.Update();
+                _tutorialOverlay.Refresh();
+            }
+        }
+
+        /// <summary>
+        /// Показує на екрані результату повідомлення про збереження (BUG-043): ключ береться з
+        /// <see cref="SaveNoticePolicy.KeyOf"/>; None гасить напис. Викликається після запису підсумку в профіль.
+        /// </summary>
+        public void ShowSaveNotice(SaveNotice notice)
+        {
+            string key = SaveNoticePolicy.KeyOf(notice);
+            _resultNotice.text = key == null ? string.Empty : _text.Get(key);
         }
 
         private void Draw(ShiftHudView view, ShiftHudView previous, bool first)

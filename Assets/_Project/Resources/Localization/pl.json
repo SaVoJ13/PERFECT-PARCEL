@@ -78,5 +78,16 @@
   "result.next": "Dalej",
   "result.menu": "Menu",
   "menu.level_stars": "Poziom {0} · gwiazdki {1}/3",
-  "menu.level_locked": "Poziom {0} · zamknięty"
+  "menu.level_locked": "Poziom {0} · zamknięty",
+  "tutorial.l01.step1": "Witaj, młody! Dotknij grilla, aby położyć mięso.",
+  "tutorial.l01.step2": "Gdy mięso się piecze, połóż najpierw pitę na desce: dotknij stanowiska z pitą.",
+  "tutorial.l01.step3": "Gotowe! Dotknij grilla jeszcze raz, aby zdjąć mięso.",
+  "tutorial.l01.step4": "Dotknij klienta, aby podać kebab!",
+  "tutorial.l02.burnt": "Zdarza się, mięso się przypaliło. Dotknij grilla, aby je wyrzucić. Tym razem bez kary.",
+  "tutorial.l03.patience": "Pilnuj serduszek: gdy się skończą, klient odejdzie.",
+  "tutorial.l03.sauce": "Ten klient chce sos czosnkowy. Dodaj go ze stanowiska z sosami.",
+  "tutorial.l04.salad": "To zamówienie wymaga sałatki. Weź ją z baru sałatkowego.",
+  "tutorial.l04.request": "Hanna ma specjalną prośbę. Sprawdź jej zamówienie, zanim podasz.",
+  "ui.tutorial.next": "Dalej",
+  "ui.tutorial.skip": "Pomiń wszystko"
 }

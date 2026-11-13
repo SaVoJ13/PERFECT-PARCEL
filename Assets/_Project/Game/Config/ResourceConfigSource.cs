@@ -40,6 +40,12 @@ namespace KebabStreet.Game
             return ConfigLoader.LoadAll(Load());
         }
 
+        /// <summary>Читає й перевіряє tutorial.json (S1-11); помилки — у результаті, а не винятком.</summary>
+        public static TutorialLoadResult LoadTutorial()
+        {
+            return TutorialConfigLoader.Parse(ReadText("tutorial"));
+        }
+
         private static string ReadText(string name)
         {
             var asset = Resources.Load<TextAsset>(Folder + name);

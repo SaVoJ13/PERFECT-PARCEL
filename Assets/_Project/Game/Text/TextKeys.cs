@@ -74,6 +74,19 @@ namespace KebabStreet.Game
         public const string MenuLevelStars = "menu.level_stars";
         public const string MenuLevelLocked = "menu.level_locked";
 
+        // Навчання від дядька Алі (S1-11): тексти кроків з tutorial.json і кнопки плашки.
+        public const string TutorialL01Step1 = "tutorial.l01.step1";
+        public const string TutorialL01Step2 = "tutorial.l01.step2";
+        public const string TutorialL01Step3 = "tutorial.l01.step3";
+        public const string TutorialL01Step4 = "tutorial.l01.step4";
+        public const string TutorialL02Burnt = "tutorial.l02.burnt";
+        public const string TutorialL03Patience = "tutorial.l03.patience";
+        public const string TutorialL03Sauce = "tutorial.l03.sauce";
+        public const string TutorialL04Salad = "tutorial.l04.salad";
+        public const string TutorialL04Request = "tutorial.l04.request";
+        public const string TutorialNext = "ui.tutorial.next";
+        public const string TutorialSkip = "ui.tutorial.skip";
+
         // Імена клієнтів і назви інгредієнтів: ці ключі вказані в customers.json / recipes.json (nameKey).
         public const string CustomerOlyaName = "customer.olya.name";
         public const string CustomerMarkoName = "customer.marko.name";
