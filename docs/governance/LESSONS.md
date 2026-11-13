@@ -84,3 +84,7 @@
 ## Unity: генерація сцен Editor-скриптом (E0-16, 2026-11-11)
 - `EditorSceneManager.NewScene` вивантажує невикористані ресурси: посилання на ScriptableObject/PanelSettings, взяте до створення наступної сцени, стає знищеним, і в наступних сценах `UIDocument.panelSettings = null` (UI не малюється, винятків немає). Завантажуй ресурс через `AssetDatabase.LoadAssetAtPath` у кожній сцені. Ловить `GeneratedScenesTests`.
 - Діагностика на телефоні: `Debug.Log` у Release-APK потрапляє в `adb logcat -s Unity`; Development Build не потрібен. Між запусками CI `adb uninstall` перед `install` (підпис debug різний).
+
+## QA ланцюгових PR (S1-09a, 2026-11-13, Агент 5)
+- PR із базою не `main` не має перевірок (`gh pr checks` → «no checks reported»): CI запускають вручну `workflow_dispatch`. Доказ — `gh run view <id> --json headSha,event,conclusion` і звірка `headSha` з останнім комітом із кодом (`git diff --stat <sha> HEAD` — лише docs).
+- «Тестів не менше, ніж на базі» перевіряй не числом, а списком: витягни `fullname` з `editmode-results.xml` бази і PR (`gh run download -n KebabStreet-EditMode-TestResults`), `comm -23 base pr` має бути порожнім.
