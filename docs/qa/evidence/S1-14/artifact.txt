@@ -1,0 +1,7 @@
+S1-14, 2026-11-13, Агент 5
+Run: https://github.com/SaVoJ13/PERFECT-PARCEL/actions/runs/43496413595
+event workflow_dispatch, branch task/S1-13-placeholder-sfx, headSha c707efdc5b1b5677a30e2fda3a6f4aa29c71134b, conclusion success
+Artifact: KebabStreet-Android-Builds (31747127 B zip, expires 2026-11-27, expired=false)
+Downloaded via gh run download -> KebabStreet.apk 32728594 B
+sha256 0ce91b8062e62eba41aa780c2f78b677214b8552476a928c5567ccad6dbd9fcf
+adb devices: "List of devices attached" (empty) -> phone not connected; smoke test not run
