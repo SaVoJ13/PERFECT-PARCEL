@@ -1,0 +1,38 @@
+gh run view 43149426749 (PR #22, headSha bd23bbc50dbe91ec7112758674e850def5f4bc37, event pull_request), 2026-11-12, Agent 5
+headSha=bd23bbc50dbe91ec7112758674e850def5f4bc37 conclusion=success
+job: EditMode tests = success
+job: Build Android APK = success
+<test-run id="2" testcasecount="573" result="Passed" total="573" passed="573" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-12 03:41:13Z" end-time="2026-11-12 03:41:15Z" duration="1.4314286">
+--- test fixtures in run (suite names, count of test-case per fixture):
+KebabStreet.Tests.EditMode.ArchitectureSmokeTests 3
+KebabStreet.Tests.EditMode.ClockTests 18
+KebabStreet.Tests.EditMode.CoreRulesTests 5
+KebabStreet.Tests.EditMode.GameFlowTests 16
+KebabStreet.Tests.EditMode.GeneratedScenesTests 3
+KebabStreet.Tests.EditMode.GrillCommandTests 61
+KebabStreet.Tests.EditMode.GrillConfigTests 40
+KebabStreet.Tests.EditMode.GrillDeterminismTests 14
+KebabStreet.Tests.EditMode.GrillMeatStateTests 16
+KebabStreet.Tests.EditMode.LocalizationTests 31
+KebabStreet.Tests.EditMode.PlatformServicesTests 12
+KebabStreet.Tests.EditMode.ProfileSessionTests 14
+KebabStreet.Tests.EditMode.SaveSerializerTests 61
+KebabStreet.Tests.EditMode.SaveServiceFaultTests 23
+KebabStreet.Tests.EditMode.SaveServiceTests 38
+KebabStreet.Tests.EditMode.SaveStorageTests 12
+KebabStreet.Tests.EditMode.ShiftActionQueueTests 28
+KebabStreet.Tests.EditMode.ShiftConfigTests 19
+KebabStreet.Tests.EditMode.ShiftSimulationAdvanceTests 16
+KebabStreet.Tests.EditMode.ShiftSimulationCommandTests 29
+KebabStreet.Tests.EditMode.ShiftSimulationDeterminismTests 11
+KebabStreet.Tests.EditMode.ShiftSimulationTimerTests 15
+KebabStreet.Tests.EditMode.SplitMix64RandomTests 15
+
+--- main 43087614701 (ba77abc): total=414 passed=414. diff fixtures main -> PR (only additions, existing counts unchanged):
+5a6,9
+> KebabStreet.Tests.EditMode.GrillCommandTests 61
+> KebabStreet.Tests.EditMode.GrillConfigTests 40
+> KebabStreet.Tests.EditMode.GrillDeterminismTests 14
+> KebabStreet.Tests.EditMode.GrillMeatStateTests 16
+15a20
+> KebabStreet.Tests.EditMode.ShiftActionQueueTests 28

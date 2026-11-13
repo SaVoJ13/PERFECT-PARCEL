@@ -1,0 +1,29 @@
+{
+  "id": "L04",
+  "draft": true,
+  "location": 1,
+  "nameKey": "level.l04.name",
+  "durationSec": 150,
+  "counterSlots": 3,
+  "goal": { "type": "coins", "coins": 150 },
+  "stars": { "two": { "type": "coins", "value": 190 }, "three": { "condition": "noWrongDishes" } },
+  "lose": { "maxLostCustomers": null, "countLostCustomers": true },
+  "waves": [
+    { "atSec": 4, "customer": "olya", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 12, "customer": "olya", "order": { "recipe": "kebab_pita", "optional": ["salad"] } },
+    { "atSec": 22, "customer": "hanna", "order": { "recipe": "kebab_pita", "optional": ["salad"] } },
+    { "atSec": 30, "customer": "marko", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 38, "customer": "olya", "order": { "recipe": "kebab_pita", "optional": ["salad", "onion"] } },
+    { "atSec": 46, "customer": "olya", "order": { "recipe": "kebab_pita", "optional": ["sauce_garlic"] } },
+    { "atSec": 54, "customer": "hanna", "order": { "recipe": "kebab_pita", "optional": ["salad"] } },
+    { "atSec": 62, "customer": "marko", "order": { "recipe": "kebab_pita", "optional": ["salad"] } },
+    { "atSec": 70, "customer": "olya", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 80, "customer": "hanna", "order": { "recipe": "kebab_pita", "optional": ["salad"] } },
+    { "atSec": 90, "customer": "olya", "order": { "recipe": "kebab_pita", "optional": ["salad", "onion"] } },
+    { "atSec": 100, "customer": "marko", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 112, "customer": "olya", "order": { "recipe": "kebab_pita", "optional": ["sauce_garlic"] } },
+    { "atSec": 124, "customer": "hanna", "order": { "recipe": "kebab_pita", "optional": ["salad"] } }
+  ],
+  "tutorialKeys": ["tutorial.l04.salad", "tutorial.l04.request"],
+  "storyKeys": { "intro": "story.l04.intro", "outro": "story.l04.outro" }
+}

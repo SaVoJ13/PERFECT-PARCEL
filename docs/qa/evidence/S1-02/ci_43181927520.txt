@@ -1,0 +1,47 @@
+S1-02 CI evidence (Agent 5, 2026-11-12)
+Run 43181927520, event pull_request, PR #23, headSha c70a0a7a7918d80b128f8560a08008de683f646f (tested merge ref 9e61e45)
+Jobs: EditMode tests = success; Build Android APK = success
+
+Artifact KebabStreet-EditMode-TestResults/editmode-results.xml:
+<test-run id="2" testcasecount="755" result="Passed" total="755" passed="755" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-12 08:23:19Z" e
+
+Fixture test counts, S1-01 run 43149426749 (bd23bbc) vs S1-02 run 43181927520 (diff):
+1a2,6
+> KebabStreet.Tests.EditMode.BoardAssemblyTests 47
+> KebabStreet.Tests.EditMode.BoardConfigTests 73
+> KebabStreet.Tests.EditMode.BoardDeterminismTests 14
+> KebabStreet.Tests.EditMode.BoardServeTests 12
+> KebabStreet.Tests.EditMode.BoardStationTests 36
+
+All fixtures in S1-02 run:
+KebabStreet.Tests.EditMode.ArchitectureSmokeTests 3
+KebabStreet.Tests.EditMode.BoardAssemblyTests 47
+KebabStreet.Tests.EditMode.BoardConfigTests 73
+KebabStreet.Tests.EditMode.BoardDeterminismTests 14
+KebabStreet.Tests.EditMode.BoardServeTests 12
+KebabStreet.Tests.EditMode.BoardStationTests 36
+KebabStreet.Tests.EditMode.ClockTests 18
+KebabStreet.Tests.EditMode.CoreRulesTests 5
+KebabStreet.Tests.EditMode.GameFlowTests 16
+KebabStreet.Tests.EditMode.GeneratedScenesTests 3
+KebabStreet.Tests.EditMode.GrillCommandTests 61
+KebabStreet.Tests.EditMode.GrillConfigTests 40
+KebabStreet.Tests.EditMode.GrillDeterminismTests 14
+KebabStreet.Tests.EditMode.GrillMeatStateTests 16
+KebabStreet.Tests.EditMode.LocalizationTests 31
+KebabStreet.Tests.EditMode.PlatformServicesTests 12
+KebabStreet.Tests.EditMode.ProfileSessionTests 14
+KebabStreet.Tests.EditMode.SaveSerializerTests 61
+KebabStreet.Tests.EditMode.SaveServiceFaultTests 23
+KebabStreet.Tests.EditMode.SaveServiceFaultTests 23
+KebabStreet.Tests.EditMode.SaveServiceTests 38
+KebabStreet.Tests.EditMode.SaveServiceTests 38
+KebabStreet.Tests.EditMode.SaveStorageTests 12
+KebabStreet.Tests.EditMode.SaveStorageTests 12
+KebabStreet.Tests.EditMode.ShiftActionQueueTests 28
+KebabStreet.Tests.EditMode.ShiftConfigTests 19
+KebabStreet.Tests.EditMode.ShiftSimulationAdvanceTests 16
+KebabStreet.Tests.EditMode.ShiftSimulationCommandTests 29
+KebabStreet.Tests.EditMode.ShiftSimulationDeterminismTests 11
+KebabStreet.Tests.EditMode.ShiftSimulationTimerTests 15
+KebabStreet.Tests.EditMode.SplitMix64RandomTests 15

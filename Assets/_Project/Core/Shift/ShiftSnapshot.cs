@@ -17,13 +17,86 @@ namespace KebabStreet.Core
             long pendingSubTicks,
             bool continueUsed,
             ulong randomState)
+            : this(
+                state,
+                elapsedTicks,
+                remainingTicks,
+                pendingSubTicks,
+                continueUsed,
+                randomState,
+                default(GrillSnapshot),
+                default(ActionQueueSnapshot))
         {
+        }
+
+        public ShiftSnapshot(
+            ShiftState state,
+            long elapsedTicks,
+            long remainingTicks,
+            long pendingSubTicks,
+            bool continueUsed,
+            ulong randomState,
+            GrillSnapshot grill,
+            ActionQueueSnapshot actions)
+            : this(
+                state,
+                elapsedTicks,
+                remainingTicks,
+                pendingSubTicks,
+                continueUsed,
+                randomState,
+                grill,
+                actions,
+                default(BoardSnapshot))
+        {
+        }
+
+        public ShiftSnapshot(
+            ShiftState state,
+            long elapsedTicks,
+            long remainingTicks,
+            long pendingSubTicks,
+            bool continueUsed,
+            ulong randomState,
+            GrillSnapshot grill,
+            ActionQueueSnapshot actions,
+            BoardSnapshot board)
+            : this(
+                state,
+                elapsedTicks,
+                remainingTicks,
+                pendingSubTicks,
+                continueUsed,
+                randomState,
+                grill,
+                actions,
+                board,
+                default(CounterSnapshot))
+        {
+        }
+
+        public ShiftSnapshot(
+            ShiftState state,
+            long elapsedTicks,
+            long remainingTicks,
+            long pendingSubTicks,
+            bool continueUsed,
+            ulong randomState,
+            GrillSnapshot grill,
+            ActionQueueSnapshot actions,
+            BoardSnapshot board,
+            CounterSnapshot counter)
+        {
+            Counter = counter;
             State = state;
             ElapsedTicks = elapsedTicks;
             RemainingTicks = remainingTicks;
             PendingSubTicks = pendingSubTicks;
             ContinueUsed = continueUsed;
             RandomState = randomState;
+            Grill = grill;
+            Actions = actions;
+            Board = board;
         }
 
         /// <summary>Стан зміни.</summary>
@@ -44,6 +117,18 @@ namespace KebabStreet.Core
         /// <summary>Стан генератора випадковості.</summary>
         public ulong RandomState { get; }
 
+        /// <summary>Стан гриля; значення за замовчуванням — гриля немає.</summary>
+        public GrillSnapshot Grill { get; }
+
+        /// <summary>Стан черги дій гравця.</summary>
+        public ActionQueueSnapshot Actions { get; }
+
+        /// <summary>Стан дошки; значення за замовчуванням — дошки немає або вона ще не використовувалась.</summary>
+        public BoardSnapshot Board { get; }
+
+        /// <summary>Стан прилавка і клієнтів; значення за замовчуванням — клієнтів у зміні немає.</summary>
+        public CounterSnapshot Counter { get; }
+
         public bool Equals(ShiftSnapshot other)
         {
             return State == other.State
@@ -51,7 +136,11 @@ namespace KebabStreet.Core
                 && RemainingTicks == other.RemainingTicks
                 && PendingSubTicks == other.PendingSubTicks
                 && ContinueUsed == other.ContinueUsed
-                && RandomState == other.RandomState;
+                && RandomState == other.RandomState
+                && Grill.Equals(other.Grill)
+                && Actions.Equals(other.Actions)
+                && Board.Equals(other.Board)
+                && Counter.Equals(other.Counter);
         }
 
         public override bool Equals(object obj)
@@ -69,16 +158,40 @@ namespace KebabStreet.Core
                 hash = (hash * 397) ^ PendingSubTicks.GetHashCode();
                 hash = (hash * 397) ^ (ContinueUsed ? 1 : 0);
                 hash = (hash * 397) ^ RandomState.GetHashCode();
+                hash = (hash * 397) ^ Grill.GetHashCode();
+                hash = (hash * 397) ^ Actions.GetHashCode();
+                hash = (hash * 397) ^ Board.GetHashCode();
+                hash = (hash * 397) ^ Counter.GetHashCode();
                 return hash;
             }
         }
 
         public override string ToString()
         {
-            return string.Format(
+            string text = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0} elapsed={1} remaining={2} pending={3} continueUsed={4} random=0x{5:X16}",
                 State, ElapsedTicks, RemainingTicks, PendingSubTicks, ContinueUsed, RandomState);
+
+            // Зміна без гриля і без дій друкується так само, як до появи станцій.
+            bool noBoard = Board.Equals(default(BoardSnapshot));
+            bool noCounter = Counter.Equals(default(CounterSnapshot));
+            if (Grill.Equals(default(GrillSnapshot))
+                && Actions.Equals(default(ActionQueueSnapshot))
+                && noBoard
+                && noCounter)
+            {
+                return text;
+            }
+
+            // Зміна без дошки і без клієнтів друкується так само, як до їх появи.
+            text = text + " grill=" + Grill + " actions=" + Actions;
+            if (!noBoard || !noCounter)
+            {
+                text = text + " board=" + Board;
+            }
+
+            return noCounter ? text : text + " counter=" + Counter;
         }
     }
 }

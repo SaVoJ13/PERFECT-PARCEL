@@ -1,0 +1,24 @@
+{
+  "id": "L02",
+  "draft": true,
+  "location": 1,
+  "nameKey": "level.l02.name",
+  "durationSec": 100,
+  "counterSlots": 2,
+  "goal": { "type": "serve", "count": 6 },
+  "stars": { "two": { "type": "coins", "value": 85 }, "three": { "condition": "noBurnt" } },
+  "lose": { "maxLostCustomers": null, "countLostCustomers": false },
+  "grill": { "slots": 2, "cookSec": 6, "burnAfterDoneSec": 12, "warnBeforeBurnSec": 3, "burntPenaltyCoins": 0 },
+  "waves": [
+    { "atSec": 4, "customer": "olya", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 18, "customer": "olya", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 18, "customer": "olya", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 36, "customer": "olya", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 52, "customer": "olya", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 52, "customer": "olya", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 68, "customer": "olya", "order": { "recipe": "kebab_pita" } },
+    { "atSec": 80, "customer": "olya", "order": { "recipe": "kebab_pita" } }
+  ],
+  "tutorialKeys": ["tutorial.l02.burnt"],
+  "storyKeys": { "intro": "story.l02.intro", "outro": "story.l02.outro" }
+}
