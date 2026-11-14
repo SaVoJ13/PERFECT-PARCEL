@@ -54,6 +54,7 @@
 | S1-17 | Читабельність екранів за скриншотом з телефона | gameplay-developer (sonnet) | Done (PR #44, злито в main) |
 | S1-18 | Тема і графіка (BUG-045), підказка піти (BUG-044), BUG-038 | gameplay-developer (sonnet) | Done (PR #45, злито в main) |
 | S1-21 | Відгук на тап (підсвічування, смужка прогресу) | gameplay-developer (sonnet) | Done (PR #46, L2, злито в main) |
-| S1-22 | Лог кадрів (development) | gameplay-developer (sonnet) | In Progress |
+| S1-22 | Лог кадрів (development) | gameplay-developer (sonnet) | Done (PR #47, L2, злито в main) |
+| S1-19 | Чек-лист телефона по частинах, питання про перший запуск | qa-release (sonnet) | In Progress |
 
 Далі (картки створюються окремо): екран результату й зірок, навчання (завантажувач `tutorial.json` + UI, BUG-036), Game-обв'язка симуляції з UI зміни, плейсхолдер-графіка і звуки, плейтест, пороги балансу після відповіді Власника (№26, №27).
