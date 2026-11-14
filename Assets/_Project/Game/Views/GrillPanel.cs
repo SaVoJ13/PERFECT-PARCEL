@@ -21,7 +21,8 @@ namespace KebabStreet.Game
         private const float SlotGap = 24f;
         private const float SlotFontSize = 34f;
         private const float BarHeight = 28f;
-        private const float IconSize = 88f;
+        private const float IconSize = 168f;
+        private const float EmptyHintOpacity = 0.4f;
         private const float BorderWidth = 8f;
         private const int WarningTextIndex = 5;
         private const int TextCount = 6;
@@ -46,6 +47,7 @@ namespace KebabStreet.Game
         private readonly GrillSlotView[] _shown;
         private readonly bool[] _drawn;
         private readonly string[] _texts = new string[TextCount];
+        private readonly string[] _slotTexts;
 
         public GrillPanel(VisualElement parent, ShiftInput input, ILocalizer text)
         {
@@ -83,6 +85,7 @@ namespace KebabStreet.Game
             _icons = new VisualElement[count];
             _decors = new TapDecor[count];
             _shown = new GrillSlotView[count];
+            _slotTexts = new string[count];
             _drawn = new bool[count];
             for (int i = 0; i < count; i++)
             {
@@ -98,10 +101,19 @@ namespace KebabStreet.Game
         /// <summary>Скільки слотів показано (grill.slots рівня).</summary>
         public int SlotCount => _buttons.Length;
 
-        /// <summary>Напис, який зараз показано в слоті.</summary>
+        /// <summary>
+        /// Локалізований напис стану слота (a11y, tooltip). Q-05b: на екрані стан показано значком; сам напис видно
+        /// лише коли спрайта немає.
+        /// </summary>
         public string GetSlotText(int slot)
         {
-            return _buttons[slot].text;
+            return _slotTexts[slot];
+        }
+
+        /// <summary>Чи слот показує значок (а не напис) стану.</summary>
+        public bool IsSlotIconShown(int slot)
+        {
+            return _icons[slot].style.display.value == DisplayStyle.Flex;
         }
 
         /// <summary>Відгук на тап слота (S1-21): рамка світиться, смужка дії.</summary>
@@ -160,6 +172,7 @@ namespace KebabStreet.Game
             button.style.marginBottom = SlotGap / 2f;
             button.style.fontSize = SlotFontSize;
             button.style.color = Color.white;
+            UiDecor.AddButtonDepth(button, EmptyColor); // Q-05b: QB-SHIFT-24 / QB-ALL-06, глибина слота.
             button.style.whiteSpace = WhiteSpace.Normal;
             button.style.unityTextAlign = TextAnchor.MiddleCenter;
             button.style.borderLeftWidth = BorderWidth;
@@ -177,17 +190,8 @@ namespace KebabStreet.Game
             bar.style.backgroundColor = BarColor;
             button.Add(bar);
 
-            // Значок стану м'яса (S1-12): форма різна в кожного стану (пара, галочка, трикутник, хрест).
-            button.style.paddingTop = IconSize;
-            var icon = new VisualElement { name = "grill-slot-icon-" + index };
-            icon.pickingMode = PickingMode.Ignore;
-            icon.style.position = Position.Absolute;
-            icon.style.left = (SlotSize - IconSize) / 2f - BorderWidth;
-            icon.style.top = 0;
-            icon.style.width = IconSize;
-            icon.style.height = IconSize;
-            icon.style.display = DisplayStyle.None;
-            button.Add(icon);
+            // Значок стану м'яса (S1-12, Q-05b): велика іконка по центру слота замість напису стану.
+            VisualElement icon = ArtLibrary.AddCenterIcon(button, IconSize, "grill-slot-icon-" + index);
             _icons[index] = icon;
             _decors[index] = new TapDecor(button, "grill-slot-" + index);
 
@@ -207,14 +211,19 @@ namespace KebabStreet.Game
             if (first || view.Display != previous.Display || view.BurnWarning != previous.BurnWarning)
             {
                 bool warning = view.Display == GrillSlotDisplay.Done && view.BurnWarning;
-                button.text = _texts[warning ? WarningTextIndex : (int)view.Display];
+                string full = _texts[warning ? WarningTextIndex : (int)view.Display];
+                _slotTexts[index] = full;
+                button.tooltip = full;
                 Color background = ColorOf(view);
                 button.style.backgroundColor = background;
                 button.style.color = UiColors.GrillText(background);
-                string iconName = IconOf(view);
-                _icons[index].style.display = iconName != null && ArtLibrary.Apply(_icons[index], iconName)
-                    ? DisplayStyle.Flex
-                    : DisplayStyle.None;
+
+                // Порожній слот підказує значком м'яса (напівпрозорий): «сюди кладуть м'ясо».
+                bool empty = view.Display == GrillSlotDisplay.Empty;
+                string iconName = empty ? ArtLibrary.IngredientIcon("meat") : IconOf(view);
+                bool shown = ArtLibrary.ShowIcon(_icons[index], iconName);
+                _icons[index].style.opacity = empty ? EmptyHintOpacity : 1f;
+                button.text = shown ? string.Empty : full;
             }
 
             if (first || view.Display != previous.Display || view.ActionQueued != previous.ActionQueued)

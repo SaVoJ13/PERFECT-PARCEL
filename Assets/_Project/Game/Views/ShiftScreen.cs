@@ -17,18 +17,21 @@ namespace KebabStreet.Game
         public const string CounterZoneName = "counter-zone";
         public const string AssemblyZoneName = "assembly-zone";
 
+        /// <summary>Q-05b: ціль на екрані - лише числа «зроблено/потрібно», без слів.</summary>
+        public const string GoalShownFormat = "{0}/{1}";
+
         // Безпечні зони референсу 1080x1920 (ART_STYLE_GUIDE 4.1): виріз зверху, жестова панель знизу.
         private const float SafeTop = 48f;
         private const float SafeBottom = 64f;
         private const float Gap = 24f;
         private const float HudFontSize = 48f;
         private const float LevelFontSize = 40f;
-        private const float PauseButtonWidth = 320f;
         private const int StarIconCount = 3;
         private const float IconSize = 64f;
         private const float ButtonIconMargin = 16f;
         private const float StarIconSize = 96f;
-        private const float PauseButtonHeight = 144f;
+        private const float PauseButtonSize = 144f;
+        private const float PauseIconSize = 96f;
         private const float ZoneBorder = 4f;
 
         private static readonly Color ZoneBorderColor = new Color(0.42f, 0.27f, 0.19f);
@@ -40,6 +43,8 @@ namespace KebabStreet.Game
         private readonly string _goalFormat;
         private readonly string _coinsFormat;
         private readonly string _hintText;
+        private string _goalFullText = string.Empty;
+        private string _coinsFullText = string.Empty;
         private readonly Label _timer;
         private readonly Label _goal;
         private readonly Label _coins;
@@ -112,13 +117,21 @@ namespace KebabStreet.Game
                 titleRow, string.Format(text.Get(TextKeys.ShiftLevelTitle), driver.Level.Number), LevelFontSize, Color.white);
             level.style.flexGrow = 1;
             level.style.unityTextAlign = TextAnchor.MiddleLeft;
-            Button pause = UiFactory.AddButton(titleRow, text.Get(TextKeys.ShiftPause), onPause);
+            // Q-05b (QB-SHIFT-05): пауза - квадратна кнопка-значок у куті HUD (>= 48 dp), без слова; слово лишається
+            // у tooltip (a11y). Немає спрайта - показуємо текст, щоб кнопку було видно.
+            string pauseText = text.Get(TextKeys.ShiftPause);
+            Button pause = UiFactory.AddButton(titleRow, string.Empty, onPause);
             pause.name = "pause-button";
-            pause.style.width = PauseButtonWidth;
-            pause.style.height = PauseButtonHeight;
+            pause.tooltip = pauseText;
+            pause.style.width = PauseButtonSize;
+            pause.style.height = PauseButtonSize;
             pause.style.marginTop = 0;
             pause.style.flexShrink = 0;
-            ArtLibrary.AddLeadingIcons(pause, new[] { ArtLibrary.Pause }, IconSize, ButtonIconMargin);
+            VisualElement pauseIcon = ArtLibrary.AddCenterIcon(pause, PauseIconSize, "pause-icon");
+            if (!ArtLibrary.ShowIcon(pauseIcon, ArtLibrary.Pause))
+            {
+                pause.text = pauseText;
+            }
 
             Backdrop(titleRow);
             VisualElement hud = Row(root);
@@ -140,6 +153,7 @@ namespace KebabStreet.Game
             _goal.style.marginRight = Gap;
 
             _hint = UiFactory.Notice(root, string.Empty);
+            _hint.name = "shift-hint";
 
             Input = new ShiftInput(driver);
             CounterZone = Zone(root, CounterZoneName);
@@ -209,9 +223,17 @@ namespace KebabStreet.Game
 
         public string TimerText => _timer.text;
 
-        public string GoalText => _goal.text;
+        /// <summary>Повний (локалізований) текст цілі для a11y; на екрані - лише «N/M» (Q-05b).</summary>
+        public string GoalText => _goalFullText;
 
-        public string CoinsText => _coins.text;
+        /// <summary>Повний (локалізований) текст монет для a11y; на екрані - значок монети й число (Q-05b).</summary>
+        public string CoinsText => _coinsFullText;
+
+        /// <summary>Те, що справді показано в смузі цілі.</summary>
+        public string GoalShownText => _goal.text;
+
+        /// <summary>Те, що справді показано біля монети.</summary>
+        public string CoinsShownText => _coins.text;
 
         public string HintText => _hint.text;
 
@@ -289,12 +311,16 @@ namespace KebabStreet.Game
 
             if (first || view.GoalProgress != previous.GoalProgress || view.GoalTarget != previous.GoalTarget)
             {
-                _goal.text = string.Format(_goalFormat, view.GoalProgress, view.GoalTarget);
+                _goalFullText = string.Format(_goalFormat, view.GoalProgress, view.GoalTarget);
+                _goal.text = string.Format(GoalShownFormat, view.GoalProgress, view.GoalTarget);
+                _goal.tooltip = _goalFullText;
             }
 
             if (first || view.Coins != previous.Coins)
             {
-                _coins.text = string.Format(_coinsFormat, view.Coins);
+                _coinsFullText = string.Format(_coinsFormat, view.Coins);
+                _coins.text = view.Coins.ToString();
+                _coins.tooltip = _coinsFullText;
             }
 
             if (first || view.GoalDoneStarHint != previous.GoalDoneStarHint)
