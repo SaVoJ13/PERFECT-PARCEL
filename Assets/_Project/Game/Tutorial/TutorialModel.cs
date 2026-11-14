@@ -115,7 +115,10 @@ namespace KebabStreet.Game
             {
                 TutorialStepState state = _states[i];
                 TutorialTrigger done = _steps[i].CompleteWhen;
-                if ((state == TutorialStepState.Active || state == TutorialStepState.Armed) && done != null && done.Matches(e))
+                // BUG-044: дію, якої чекає крок, можна зробити ще до того, як він став чинним (піта до м'яса) —
+                // тоді підказка вже не потрібна, і крок завершується тихо.
+                bool open = state == TutorialStepState.Active || state == TutorialStepState.Armed || state == TutorialStepState.Pending;
+                if (open && done != null && done.Matches(e))
                 {
                     Finish(i, nowMs);
                 }

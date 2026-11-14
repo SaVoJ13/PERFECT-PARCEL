@@ -40,19 +40,19 @@ namespace KebabStreet.Game
         private const float HalfPercent = 50f;
         private const float FullPercent = 100f;
 
-        private static readonly Color CardColor = new Color(0.30f, 0.20f, 0.14f);
-        private static readonly Color FreeCardColor = new Color(0.20f, 0.15f, 0.12f);
+        private static readonly Color CardColor = UiColors.CustomerCard;
+        private static readonly Color FreeCardColor = UiColors.CustomerFreeCard;
         private static readonly Color IdleBorder = new Color(0.23f, 0.14f, 0.08f);
         private static readonly Color LowBorder = new Color(0.84f, 0.16f, 0.16f);
         private static readonly Color QueuedBorder = Color.white;
         private static readonly Color HeartColor = new Color(0.84f, 0.16f, 0.16f);
         private static readonly Color HeartFrame = new Color(1f, 0.95f, 0.84f);
         private static readonly Color BarColor = new Color(1f, 0.95f, 0.84f);
-        private static readonly Color StepChip = new Color(0.61f, 0.35f, 0.17f);
-        private static readonly Color RequestedChip = new Color(0.18f, 0.62f, 0.31f);
-        private static readonly Color ExcludedChip = new Color(0.25f, 0.25f, 0.25f);
-        private static readonly Color CoinColor = new Color(1f, 0.79f, 0.2f);
-        private static readonly Color WarningColor = new Color(0.96f, 0.62f, 0.04f);
+        private static readonly Color StepChip = UiColors.ChipStep;
+        private static readonly Color RequestedChip = UiColors.ChipRequested;
+        private static readonly Color ExcludedChip = UiColors.ChipExcluded;
+        private static readonly Color CoinColor = UiColors.Coin;
+        private static readonly Color WarningColor = UiColors.Warning;
 
         private readonly ShiftDriver _driver;
         private readonly ShiftInput _input;
@@ -346,7 +346,7 @@ namespace KebabStreet.Game
                 case CounterEventKind.Served:
                     return CoinColor;
                 case CounterEventKind.Left:
-                    return LowBorder;
+                    return UiColors.LeftText;
                 default:
                     return WarningColor;
             }
@@ -402,14 +402,29 @@ namespace KebabStreet.Game
                     frame.style.height = HeartSize;
                     frame.style.marginLeft = HeartGap / 2f;
                     frame.style.marginRight = HeartGap / 2f;
-                    SetBorder(frame, HeartBorder, HeartFrame);
+                    frame.AddToClassList("ks-icon");
+                    // S1-18: спрайти сердечок; без них лишається рамка й заливка кольором.
+                    bool sprites = ArtLibrary.Apply(frame, ArtLibrary.HeartEmpty);
+                    if (!sprites)
+                    {
+                        SetBorder(frame, HeartBorder, HeartFrame);
+                    }
+
                     var fill = new VisualElement { pickingMode = PickingMode.Ignore };
                     fill.style.position = Position.Absolute;
                     fill.style.left = 0;
                     fill.style.top = 0;
                     fill.style.bottom = 0;
                     fill.style.width = Length.Percent(0);
-                    fill.style.backgroundColor = HeartColor;
+                    if (sprites && ArtLibrary.ApplyFixed(fill, ArtLibrary.HeartFull, HeartSize))
+                    {
+                        fill.style.backgroundColor = Color.clear;
+                    }
+                    else
+                    {
+                        fill.style.backgroundColor = HeartColor;
+                    }
+
                     frame.Add(fill);
                     _heartsRow.Add(frame);
                     _heartFills[h] = fill;
