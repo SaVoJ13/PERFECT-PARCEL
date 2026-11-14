@@ -14,6 +14,7 @@ namespace KebabStreet.Game
         public const string GlossName = "ks-gloss";
         public const string GradientName = "ks-gradient";
         public const string VignetteName = "ks-vignette";
+        public const string TrashName = "ks-trash";
 
         /// <summary>QB-ALL-06: зсув тіні-основи кнопки, px референсу.</summary>
         public const float ButtonShadowOffset = 8f;
@@ -148,6 +149,70 @@ namespace KebabStreet.Game
             shadow.style.borderBottomLeftRadius = ShadowRadius;
             shadow.style.borderBottomRightRadius = ShadowRadius;
             panel.Insert(0, shadow);
+        }
+
+        /// <summary>
+        /// Q-05b (QB-SHIFT-28): значок смітника, складений з елементів (кришка, ручка, корпус, дві щілини), без
+        /// ресурсу. Центрований у кнопці, не ловить дотики. Повторний виклик нічого не додає.
+        /// </summary>
+        public static VisualElement AddTrashGlyph(VisualElement button, float size, Color color, Color slit)
+        {
+            if (button == null)
+            {
+                return null;
+            }
+
+            VisualElement existing = button.Q(TrashName);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var host = new VisualElement { name = TrashName, pickingMode = PickingMode.Ignore };
+            host.style.position = Position.Absolute;
+            host.style.left = 0;
+            host.style.right = 0;
+            host.style.top = 0;
+            host.style.bottom = 0;
+            host.style.alignItems = Align.Center;
+            host.style.justifyContent = Justify.Center;
+
+            var glyph = new VisualElement { pickingMode = PickingMode.Ignore };
+            glyph.style.width = size;
+            glyph.style.height = size;
+            glyph.style.alignItems = Align.Center;
+            host.Add(glyph);
+
+            glyph.Add(GlyphPart(size * 0.34f, size * 0.12f, color, size * 0.04f, 0f));
+            glyph.Add(GlyphPart(size * 0.9f, size * 0.12f, color, size * 0.04f, 0f));
+            VisualElement body = GlyphPart(size * 0.68f, size * 0.62f, color, 0f, size * 0.12f);
+            body.style.marginTop = size * 0.04f;
+            body.style.flexDirection = FlexDirection.Row;
+            body.style.justifyContent = Justify.SpaceEvenly;
+            body.style.alignItems = Align.Center;
+            for (int i = 0; i < 2; i++)
+            {
+                VisualElement line = GlyphPart(size * 0.07f, size * 0.4f, slit, size * 0.03f, 0f);
+                body.Add(line);
+            }
+
+            glyph.Add(body);
+            button.Add(host);
+            return host;
+        }
+
+        private static VisualElement GlyphPart(float width, float height, Color color, float radius, float bottomRadius)
+        {
+            var part = new VisualElement { pickingMode = PickingMode.Ignore };
+            part.style.width = width;
+            part.style.height = height;
+            part.style.flexShrink = 0;
+            part.style.backgroundColor = color;
+            part.style.borderTopLeftRadius = radius;
+            part.style.borderTopRightRadius = radius;
+            part.style.borderBottomLeftRadius = Mathf.Max(radius, bottomRadius);
+            part.style.borderBottomRightRadius = Mathf.Max(radius, bottomRadius);
+            return part;
         }
 
         private static VisualElement Fill(string name, Texture2D texture)

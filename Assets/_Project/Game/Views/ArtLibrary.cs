@@ -220,6 +220,57 @@ namespace KebabStreet.Game
             return strip;
         }
 
+        /// <summary>Ім'я спрайта інгредієнта за його ідентифікатором (<c>ing_&lt;id&gt;</c>).</summary>
+        public static string IngredientIcon(string ingredientId)
+        {
+            return "ing_" + ingredientId;
+        }
+
+        /// <summary>
+        /// Q-05b: велика іконка по центру кнопки (значок замість слова). Повертає внутрішній елемент-іконку;
+        /// спрайт ставиться через <see cref="ShowIcon"/>. Іконка прихована, доки спрайт не задано.
+        /// Центральна смужка не ловить дотики і лежить поверх тіні/відблиску кнопки.
+        /// </summary>
+        public static VisualElement AddCenterIcon(VisualElement button, float size, string name)
+        {
+            if (button == null)
+            {
+                return null;
+            }
+
+            var strip = new VisualElement { pickingMode = PickingMode.Ignore, name = name + "-strip" };
+            strip.style.position = Position.Absolute;
+            strip.style.left = 0;
+            strip.style.right = 0;
+            strip.style.top = 0;
+            strip.style.bottom = 0;
+            strip.style.flexDirection = FlexDirection.Row;
+            strip.style.justifyContent = Justify.Center;
+            strip.style.alignItems = Align.Center;
+            var icon = new VisualElement { pickingMode = PickingMode.Ignore, name = name };
+            icon.AddToClassList("ks-icon");
+            icon.style.width = size;
+            icon.style.height = size;
+            icon.style.flexShrink = 0;
+            icon.style.display = DisplayStyle.None;
+            strip.Add(icon);
+            button.Add(strip);
+            return icon;
+        }
+
+        /// <summary>Ставить спрайт у іконку й показує її; немає спрайта (або name null) — ховає. true — показано.</summary>
+        public static bool ShowIcon(VisualElement icon, string name)
+        {
+            if (icon == null)
+            {
+                return false;
+            }
+
+            bool shown = !string.IsNullOrEmpty(name) && Apply(icon, name);
+            icon.style.display = shown ? DisplayStyle.Flex : DisplayStyle.None;
+            return shown;
+        }
+
         /// <summary>Підключає тему USS до кореня (повторне підключення нічого не міняє). Немає теми — нічого не робить.</summary>
         public static void ApplyTheme(VisualElement root)
         {

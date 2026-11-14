@@ -19,16 +19,17 @@ namespace KebabStreet.Game
 
         /// <summary>Скільки кнопок у рядку (станції, дошка): ≈ 290 px логічної ширини на 1080x2340.</summary>
         public const int ButtonsPerRow = 3;
-        private const float StationIconSize = 48f;
-        private const float StationIconMargin = 8f;
-        private const float ClearPadding = 12f;
-        private const float ClearWidth = 250f;
+        private const float StationIconSize = 128f;
+        private const float ItemIconSize = 96f;
+        private const float QueueIconSize = 72f;
+        private const float ClearGlyphSize = 64f;
+        private const float ClearWidth = 144f;
 
         /// <summary>Найбільше показаних дій черги (rules.actionQueueMax може бути більшим).</summary>
         public const int MaxQueueShown = 4;
 
         // Референс 1080x1920 (ART_STYLE_GUIDE 4.1): зона дотику ≥ 144 px (48 dp), текст ≥ 28 px.
-        private const float StationHeight = 144f;
+        private const float StationHeight = 176f;
         private const float ItemHeight = 144f;
         private const float QueueHeight = 112f;
         private const float Gap = 12f;
@@ -47,6 +48,14 @@ namespace KebabStreet.Game
         private readonly ILocalizer _text;
         private readonly int[] _stations;
         private readonly string[] _ingredientNames;
+        private readonly string[] _ingredientIcons;
+        private readonly string[] _stationTexts;
+        private readonly string[] _itemTexts;
+        private readonly string[] _queueTexts;
+        private readonly VisualElement[] _stationIcons;
+        private readonly VisualElement[] _itemIcons;
+        private readonly VisualElement[] _queueIcons;
+        private readonly Label _queueTitle;
         private readonly string[] _actionNames = new string[(int)ShiftActionType.ServeDish + 1];
         private readonly string _comboFormat;
         private readonly Button[] _stationButtons;
@@ -55,6 +64,7 @@ namespace KebabStreet.Game
         private readonly Button[] _queue;
         private readonly ShiftAction[] _shownQueue;
         private readonly Button _clear;
+        private readonly string _clearText;
         private readonly TapDecor[] _stationDecors;
         private readonly TapDecor[] _itemDecors;
         private readonly TapDecor _clearDecor;
@@ -80,9 +90,11 @@ namespace KebabStreet.Game
             _comboFormat = text.Get(TextKeys.AssemblyCombo);
             _stations = board == null ? new int[0] : AssemblyView.Stations(board);
             _ingredientNames = new string[board == null ? 0 : board.Config.IngredientCount];
+            _ingredientIcons = new string[_ingredientNames.Length];
             for (int i = 0; i < _ingredientNames.Length; i++)
             {
                 _ingredientNames[i] = text.Get(board.Config.GetIngredient(i).NameKey);
+                _ingredientIcons[i] = ArtLibrary.IngredientIcon(board.Config.GetIngredient(i).Id);
             }
 
             for (int type = 0; type < _actionNames.Length; type++)
@@ -99,18 +111,33 @@ namespace KebabStreet.Game
             parent.Add(Root);
 
             _stationButtons = Grid("assembly-station", _stations.Length, StationHeight, StationColor, TapStation);
+            _stationTexts = new string[_stations.Length];
+            _stationIcons = new VisualElement[_stations.Length];
             for (int i = 0; i < _stations.Length; i++)
             {
-                _stationButtons[i].text = _ingredientNames[_stations[i]];
-
-                // S1-18: спрайт інгредієнта ing_<id> над написом; немає спрайта — лише текст.
+                // Q-05b (QB-SHIFT-24): станція - велика іконка інгредієнта з глибиною; слово лише як tooltip
+                // (і як резерв, якщо спрайта немає).
                 Button station = _stationButtons[i];
-                ArtLibrary.AddTopIcon(
-                    station, "ing_" + board.Config.GetIngredient(_stations[i]).Id, StationIconSize, StationIconMargin);
+                _stationTexts[i] = _ingredientNames[_stations[i]];
+                station.tooltip = _stationTexts[i];
+                UiDecor.AddButtonDepth(station, StationColor);
+                _stationIcons[i] = ArtLibrary.AddCenterIcon(station, StationIconSize, "assembly-station-icon-" + i);
+                if (!ArtLibrary.ShowIcon(_stationIcons[i], _ingredientIcons[_stations[i]]))
+                {
+                    station.text = _stationTexts[i];
+                }
             }
 
             _items = Grid("assembly-item", board == null ? 0 : board.Capacity, ItemHeight, ItemColor, TapBoardItem);
             _shownItems = new int[_items.Length];
+            _itemTexts = new string[_items.Length];
+            _itemIcons = new VisualElement[_items.Length];
+            for (int i = 0; i < _items.Length; i++)
+            {
+                UiDecor.AddButtonDepth(_items[i], ItemColor);
+                _itemIcons[i] = ArtLibrary.AddCenterIcon(_items[i], ItemIconSize, "assembly-item-icon-" + i);
+                _itemTexts[i] = string.Empty;
+            }
 
             // S1-21: відгук на тап - рамка підсвічування і смужка дії на кожній кнопці.
             _stationDecors = new TapDecor[_stationButtons.Length];
@@ -129,8 +156,14 @@ namespace KebabStreet.Game
             _dish = AddLabel(status, "assembly-dish", FontSize, Color.white);
             Backdrop(_dish);
             _dish.style.flexGrow = 1;
-            _clear = AddButton(status, "assembly-clear", text.Get(TextKeys.AssemblyClear), ClearColor, () => TapClear());
+            _clear = AddButton(status, "assembly-clear", string.Empty, ClearColor, () => TapClear());
             _clear.style.height = QueueHeight;
+
+            // Q-05b (QB-SHIFT-28): «Очистити дошку» - значок смітника (форма з елементів, без ресурсу); слово - tooltip.
+            _clearText = text.Get(TextKeys.AssemblyClear);
+            _clear.tooltip = _clearText;
+            UiDecor.AddButtonDepth(_clear, ClearColor);
+            UiDecor.AddTrashGlyph(_clear, ClearGlyphSize, Color.white, ClearColor);
 
             // S1-23: кнопка не стискується до вузької колонки: ширина за текстом, напис в один рядок.
             _clear.style.flexShrink = 0;
@@ -139,9 +172,6 @@ namespace KebabStreet.Game
             _clear.style.width = ClearWidth;
             _clear.style.minWidth = ClearWidth;
             _clear.style.fontSize = SmallFontSize;
-            _clear.parent.style.overflow = Overflow.Hidden;
-            _clear.style.paddingLeft = ClearPadding;
-            _clear.style.paddingRight = ClearPadding;
             _dish.style.flexBasis = 0;
             _dish.style.flexShrink = 1;
             _dish.style.minWidth = 0;
@@ -149,11 +179,15 @@ namespace KebabStreet.Game
             _clear.style.display = board != null && board.IsBinAvailable ? DisplayStyle.Flex : DisplayStyle.None;
 
             VisualElement queueRow = Row(Root, "assembly-queue");
-            Label queueTitle = AddLabel(queueRow, "assembly-queue-title", SmallFontSize, Color.white);
-            queueTitle.text = text.Get(TextKeys.AssemblyQueue);
-            Backdrop(queueTitle);
+
+            // Q-05b (QB-SHIFT-29): підпис «Далі:» не показуємо - чергу читають за значками; слово лишається в tooltip.
+            _queueTitle = AddLabel(queueRow, "assembly-queue-title", SmallFontSize, Color.white);
+            _queueTitle.text = text.Get(TextKeys.AssemblyQueue);
+            _queueTitle.style.display = DisplayStyle.None;
             _queue = new Button[Math.Min(simulation.Config.ActionQueueMax, MaxQueueShown)];
             _shownQueue = new ShiftAction[_queue.Length];
+            _queueTexts = new string[_queue.Length];
+            _queueIcons = new VisualElement[_queue.Length];
             for (int i = 0; i < _queue.Length; i++)
             {
                 int index = i;
@@ -162,6 +196,9 @@ namespace KebabStreet.Game
                 _queue[i].style.fontSize = SmallFontSize;
                 _queue[i].style.flexGrow = 1;
                 _queue[i].style.flexBasis = 0;
+                _queue[i].tooltip = _queueTitle.text;
+                _queueTexts[i] = string.Empty;
+                _queueIcons[i] = ArtLibrary.AddCenterIcon(_queue[i], QueueIconSize, "assembly-queued-icon-" + i);
             }
 
             VisualElement notes = Row(Root, "assembly-notes");
@@ -208,7 +245,23 @@ namespace KebabStreet.Game
             return _stations[index];
         }
 
+        /// <summary>Локалізоване ім'я інгредієнта станції (a11y); на екрані станцію показує значок (Q-05b).</summary>
         public string GetStationText(int index)
+        {
+            return _stationTexts[index];
+        }
+
+        /// <summary>Чи станція показує значок (а не напис).</summary>
+        public bool IsStationIconShown(int index)
+        {
+            return _stationIcons[index].style.display.value == DisplayStyle.Flex;
+        }
+
+        /// <summary>Локалізований напис кнопки «Очистити дошку» (a11y); на екрані - смітник.</summary>
+        public string ClearText => _clearText;
+
+        /// <summary>Напис, що справді видно на кнопці станції (порожньо, коли показано значок).</summary>
+        public string GetVisibleStationText(int index)
         {
             return _stationButtons[index].text;
         }
@@ -221,6 +274,18 @@ namespace KebabStreet.Game
 
         public string GetItemText(int position)
         {
+            return _itemTexts[position];
+        }
+
+        /// <summary>Чи місце дошки показує значок інгредієнта.</summary>
+        public bool IsItemIconShown(int position)
+        {
+            return _itemIcons[position].style.display.value == DisplayStyle.Flex;
+        }
+
+        /// <summary>Напис, що справді видно на місці дошки.</summary>
+        public string GetVisibleItemText(int position)
+        {
             return _items[position].text;
         }
 
@@ -232,7 +297,35 @@ namespace KebabStreet.Game
 
         public string GetQueuedText(int index)
         {
-            return _queue[index].text;
+            return _queueTexts[index];
+        }
+
+        /// <summary>Чи дія черги показує значок.</summary>
+        public bool IsQueuedIconShown(int index)
+        {
+            return _queueIcons[index].style.display.value == DisplayStyle.Flex;
+        }
+
+        /// <summary>Ім'я спрайта для дії черги (null - значка немає, показується слово).</summary>
+        public static string QueueIconName(ShiftAction action, string[] ingredientIcons)
+        {
+            switch (action.Type)
+            {
+                case ShiftActionType.AddIngredient:
+                    return ingredientIcons != null && action.Slot >= 0 && action.Slot < ingredientIcons.Length
+                        ? ingredientIcons[action.Slot]
+                        : null;
+                case ShiftActionType.PlaceMeat:
+                    return ArtLibrary.IngredientIcon("meat");
+                case ShiftActionType.TakeMeat:
+                    return ArtLibrary.MeatDone;
+                case ShiftActionType.DiscardBurntMeat:
+                    return ArtLibrary.MeatBurnt;
+                case ShiftActionType.ServeDish:
+                    return ArtLibrary.Coin;
+                default:
+                    return null;
+            }
         }
 
         /// <summary>Тап по кнопці станції: інгредієнт на дошку.</summary>
@@ -285,7 +378,10 @@ namespace KebabStreet.Game
                 int item = p < board.ItemCount ? board.GetItem(p) : -1;
                 if (!_drawn || item != _shownItems[p])
                 {
-                    _items[p].text = item >= 0 ? _ingredientNames[item] : string.Empty;
+                    _itemTexts[p] = item >= 0 ? _ingredientNames[item] : string.Empty;
+                    _items[p].tooltip = _itemTexts[p];
+                    bool itemIcon = ArtLibrary.ShowIcon(_itemIcons[p], item >= 0 ? _ingredientIcons[item] : null);
+                    _items[p].text = itemIcon ? string.Empty : _itemTexts[p];
                     _items[p].style.visibility = item >= 0 ? Visibility.Visible : Visibility.Hidden;
                     _shownItems[p] = item;
                 }
@@ -296,7 +392,10 @@ namespace KebabStreet.Game
                 ShiftAction action = i < simulation.QueuedActionCount ? simulation.GetQueuedAction(i) : default(ShiftAction);
                 if (!_drawn || !action.Equals(_shownQueue[i]))
                 {
-                    _queue[i].text = NameOf(action);
+                    _queueTexts[i] = NameOf(action);
+                    bool queueIcon = ArtLibrary.ShowIcon(
+                        _queueIcons[i], action.Type != ShiftActionType.None ? QueueIconName(action, _ingredientIcons) : null);
+                    _queue[i].text = queueIcon ? string.Empty : _queueTexts[i];
                     _queue[i].style.visibility = action.Type != ShiftActionType.None ? Visibility.Visible : Visibility.Hidden;
                     _shownQueue[i] = action;
                 }
