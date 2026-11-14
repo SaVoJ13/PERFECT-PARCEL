@@ -78,7 +78,7 @@ namespace KebabStreet.Editor
                     locationPathName = outputPath,
                     target = BuildTarget.Android,
                     targetGroup = BuildTargetGroup.Android,
-                    options = BuildOptions.None,
+                    options = IsDevelopmentBuild() ? BuildOptions.Development : BuildOptions.None,
                 });
 
                 BuildSummary summary = report.summary;
@@ -161,6 +161,13 @@ namespace KebabStreet.Editor
             PlayerSettings.Android.keyaliasPass = aliasPass;
             Debug.Log("[BuildScript] Підпис: ключ із секретів CI.");
             return true;
+        }
+
+        /// <summary>Development-збірка (S1-22) лише за явною змінною KS_DEVELOPMENT_BUILD=true; за замовчуванням реліз.</summary>
+        private static bool IsDevelopmentBuild()
+        {
+            return Environment.GetEnvironmentVariable("KS_DEVELOPMENT_BUILD") == "true"
+                || GetArgument("-ksDevelopmentBuild") == "true";
         }
 
         private static string GetArgument(string name)

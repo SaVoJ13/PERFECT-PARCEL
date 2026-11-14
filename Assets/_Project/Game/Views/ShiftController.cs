@@ -17,6 +17,7 @@ namespace KebabStreet.Game
         private ShiftScreen _screen;
         private SfxDirector _sfx;
         private TutorialDirector _tutorial;
+        private FrameStats _frameStats;
         private bool _userPaused;
         private bool _appPaused;
         private bool _hasFocus = true;
@@ -41,6 +42,9 @@ namespace KebabStreet.Game
             _screen = new ShiftScreen(
                 Container, _driver, Context.Text, OnPauseTap, OnResumeTap, OnExit, OnRetry, OnNext, Context.NextLevelNumber != 0, _tutorial, SaveTutorial);
 
+            // S1-22: вимірювання кадрів лише в development-збірці (у релізній _frameStats лишається null).
+            _frameStats = Debug.isDebugBuild ? new FrameStats() : null;
+
             _driver.Begin();
             ApplyPause();
             _screen.Refresh();
@@ -53,9 +57,15 @@ namespace KebabStreet.Game
                 return;
             }
 
-            _driver.Frame(Time.unscaledDeltaTime);
+            float delta = Time.unscaledDeltaTime;
+            _driver.Frame(delta);
             _sfx.Update(_driver.IsPaused);
             _screen.Refresh();
+
+            if (_frameStats != null && _frameStats.Frame(delta, _driver.IsPaused))
+            {
+                GameLog.Info("frames " + _frameStats.TakeReport());
+            }
         }
 
         private void OnDestroy()
