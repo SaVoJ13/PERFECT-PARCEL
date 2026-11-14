@@ -26,12 +26,12 @@ namespace KebabStreet.Game
         private const int WarningTextIndex = 5;
         private const int TextCount = 6;
 
-        private static readonly Color EmptyColor = new Color(0.42f, 0.27f, 0.19f);
-        private static readonly Color RawColor = new Color(0.91f, 0.51f, 0.48f);
-        private static readonly Color CookingColor = new Color(0.80f, 0.42f, 0.30f);
-        private static readonly Color DoneColor = new Color(0.18f, 0.62f, 0.31f);
-        private static readonly Color WarningColor = new Color(0.96f, 0.62f, 0.04f);
-        private static readonly Color BurntColor = new Color(0.10f, 0.08f, 0.08f);
+        private static readonly Color EmptyColor = UiColors.GrillEmpty;
+        private static readonly Color RawColor = UiColors.GrillRaw;
+        private static readonly Color CookingColor = UiColors.GrillCooking;
+        private static readonly Color DoneColor = UiColors.GrillDone;
+        private static readonly Color WarningColor = UiColors.GrillWarning;
+        private static readonly Color BurntColor = UiColors.GrillBurnt;
         private static readonly Color BurntBorder = new Color(0.84f, 0.16f, 0.16f);
         private static readonly Color BarColor = new Color(1f, 0.95f, 0.84f);
         private static readonly Color QueuedBorder = Color.white;
@@ -194,7 +194,9 @@ namespace KebabStreet.Game
             {
                 bool warning = view.Display == GrillSlotDisplay.Done && view.BurnWarning;
                 button.text = _texts[warning ? WarningTextIndex : (int)view.Display];
-                button.style.backgroundColor = ColorOf(view);
+                Color background = ColorOf(view);
+                button.style.backgroundColor = background;
+                button.style.color = UiColors.GrillText(background);
                 string iconName = IconOf(view);
                 _icons[index].style.display = iconName != null && ArtLibrary.Apply(_icons[index], iconName)
                     ? DisplayStyle.Flex

@@ -103,6 +103,55 @@ namespace KebabStreet.Game
             return true;
         }
 
+        /// <summary>
+        /// Як <see cref="Apply"/>, але спрайт малюється фіксованим розміром від лівого верхнього кута
+        /// (для заповнення сердечка: обрізається шириною елемента). true — спрайт знайдено.
+        /// </summary>
+        public static bool ApplyFixed(VisualElement element, string name, float size)
+        {
+            Sprite sprite = Get(name);
+            if (element == null || sprite == null)
+            {
+                return false;
+            }
+
+            element.style.backgroundImage = new StyleBackground(sprite);
+            element.style.backgroundSize = new BackgroundSize(new Length(size, LengthUnit.Pixel), new Length(size, LengthUnit.Pixel));
+            element.style.backgroundPositionX = new BackgroundPosition(BackgroundPositionKeyword.Left);
+            element.style.backgroundPositionY = new BackgroundPosition(BackgroundPositionKeyword.Top);
+            element.style.backgroundRepeat = new BackgroundRepeat(Repeat.NoRepeat, Repeat.NoRepeat);
+            return true;
+        }
+
+        /// <summary>
+        /// Додає до батька квадратну іконку-спрайт (клас <c>ks-icon</c>). Немає спрайта — повертає null і нічого не додає
+        /// (текстова альтернатива лишається в підписі).
+        /// </summary>
+        public static VisualElement AddIcon(VisualElement parent, string name, float size, bool first = false)
+        {
+            if (parent == null || Get(name) == null)
+            {
+                return null;
+            }
+
+            var icon = new VisualElement { pickingMode = PickingMode.Ignore };
+            icon.AddToClassList("ks-icon");
+            icon.style.width = size;
+            icon.style.height = size;
+            icon.style.flexShrink = 0;
+            Apply(icon, name);
+            if (first)
+            {
+                parent.Insert(0, icon);
+            }
+            else
+            {
+                parent.Add(icon);
+            }
+
+            return icon;
+        }
+
         /// <summary>Підключає тему USS до кореня (повторне підключення нічого не міняє). Немає теми — нічого не робить.</summary>
         public static void ApplyTheme(VisualElement root)
         {
