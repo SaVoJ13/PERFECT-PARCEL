@@ -28,8 +28,8 @@ namespace KebabStreet.Game
         private const float ZoneBorder = 4f;
 
         private static readonly Color ZoneBorderColor = new Color(0.42f, 0.27f, 0.19f);
-        private static readonly Color OverlayColor = new Color(0.10f, 0.07f, 0.06f, 0.92f);
-        private static readonly Color CoinColor = new Color(1f, 0.79f, 0.2f);
+        private static readonly Color OverlayColor = UiColors.Overlay;
+        private static readonly Color CoinColor = UiColors.Coin;
 
         private readonly ShiftDriver _driver;
         private readonly ILocalizer _text;
@@ -99,6 +99,9 @@ namespace KebabStreet.Game
             root.style.paddingBottom = SafeBottom;
             container.Add(root);
 
+            // S1-17: відступи за справжньою безпечною зоною телефона (виріз, жестова панель), а не лише за референсом.
+            root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea(root));
+
             VisualElement titleRow = Row(root);
             Label level = HudLabel(
                 titleRow, string.Format(text.Get(TextKeys.ShiftLevelTitle), driver.Level.Number), LevelFontSize, Color.white);
@@ -110,7 +113,9 @@ namespace KebabStreet.Game
             pause.style.height = PauseButtonHeight;
             pause.style.marginTop = 0;
 
+            Backdrop(titleRow);
             VisualElement hud = Row(root);
+            Backdrop(hud);
             hud.name = "shift-hud";
             hud.style.justifyContent = Justify.SpaceBetween;
 
@@ -307,6 +312,19 @@ namespace KebabStreet.Game
             _nextButton.style.display = view.CanNext ? DisplayStyle.Flex : DisplayStyle.None;
         }
 
+        private static void ApplySafeArea(VisualElement root)
+        {
+            Rect safe = UnityEngine.Screen.safeArea;
+            float scale = SafeAreaMath.ScaleOf(UnityEngine.Screen.height, root.layout.height);
+            float top = Mathf.Max(SafeTop, SafeAreaMath.Top(UnityEngine.Screen.height, safe.y, safe.height, scale));
+            float bottom = Mathf.Max(SafeBottom, SafeAreaMath.Bottom(safe.y, scale));
+            if (Mathf.Abs(root.resolvedStyle.paddingTop - top) > 0.5f || Mathf.Abs(root.resolvedStyle.paddingBottom - bottom) > 0.5f)
+            {
+                root.style.paddingTop = top;
+                root.style.paddingBottom = bottom;
+            }
+        }
+
         private static void NoAction()
         {
         }
@@ -322,6 +340,14 @@ namespace KebabStreet.Game
             row.style.marginBottom = Gap / 2f;
             parent.Add(row);
             return row;
+        }
+
+        // S1-17: белий текст на білих смугах навісу не читався - темна підкладка під смугою.
+        private static void Backdrop(VisualElement row)
+        {
+            row.style.backgroundColor = UiColors.HudBackdrop;
+            row.style.borderBottomLeftRadius = Gap;
+            row.style.borderBottomRightRadius = Gap;
         }
 
         private static Label HudLabel(VisualElement parent, string text, float size, Color color)

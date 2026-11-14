@@ -31,13 +31,13 @@ namespace KebabStreet.Game
         private const float FontSize = 34f;
         private const float SmallFontSize = 28f;
 
-        private static readonly Color StationColor = new Color(0.61f, 0.35f, 0.17f);
-        private static readonly Color ItemColor = new Color(0.42f, 0.27f, 0.19f);
-        private static readonly Color ClearColor = new Color(0.45f, 0.12f, 0.12f);
-        private static readonly Color QueueColor = new Color(0.25f, 0.25f, 0.25f);
-        private static readonly Color ReadyColor = new Color(0.18f, 0.62f, 0.31f);
-        private static readonly Color WarningColor = new Color(0.96f, 0.62f, 0.04f);
-        private static readonly Color CoinColor = new Color(1f, 0.79f, 0.2f);
+        private static readonly Color StationColor = UiColors.StationButton;
+        private static readonly Color ItemColor = UiColors.ItemButton;
+        private static readonly Color ClearColor = UiColors.ClearButton;
+        private static readonly Color QueueColor = UiColors.QueueButton;
+        private static readonly Color ReadyColor = UiColors.ReadyText;
+        private static readonly Color WarningColor = UiColors.Warning;
+        private static readonly Color CoinColor = UiColors.Coin;
 
         private readonly ShiftInput _input;
         private readonly ILocalizer _text;
@@ -102,13 +102,16 @@ namespace KebabStreet.Game
 
             VisualElement status = Row(Root, "assembly-status");
             _dish = AddLabel(status, "assembly-dish", FontSize, Color.white);
+            Backdrop(_dish);
             _dish.style.flexGrow = 1;
             _clear = AddButton(status, "assembly-clear", text.Get(TextKeys.AssemblyClear), ClearColor, () => TapClear());
             _clear.style.height = QueueHeight;
             _clear.style.display = board != null && board.IsBinAvailable ? DisplayStyle.Flex : DisplayStyle.None;
 
             VisualElement queueRow = Row(Root, "assembly-queue");
-            AddLabel(queueRow, "assembly-queue-title", SmallFontSize, Color.white).text = text.Get(TextKeys.AssemblyQueue);
+            Label queueTitle = AddLabel(queueRow, "assembly-queue-title", SmallFontSize, Color.white);
+            queueTitle.text = text.Get(TextKeys.AssemblyQueue);
+            Backdrop(queueTitle);
             _queue = new Button[Math.Min(simulation.Config.ActionQueueMax, MaxQueueShown)];
             _shownQueue = new ShiftAction[_queue.Length];
             for (int i = 0; i < _queue.Length; i++)
@@ -123,8 +126,10 @@ namespace KebabStreet.Game
 
             VisualElement notes = Row(Root, "assembly-notes");
             _hint = AddLabel(notes, "assembly-hint", FontSize, WarningColor);
+            Backdrop(_hint);
             _hint.style.flexGrow = 1;
             _combo = AddLabel(notes, "assembly-combo", FontSize, CoinColor);
+            Backdrop(_combo);
 
             Refresh();
         }
@@ -326,6 +331,20 @@ namespace KebabStreet.Game
             button.style.backgroundColor = color;
             parent.Add(button);
             return button;
+        }
+
+        // S1-17: сірі й бурштинові написи на дерев'яному фоні зникали - темна підкладка під текстом.
+        private static void Backdrop(Label label)
+        {
+            label.style.backgroundColor = UiColors.LabelBackdrop;
+            label.style.paddingLeft = Gap;
+            label.style.paddingRight = Gap;
+            label.style.paddingTop = Gap / 3f;
+            label.style.paddingBottom = Gap / 3f;
+            label.style.borderTopLeftRadius = Gap;
+            label.style.borderTopRightRadius = Gap;
+            label.style.borderBottomLeftRadius = Gap;
+            label.style.borderBottomRightRadius = Gap;
         }
 
         private static Label AddLabel(VisualElement parent, string name, float size, Color color)

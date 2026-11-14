@@ -23,11 +23,11 @@ namespace KebabStreet.Game
         private const float ButtonFontSize = 36f;
         private const float HighlightWidth = 8f;
 
-        private static readonly Color PlaqueColor = new Color(0.20f, 0.13f, 0.09f, 0.96f);
+        private static readonly Color PlaqueColor = UiColors.Plaque;
         private static readonly Color PlaqueBorder = new Color(1f, 0.85f, 0.4f);
         private static readonly Color HighlightColor = new Color(1f, 0.85f, 0.4f);
         private const float AliSize = 120f;
-        private static readonly Color ButtonColor = new Color(0.85f, 0.45f, 0.15f);
+        private static readonly Color ButtonColor = UiColors.TutorialButton;
 
         private readonly TutorialDirector _director;
         private readonly ILocalizer _text;
@@ -89,15 +89,20 @@ namespace KebabStreet.Game
             _plaque.pickingMode = PickingMode.Ignore;
             parent.Add(_plaque);
 
-            // Дядько Алі (S1-12): портрет над краєм плашки, праворуч; немає спрайта — просто не показується.
+            // Дядько Алі (S1-12): портрет у рядку з текстом, ліворуч (S1-17: раніше стояв над краєм плашки
+            // й перекривав кнопку «Очистити дошку»). Немає спрайта — просто не показується.
+            var head = new VisualElement { name = "tutorial-head", pickingMode = PickingMode.Ignore };
+            head.style.flexDirection = FlexDirection.Row;
+            head.style.alignItems = Align.Center;
+            _plaque.Add(head);
+
             var portrait = new VisualElement { name = "tutorial-portrait", pickingMode = PickingMode.Ignore };
-            portrait.style.position = Position.Absolute;
-            portrait.style.top = -AliSize;
-            portrait.style.right = Padding;
+            portrait.style.flexShrink = 0;
             portrait.style.width = AliSize;
             portrait.style.height = AliSize;
+            portrait.style.marginRight = Padding;
             ArtLibrary.Apply(portrait, ArtLibrary.Ali);
-            _plaque.Add(portrait);
+            head.Add(portrait);
 
             _label = new Label(string.Empty);
             _label.style.fontSize = TextSize;
@@ -105,7 +110,9 @@ namespace KebabStreet.Game
             _label.style.whiteSpace = WhiteSpace.Normal;
             _label.style.unityTextAlign = TextAnchor.MiddleLeft;
             _label.pickingMode = PickingMode.Ignore;
-            _plaque.Add(_label);
+            _label.style.flexGrow = 1;
+            _label.style.flexShrink = 1;
+            head.Add(_label);
 
             var row = new VisualElement();
             row.style.flexDirection = FlexDirection.Row;
@@ -118,6 +125,12 @@ namespace KebabStreet.Game
             _nextButton.name = "tutorial-next";
             _skipAllButton = AddButton(row, text.Get(TextKeys.TutorialSkip), OnSkipAll);
             _skipAllButton.name = "tutorial-skip-all";
+
+            // S1-17: плашка стоїть над грилем за його справжнім положенням, а не на сталих 352 px.
+            if (grillZone != null)
+            {
+                grillZone.RegisterCallback<GeometryChangedEvent>(_ => AnchorAboveGrill(parent, grillZone));
+            }
         }
 
         /// <summary>Плашку показано.</summary>
@@ -159,6 +172,22 @@ namespace KebabStreet.Game
             _skipAllButton.style.display = _director.Model.CanSkipAll ? DisplayStyle.Flex : DisplayStyle.None;
             _plaque.style.display = DisplayStyle.Flex;
             SetHighlight(TutorialAnchors.ZoneOf(step.Anchor));
+        }
+
+        private void AnchorAboveGrill(VisualElement parent, VisualElement grill)
+        {
+            float parentHeight = parent.layout.height;
+            float top = grill.layout.y;
+            if (float.IsNaN(parentHeight) || float.IsNaN(top) || parentHeight <= 0f)
+            {
+                return;
+            }
+
+            float bottom = parentHeight - top + (Padding / 2f);
+            if (Mathf.Abs(_plaque.style.bottom.value.value - bottom) > 0.5f)
+            {
+                _plaque.style.bottom = bottom;
+            }
         }
 
         private void OnNext()

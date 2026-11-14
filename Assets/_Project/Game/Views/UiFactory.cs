@@ -14,10 +14,10 @@ namespace KebabStreet.Game
         private const float BodySize = 40f;
         private const float ButtonHeight = 140f;
         private const float Gap = 32f;
-        public static readonly Color Background = new Color(0.169f, 0.106f, 0.180f); // Night Plum #2B1B2E
-        private static readonly Color ButtonColor = new Color(1f, 0.718f, 0.012f); // Saffron #FFB703, текст Espresso (WCAG AA)
-        private static readonly Color ButtonTextColor = new Color(0.231f, 0.137f, 0.078f);
-        private static readonly Color NoticeColor = new Color(1f, 0.718f, 0.012f);
+        public static readonly Color Background = UiColors.NightPlum; // Night Plum #2B1B2E
+        private static readonly Color ButtonColor = UiColors.Saffron; // Saffron #FFB703, текст Espresso (WCAG AA)
+        private static readonly Color ButtonTextColor = UiColors.Espresso;
+        private static readonly Color NoticeColor = UiColors.Saffron;
 
         /// <summary>Повноекранний вертикальний контейнер по центру.</summary>
         public static VisualElement Screen(VisualElement root)
