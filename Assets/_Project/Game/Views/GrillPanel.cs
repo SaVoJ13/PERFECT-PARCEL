@@ -42,6 +42,7 @@ namespace KebabStreet.Game
         private readonly Button[] _buttons;
         private readonly VisualElement[] _bars;
         private readonly VisualElement[] _icons;
+        private readonly TapDecor[] _decors;
         private readonly GrillSlotView[] _shown;
         private readonly bool[] _drawn;
         private readonly string[] _texts = new string[TextCount];
@@ -80,6 +81,7 @@ namespace KebabStreet.Game
             _buttons = new Button[count];
             _bars = new VisualElement[count];
             _icons = new VisualElement[count];
+            _decors = new TapDecor[count];
             _shown = new GrillSlotView[count];
             _drawn = new bool[count];
             for (int i = 0; i < count; i++)
@@ -100,6 +102,12 @@ namespace KebabStreet.Game
         public string GetSlotText(int slot)
         {
             return _buttons[slot].text;
+        }
+
+        /// <summary>Відгук на тап слота (S1-21): рамка світиться, смужка дії.</summary>
+        public TapDecor GetDecor(int slot)
+        {
+            return _decors[slot];
         }
 
         /// <summary>Вигляд слота, який зараз показано.</summary>
@@ -125,6 +133,10 @@ namespace KebabStreet.Game
             for (int i = 0; i < _buttons.Length; i++)
             {
                 GrillSlotView view = GrillView.FromSimulation(simulation, i);
+
+                // S1-21: відгук на тап - рамка і смужка дії; оновлюється щокадру, стиль міняється лише за зміни.
+                _decors[i].Update(
+                    _input.IsLit(FeedbackTarget.GrillSlot, i), _input.ProgressOf(FeedbackTarget.GrillSlot, i), ColorOf(view));
                 if (_drawn[i] && view.Equals(_shown[i]))
                 {
                     continue;
@@ -176,6 +188,7 @@ namespace KebabStreet.Game
             icon.style.display = DisplayStyle.None;
             button.Add(icon);
             _icons[index] = icon;
+            _decors[index] = new TapDecor(button, "grill-slot-" + index);
 
             Root.Add(button);
             _buttons[index] = button;

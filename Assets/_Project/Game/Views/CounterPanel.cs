@@ -204,6 +204,12 @@ namespace KebabStreet.Game
             return _cards[slot].Shown;
         }
 
+        /// <summary>Відгук на тап картки клієнта (S1-21).</summary>
+        public TapDecor GetDecor(int slot)
+        {
+            return _cards[slot].Decor;
+        }
+
         /// <summary>Подія слота, яку зараз показано.</summary>
         public CounterEvent GetShownEvent(int slot)
         {
@@ -363,6 +369,8 @@ namespace KebabStreet.Game
             private readonly VisualElement _bar;
             private readonly VisualElement _order;
             private readonly VisualElement _portrait;
+            private readonly TapDecor _decor;
+            private readonly int _index;
             private readonly bool _showPortrait;
             private bool _drawn;
 
@@ -453,7 +461,13 @@ namespace KebabStreet.Game
                 Strikes = new VisualElement[0];
 
                 Feedback = AddLabel(_button, "counter-event-" + index, FeedbackFontSize, CoinColor);
+
+                // S1-21: рамка підсвічування тапу (видача) і смужка дії на картці.
+                _index = index;
+                _decor = new TapDecor(_button, "counter-slot-" + index);
             }
+
+            public TapDecor Decor => _decor;
 
             public Label Name { get; }
 
@@ -473,6 +487,10 @@ namespace KebabStreet.Game
             {
                 bool first = !_drawn;
                 _drawn = true;
+                _decor.Update(
+                    _owner._input.IsLit(FeedbackTarget.Customer, _index),
+                    _owner._input.ProgressOf(FeedbackTarget.Customer, _index),
+                    view.Occupied ? CardColor : FreeCardColor);
                 CustomerSlotView previous = Shown;
                 if (first || view.CustomerId != previous.CustomerId)
                 {
