@@ -152,6 +152,47 @@ namespace KebabStreet.Game
             return icon;
         }
 
+        /// <summary>
+        /// S1-23: іконки кнопки зі своїм текстом (текст <c>Button.text</c> не є flex-елементом, тому діти кнопки
+        /// лягали б поверх нього). Іконки йдуть рядком біля лівого краю, а кнопка отримує однакові бічні відступи
+        /// на ширину рядка, тож напис лишається по центру і не перекривається. Немає жодного спрайта — нічого не
+        /// міняє, повертає null.
+        /// </summary>
+        public static VisualElement AddLeadingIcons(VisualElement button, string[] names, float size, float margin)
+        {
+            if (button == null || names == null)
+            {
+                return null;
+            }
+
+            var strip = new VisualElement { pickingMode = PickingMode.Ignore, name = "icon-strip" };
+            strip.style.position = Position.Absolute;
+            strip.style.left = margin;
+            strip.style.top = 0;
+            strip.style.bottom = 0;
+            strip.style.flexDirection = FlexDirection.Row;
+            strip.style.alignItems = Align.Center;
+            int added = 0;
+            for (int i = 0; i < names.Length; i++)
+            {
+                if (AddIcon(strip, names[i], size) != null)
+                {
+                    added++;
+                }
+            }
+
+            if (added == 0)
+            {
+                return null;
+            }
+
+            button.Add(strip);
+            float inset = (added * size) + (2f * margin);
+            button.style.paddingLeft = inset;
+            button.style.paddingRight = inset;
+            return strip;
+        }
+
         /// <summary>Підключає тему USS до кореня (повторне підключення нічого не міняє). Немає теми — нічого не робить.</summary>
         public static void ApplyTheme(VisualElement root)
         {

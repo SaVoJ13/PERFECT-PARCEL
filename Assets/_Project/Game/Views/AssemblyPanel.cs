@@ -20,6 +20,8 @@ namespace KebabStreet.Game
         /// <summary>Скільки кнопок у рядку (станції, дошка): ≈ 290 px логічної ширини на 1080x2340.</summary>
         public const int ButtonsPerRow = 3;
         private const float StationIconSize = 64f;
+        private const float StationIconMargin = 12f;
+        private const float ClearPadding = 24f;
 
         /// <summary>Найбільше показаних дій черги (rules.actionQueueMax може бути більшим).</summary>
         public const int MaxQueueShown = 4;
@@ -102,10 +104,8 @@ namespace KebabStreet.Game
 
                 // S1-18: спрайт інгредієнта ing_<id> над написом; немає спрайта — лише текст.
                 Button station = _stationButtons[i];
-                station.style.flexDirection = FlexDirection.Column;
-                station.style.alignItems = Align.Center;
-                station.style.justifyContent = Justify.Center;
-                ArtLibrary.AddIcon(station, "ing_" + board.Config.GetIngredient(_stations[i]).Id, StationIconSize, true);
+                ArtLibrary.AddLeadingIcons(
+                    station, new[] { "ing_" + board.Config.GetIngredient(_stations[i]).Id }, StationIconSize, StationIconMargin);
             }
 
             _items = Grid("assembly-item", board == null ? 0 : board.Capacity, ItemHeight, ItemColor, TapBoardItem);
@@ -130,6 +130,16 @@ namespace KebabStreet.Game
             _dish.style.flexGrow = 1;
             _clear = AddButton(status, "assembly-clear", text.Get(TextKeys.AssemblyClear), ClearColor, () => TapClear());
             _clear.style.height = QueueHeight;
+
+            // S1-23: кнопка не стискується до вузької колонки: ширина за текстом, напис в один рядок.
+            _clear.style.flexShrink = 0;
+            _clear.style.flexGrow = 0;
+            _clear.style.whiteSpace = WhiteSpace.NoWrap;
+            _clear.style.paddingLeft = ClearPadding;
+            _clear.style.paddingRight = ClearPadding;
+            _dish.style.flexBasis = 0;
+            _dish.style.flexShrink = 1;
+            _dish.style.minWidth = 0;
             _clearDecor = new TapDecor(_clear, "assembly-clear");
             _clear.style.display = board != null && board.IsBinAvailable ? DisplayStyle.Flex : DisplayStyle.None;
 

@@ -33,27 +33,28 @@ namespace KebabStreet.Game
             _settingsHint = UiFactory.Body(Container, string.Empty);
         }
 
-        private const float LevelIconSize = 56f;
+        private const float LevelIconSize = 44f;
+        private const float LevelIconMargin = 20f;
         private const int MaxStars = 3;
 
-        /// <summary>Замок або зірки на кнопці рівня (S1-18); текстовий підпис лишається, без спрайтів — лише він.</summary>
+        /// <summary>Замок або зірки на кнопці рівня (S1-18, S1-23: біля лівого краю, текст не перекривається).</summary>
         private static void AddLevelIcons(Button button, LevelEntry entry)
         {
-            button.style.flexDirection = FlexDirection.Row;
-            button.style.alignItems = Align.Center;
-            button.style.justifyContent = Justify.Center;
             if (!entry.Unlocked)
             {
-                ArtLibrary.AddIcon(button, ArtLibrary.Lock, LevelIconSize, true);
+                ArtLibrary.AddLeadingIcons(button, new[] { ArtLibrary.Lock }, LevelIconSize, LevelIconMargin);
                 return;
             }
 
             if (entry.BestStars > 0)
             {
+                var names = new string[MaxStars];
                 for (int s = 0; s < MaxStars; s++)
                 {
-                    ArtLibrary.AddIcon(button, s < entry.BestStars ? ArtLibrary.StarFull : ArtLibrary.StarEmpty, LevelIconSize);
+                    names[s] = s < entry.BestStars ? ArtLibrary.StarFull : ArtLibrary.StarEmpty;
                 }
+
+                ArtLibrary.AddLeadingIcons(button, names, LevelIconSize, LevelIconMargin);
             }
         }
 

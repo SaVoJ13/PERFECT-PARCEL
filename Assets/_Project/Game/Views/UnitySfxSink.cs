@@ -61,10 +61,31 @@ namespace KebabStreet.Game
             _installed = true;
             var holder = new GameObject("Sfx");
             UnityEngine.Object.DontDestroyOnLoad(holder);
+            AttachListener(holder);
             AudioSource source = holder.AddComponent<AudioSource>();
             source.playOnAwake = false;
             source.spatialBlend = 0f;
             SfxHub.Install(new UnitySfxSink(source));
+        }
+
+        /// <summary>
+        /// S1-23 (BUG-054): у сценах немає камери зі слухачем, тож без <see cref="AudioListener"/> звуку не чути.
+        /// Додає слухача на об'єкт, якщо ні на ньому, ні будь-де в сцені його ще немає; повторний виклик не дублює.
+        /// Повертає кількість слухачів на об'єкті (0 або 1).
+        /// </summary>
+        public static int AttachListener(GameObject holder)
+        {
+            if (holder == null)
+            {
+                return 0;
+            }
+
+            if (holder.GetComponent<AudioListener>() == null && UnityEngine.Object.FindFirstObjectByType<AudioListener>() == null)
+            {
+                holder.AddComponent<AudioListener>();
+            }
+
+            return holder.GetComponents<AudioListener>().Length;
         }
 
         private static bool _installed;

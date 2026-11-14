@@ -26,6 +26,7 @@ namespace KebabStreet.Game
         private const float PauseButtonWidth = 260f;
         private const int StarIconCount = 3;
         private const float IconSize = 64f;
+        private const float ButtonIconMargin = 12f;
         private const float StarIconSize = 96f;
         private const float PauseButtonHeight = 144f;
         private const float ZoneBorder = 4f;
@@ -116,10 +117,8 @@ namespace KebabStreet.Game
             pause.style.width = PauseButtonWidth;
             pause.style.height = PauseButtonHeight;
             pause.style.marginTop = 0;
-            pause.style.flexDirection = FlexDirection.Row;
-            pause.style.alignItems = Align.Center;
-            pause.style.justifyContent = Justify.Center;
-            ArtLibrary.AddIcon(pause, ArtLibrary.Pause, IconSize, true);
+            pause.style.flexShrink = 0;
+            ArtLibrary.AddLeadingIcons(pause, new[] { ArtLibrary.Pause }, IconSize, ButtonIconMargin);
 
             Backdrop(titleRow);
             VisualElement hud = Row(root);
@@ -184,10 +183,7 @@ namespace KebabStreet.Game
             _retryButton.style.display = onRetry == null ? DisplayStyle.None : DisplayStyle.Flex;
             Button menu = UiFactory.AddButton(_resultPanel, text.Get(TextKeys.ResultMenu), onExit);
             menu.name = "result-menu";
-            menu.style.flexDirection = FlexDirection.Row;
-            menu.style.alignItems = Align.Center;
-            menu.style.justifyContent = Justify.Center;
-            ArtLibrary.AddIcon(menu, ArtLibrary.Menu, IconSize, true);
+            ArtLibrary.AddLeadingIcons(menu, new[] { ArtLibrary.Menu }, IconSize, ButtonIconMargin);
 
             Refresh();
         }

@@ -392,6 +392,7 @@ namespace KebabStreet.Game
                 _portrait = new VisualElement { name = "counter-portrait-" + index, pickingMode = PickingMode.Ignore };
                 _portrait.style.width = PortraitSize;
                 _portrait.style.height = PortraitSize;
+                _portrait.style.flexShrink = 0;
                 _portrait.style.display = DisplayStyle.None;
                 _showPortrait = owner._cards.Length <= MaxCardsPerRow;
                 _button.Add(_portrait);
@@ -401,6 +402,7 @@ namespace KebabStreet.Game
                 _heartsRow = new VisualElement { name = "counter-hearts-" + index, pickingMode = PickingMode.Ignore };
                 _heartsRow.style.flexDirection = FlexDirection.Row;
                 _heartsRow.style.marginTop = HeartGap;
+                _heartsRow.style.flexShrink = 0;
                 _button.Add(_heartsRow);
                 _heartFills = new VisualElement[hearts];
                 for (int h = 0; h < hearts; h++)
@@ -441,6 +443,7 @@ namespace KebabStreet.Game
                 _barFrame = new VisualElement { pickingMode = PickingMode.Ignore };
                 _barFrame.style.height = BarHeight;
                 _barFrame.style.alignSelf = Align.Stretch;
+                _barFrame.style.flexShrink = 0;
                 _barFrame.style.marginTop = HeartGap;
                 _barFrame.style.marginLeft = CardGap;
                 _barFrame.style.marginRight = CardGap;
@@ -452,9 +455,13 @@ namespace KebabStreet.Game
                 _barFrame.Add(_bar);
 
                 _order = new VisualElement { name = "counter-order-" + index, pickingMode = PickingMode.Ignore };
-                _order.style.flexDirection = FlexDirection.Row;
-                _order.style.flexWrap = Wrap.Wrap;
-                _order.style.justifyContent = Justify.Center;
+
+                // S1-23: значки замовлення — стовпчик рядків (кожен значок займає свій рядок), без перенесення,
+                // що на телефоні складав усі значки в одну точку.
+                _order.style.flexDirection = FlexDirection.Column;
+                _order.style.flexWrap = Wrap.NoWrap;
+                _order.style.alignItems = Align.Center;
+                _order.style.flexShrink = 0;
                 _order.style.marginTop = HeartGap;
                 _button.Add(_order);
                 Chips = new Label[0];
@@ -590,6 +597,8 @@ namespace KebabStreet.Game
                     chip.style.marginTop = ChipGap / 2f;
                     chip.style.marginBottom = ChipGap / 2f;
                     chip.style.unityTextAlign = TextAnchor.MiddleCenter;
+                    chip.style.flexShrink = 0;
+                    chip.style.whiteSpace = WhiteSpace.NoWrap;
 
                     var strike = new VisualElement { pickingMode = PickingMode.Ignore };
                     strike.style.position = Position.Absolute;
@@ -617,6 +626,7 @@ namespace KebabStreet.Game
                 label.style.color = color;
                 label.style.whiteSpace = WhiteSpace.Normal;
                 label.style.unityTextAlign = TextAnchor.MiddleCenter;
+                label.style.flexShrink = 0;
                 parent.Add(label);
                 return label;
             }
