@@ -118,6 +118,22 @@ namespace KebabStreet.Tests.EditMode
         }
 
         [Test]
+        public void PitaPlacedBeforeMeat_PitaHintIsNeverShown()
+        {
+            var model = new TutorialModel(Real(), "L01", new SaveData());
+            model.Handle(Ev(TutorialEventKind.ShiftStarted), 0);
+            Assert.AreEqual("l01.step1", model.Current.Id);
+
+            model.Handle(Ev(TutorialEventKind.AddIngredient, "pita"), 300);
+            Assert.AreEqual("l01.step1", model.Current.Id, "крок «м'ясо» лишається");
+            model.Handle(Ev(TutorialEventKind.PlaceMeat), 600);
+            model.Update(10000);
+
+            Assert.AreEqual(TutorialStepState.Done, model.GetState("l01.step2"));
+            Assert.IsNull(model.Current, "підказка «піта» не показується");
+        }
+
+        [Test]
         public void WrongIngredient_DoesNotCompleteStep()
         {
             var model = new TutorialModel(Real(), "L01", new SaveData());
