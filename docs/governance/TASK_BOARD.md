@@ -62,7 +62,7 @@
 ### Черга підняття якості (ADR-029, 2026-11-14)
 | ID | Завдання | Агент | Статус |
 |---|---|---|---|
-| Q-01 | QUALITY_BAR (планка якості) | ui-art-designer (opus) | Backlog |
+| Q-01 | QUALITY_BAR (планка якості) | ui-art-designer (opus) | Done (PR #55, QA Verified L0) |
 | Q-02 | DESIGN_DEPTH (глибина дизайну) | game-designer (opus) | Backlog |
 | Q-03 | D09_DOSSIER (графіка: ціни, інструменти, сценарії) | ui-art-designer (opus) | Backlog |
 | Q-04 | GAP_ANALYSIS (скриншоти + P0/P1/P2) | qa-release (sonnet) | Backlog |
