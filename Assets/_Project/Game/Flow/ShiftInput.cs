@@ -25,9 +25,34 @@ namespace KebabStreet.Game
             Driver = driver ?? throw new ArgumentNullException(nameof(driver));
             _hintTicks = TickTime.FromMs(HintMs, driver.Simulation.Config.TicksPerSecond);
             _ignored = driver.Simulation.IgnoredActionCount;
+            ShiftSimulation sim = driver.Simulation;
+            Flash = new TapFlash(
+                sim.Grill == null ? 0 : sim.Grill.SlotCount,
+                sim.Board == null ? 0 : sim.Board.Config.IngredientCount,
+                sim.Board == null ? 0 : sim.Board.Capacity,
+                sim.Counter == null ? 0 : sim.Counter.Slots.Count,
+                Math.Max(1L, TickTime.FromMs(TapFlash.FlashMs, sim.Config.TicksPerSecond)));
         }
 
         public ShiftDriver Driver { get; }
+
+        /// <summary>Миттєве підсвічування натиснутого (S1-21).</summary>
+        public TapFlash Flash { get; }
+
+        /// <summary>Дія, що зараз виконується (смужка прогресу, S1-21); оновлюється в <see cref="Update"/>.</summary>
+        public ActionProgressView Progress { get; private set; }
+
+        /// <summary>Чи світиться елемент зараз.</summary>
+        public bool IsLit(FeedbackTarget target, int index)
+        {
+            return Flash.IsLit(target, index, Driver.Simulation.ElapsedTicks);
+        }
+
+        /// <summary>Скільки відсотків дії на цьому елементі відпрацьовано; -1 — на ньому дії немає.</summary>
+        public int ProgressOf(FeedbackTarget target, int index)
+        {
+            return Progress.Is(target, index) ? Progress.Percent : -1;
+        }
 
         /// <summary>Ключ локалізації підказки, яку зараз показувати; null — підказки немає.</summary>
         public string HintKey { get; private set; }
@@ -41,6 +66,7 @@ namespace KebabStreet.Game
                 return false;
             }
 
+            MarkTapped(FeedbackTarget.GrillSlot, slot);
             ShiftTap tap;
             GrillSlotView view = GrillView.FromSimulation(simulation, slot);
             if (GrillView.TryGetTap(view, out tap))
@@ -66,6 +92,7 @@ namespace KebabStreet.Game
                 return false;
             }
 
+            MarkTapped(FeedbackTarget.Customer, slot);
             ShiftTap tap;
             CustomerSlotView view = CounterView.FromSimulation(simulation, slot, CounterView.DefaultHearts);
             return CounterView.TryGetTap(view, out tap) && Driver.Tap(tap, slot);
@@ -74,6 +101,7 @@ namespace KebabStreet.Game
         /// <summary>Тап по станції: покласти інгредієнт на дошку.</summary>
         public bool TapStation(int ingredient)
         {
+            MarkTapped(FeedbackTarget.Station, ingredient);
             return Driver.Tap(ShiftTap.AddIngredient, ingredient);
         }
 
@@ -81,15 +109,26 @@ namespace KebabStreet.Game
         public bool TapBoardItem(int position)
         {
             Board board = Driver.Simulation.Board;
-            return board != null && position >= 0 && position < board.ItemCount
-                && Driver.Tap(ShiftTap.RemoveIngredient, position);
+            if (board == null || position < 0 || position >= board.ItemCount)
+            {
+                return false;
+            }
+
+            MarkTapped(FeedbackTarget.BoardItem, position);
+            return Driver.Tap(ShiftTap.RemoveIngredient, position);
         }
 
         /// <summary>Тап «Очистити дошку» (у смітник, зі штрафом за конфігом).</summary>
         public bool TapClearBoard()
         {
             Board board = Driver.Simulation.Board;
-            return board != null && board.ItemCount > 0 && Driver.Tap(ShiftTap.ClearBoard);
+            if (board == null || board.ItemCount < 1)
+            {
+                return false;
+            }
+
+            MarkTapped(FeedbackTarget.Clear, 0);
+            return Driver.Tap(ShiftTap.ClearBoard);
         }
 
         /// <summary>Тап по дії в черзі: скасувати її (PROVISIONAL 14).</summary>
@@ -115,6 +154,16 @@ namespace KebabStreet.Game
             if (HintKey != null && simulation.ElapsedTicks >= _hintUntil)
             {
                 HintKey = null;
+            }
+
+            Progress = ActionProgressView.FromSimulation(simulation);
+        }
+
+        private void MarkTapped(FeedbackTarget target, int index)
+        {
+            if (CanTap())
+            {
+                Flash.Mark(target, index, Driver.Simulation.ElapsedTicks);
             }
         }
 

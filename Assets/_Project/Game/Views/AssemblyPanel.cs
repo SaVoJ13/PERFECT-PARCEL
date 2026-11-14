@@ -52,6 +52,9 @@ namespace KebabStreet.Game
         private readonly Button[] _queue;
         private readonly ShiftAction[] _shownQueue;
         private readonly Button _clear;
+        private readonly TapDecor[] _stationDecors;
+        private readonly TapDecor[] _itemDecors;
+        private readonly TapDecor _clearDecor;
         private readonly Label _dish;
         private readonly Label _hint;
         private readonly Label _combo;
@@ -108,12 +111,26 @@ namespace KebabStreet.Game
             _items = Grid("assembly-item", board == null ? 0 : board.Capacity, ItemHeight, ItemColor, TapBoardItem);
             _shownItems = new int[_items.Length];
 
+            // S1-21: відгук на тап - рамка підсвічування і смужка дії на кожній кнопці.
+            _stationDecors = new TapDecor[_stationButtons.Length];
+            for (int i = 0; i < _stationDecors.Length; i++)
+            {
+                _stationDecors[i] = new TapDecor(_stationButtons[i], "assembly-station-" + i);
+            }
+
+            _itemDecors = new TapDecor[_items.Length];
+            for (int i = 0; i < _itemDecors.Length; i++)
+            {
+                _itemDecors[i] = new TapDecor(_items[i], "assembly-item-" + i);
+            }
+
             VisualElement status = Row(Root, "assembly-status");
             _dish = AddLabel(status, "assembly-dish", FontSize, Color.white);
             Backdrop(_dish);
             _dish.style.flexGrow = 1;
             _clear = AddButton(status, "assembly-clear", text.Get(TextKeys.AssemblyClear), ClearColor, () => TapClear());
             _clear.style.height = QueueHeight;
+            _clearDecor = new TapDecor(_clear, "assembly-clear");
             _clear.style.display = board != null && board.IsBinAvailable ? DisplayStyle.Flex : DisplayStyle.None;
 
             VisualElement queueRow = Row(Root, "assembly-queue");
@@ -160,6 +177,15 @@ namespace KebabStreet.Game
         public string HintText => _hint.text;
 
         public string ComboText => _combo.text;
+
+        /// <summary>Відгук на тап кнопки станції (S1-21).</summary>
+        public TapDecor GetStationDecor(int index)
+        {
+            return _stationDecors[index];
+        }
+
+        /// <summary>Відгук на тап «Очистити дошку» (смітник, S1-21).</summary>
+        public TapDecor ClearDecor => _clearDecor;
 
         /// <summary>Номер інгредієнта кнопки станції.</summary>
         public int GetStationIngredient(int index)
@@ -223,6 +249,22 @@ namespace KebabStreet.Game
         {
             ShiftSimulation simulation = _input.Driver.Simulation;
             Board board = simulation.Board;
+            for (int s = 0; s < _stationDecors.Length; s++)
+            {
+                _stationDecors[s].Update(
+                    _input.IsLit(FeedbackTarget.Station, _stations[s]),
+                    _input.ProgressOf(FeedbackTarget.Station, _stations[s]),
+                    StationColor);
+            }
+
+            _clearDecor.Update(
+                _input.IsLit(FeedbackTarget.Clear, 0), _input.ProgressOf(FeedbackTarget.Clear, 0), ClearColor);
+            for (int p = 0; p < _items.Length; p++)
+            {
+                _itemDecors[p].Update(
+                    _input.IsLit(FeedbackTarget.BoardItem, p), _input.ProgressOf(FeedbackTarget.BoardItem, p), ItemColor);
+            }
+
             for (int p = 0; p < _items.Length; p++)
             {
                 int item = p < board.ItemCount ? board.GetItem(p) : -1;

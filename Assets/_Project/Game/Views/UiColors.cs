@@ -75,6 +75,12 @@ namespace KebabStreet.Game
 
         public static readonly Color Overlay = new Color(0.10f, 0.07f, 0.06f, 0.92f);
 
+        /// <summary>Заливка смужки прогресу дії (S1-21). Оголошена до <see cref="Pairs"/>: статичні поля ініціалізуються по порядку.</summary>
+        public static readonly Color ActionFill = Saffron;
+
+        /// <summary>Темна доріжка під смужкою дії: смужка читається на будь-якому фоні кнопки.</summary>
+        public static readonly Color ActionTrack = Ink;
+
         public static readonly ContrastPair[] Pairs =
         {
             new ContrastPair("Рівень/таймер/ціль на смузі", White, HudBackdrop, false),
@@ -107,7 +113,25 @@ namespace KebabStreet.Game
             new ContrastPair("Заголовок/текст екрана", White, NightPlum, false),
             new ContrastPair("Повідомлення екрана", Saffron, NightPlum, false),
             new ContrastPair("Текст на затемненні паузи", White, Overlay, false),
+            new ContrastPair("Смужка дії на доріжці", ActionFill, ActionTrack, true),
+            new ContrastPair("Рамка тапу: станція", TapFrameFor(StationButton), StationButton, true),
+            new ContrastPair("Рамка тапу: предмет дошки", TapFrameFor(ItemButton), ItemButton, true),
+            new ContrastPair("Рамка тапу: очистити", TapFrameFor(ClearButton), ClearButton, true),
+            new ContrastPair("Рамка тапу: картка клієнта", TapFrameFor(CustomerCard), CustomerCard, true),
+            new ContrastPair("Рамка тапу: вільний слот", TapFrameFor(CustomerFreeCard), CustomerFreeCard, true),
+            new ContrastPair("Рамка тапу: гриль порожньо", TapFrameFor(GrillEmpty), GrillEmpty, true),
+            new ContrastPair("Рамка тапу: гриль сире", TapFrameFor(GrillRaw), GrillRaw, true),
+            new ContrastPair("Рамка тапу: гриль смажиться", TapFrameFor(GrillCooking), GrillCooking, true),
+            new ContrastPair("Рамка тапу: гриль готово", TapFrameFor(GrillDone), GrillDone, true),
+            new ContrastPair("Рамка тапу: гриль пригорає", TapFrameFor(GrillWarning), GrillWarning, true),
+            new ContrastPair("Рамка тапу: гриль згоріло", TapFrameFor(GrillBurnt), GrillBurnt, true),
         };
+
+        /// <summary>Колір рамки підсвічування тапу на цьому фоні: шафран або чорнило, що контрастніше (S1-21).</summary>
+        public static Color TapFrameFor(Color background)
+        {
+            return Contrast(Saffron, background) >= Contrast(Ink, background) ? Saffron : Ink;
+        }
 
         /// <summary>Текст на кнопці гриля за її фоном: світлі стани (сире, смажиться, пригорає) — темний, решта — білий.</summary>
         public static Color GrillText(Color background)
