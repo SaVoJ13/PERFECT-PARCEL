@@ -150,7 +150,8 @@ namespace KebabStreet.Game
 
         private void AddSlot(int index)
         {
-            var button = new Button(() => TapSlot(index)) { name = "grill-slot-" + index };
+            var button = new Button(SfxHub.WithTapSound(() => TapSlot(index))) { name = "grill-slot-" + index };
+            button.AddToClassList(UiFactory.PressClass);
             button.style.width = SlotSize;
             button.style.height = SlotSize;
             button.style.marginLeft = SlotGap / 2f;

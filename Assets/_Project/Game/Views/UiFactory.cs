@@ -10,6 +10,9 @@ namespace KebabStreet.Game
     /// </summary>
     public static class UiFactory
     {
+        /// <summary>USS-клас «пружинки» натискання (Q-05a, QB-ALL-02); стиль у kebab_theme.uss.</summary>
+        public const string PressClass = "ks-press";
+
         private const float TitleSize = 72f;
         private const float BodySize = 40f;
         private const float ButtonHeight = 140f;
@@ -33,6 +36,7 @@ namespace KebabStreet.Game
             container.style.alignItems = Align.Center;
             container.style.backgroundColor = Background;
             container.AddToClassList("ks-screen");
+            UiDecor.AddBackdrop(container);
             ArtLibrary.ApplyTheme(root);
             root.Add(container);
             return container;
@@ -64,7 +68,9 @@ namespace KebabStreet.Game
             button.style.fontSize = BodySize;
             button.style.color = ButtonTextColor;
             button.AddToClassList("ks-button");
+            button.AddToClassList(PressClass);
             button.style.backgroundColor = ButtonColor;
+            UiDecor.AddButtonDepth(button, ButtonColor);
             parent.Add(button);
             return button;
         }

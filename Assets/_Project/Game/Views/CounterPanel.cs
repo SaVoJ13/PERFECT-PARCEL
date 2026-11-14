@@ -378,7 +378,8 @@ namespace KebabStreet.Game
             public Card(VisualElement parent, int index, int hearts, CounterPanel owner)
             {
                 _owner = owner;
-                _button = new Button(() => owner.TapSlot(index)) { name = "counter-slot-" + index };
+                _button = new Button(SfxHub.WithTapSound(() => owner.TapSlot(index))) { name = "counter-slot-" + index };
+                _button.AddToClassList(UiFactory.PressClass);
                 Grow(_button);
                 _button.style.minHeight = CardMinHeight;
                 _button.style.flexDirection = FlexDirection.Column;
