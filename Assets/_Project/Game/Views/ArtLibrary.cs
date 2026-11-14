@@ -41,6 +41,9 @@ namespace KebabStreet.Game
             "chr_olya", "chr_marko", "chr_hanna", Ali,
         };
 
+        /// <summary>Зазор між смужкою іконок і написом кнопки.</summary>
+        public const float IconTextGap = 24f;
+
         private static readonly Dictionary<string, Sprite> Cache = new Dictionary<string, Sprite>();
         private static StyleSheet _theme;
         private static bool _themeLoaded;
@@ -150,6 +153,71 @@ namespace KebabStreet.Game
             }
 
             return icon;
+        }
+
+        /// <summary>
+        /// S1-23: іконки кнопки зі своїм текстом (текст <c>Button.text</c> не є flex-елементом, тому діти кнопки
+        /// лягали б поверх нього). Іконки йдуть рядком біля лівого краю, а кнопка отримує однакові бічні відступи
+        /// на ширину рядка, тож напис лишається по центру і не перекривається. Немає жодного спрайта — нічого не
+        /// міняє, повертає null.
+        /// </summary>
+        public static VisualElement AddLeadingIcons(VisualElement button, string[] names, float size, float margin)
+        {
+            if (button == null || names == null)
+            {
+                return null;
+            }
+
+            var strip = new VisualElement { pickingMode = PickingMode.Ignore, name = "icon-strip" };
+            strip.style.position = Position.Absolute;
+            strip.style.left = margin;
+            strip.style.top = 0;
+            strip.style.bottom = 0;
+            strip.style.flexDirection = FlexDirection.Row;
+            strip.style.alignItems = Align.Center;
+            int added = 0;
+            for (int i = 0; i < names.Length; i++)
+            {
+                if (AddIcon(strip, names[i], size) != null)
+                {
+                    added++;
+                }
+            }
+
+            if (added == 0)
+            {
+                return null;
+            }
+
+            button.Add(strip);
+            // Напис по центру вільної частини: ліворуч місце під іконки і зазор, праворуч лише поле (S1-23, L3).
+            button.style.paddingLeft = (added * size) + (2f * margin) + IconTextGap;
+            button.style.paddingRight = margin;
+            return strip;
+        }
+
+        /// <summary>
+        /// Як <see cref="AddLeadingIcons"/>, але одна іконка зверху по центру кнопки, а напис нижче (вузькі кнопки
+        /// станцій: слова не ламаються, бо ширина тексту не зменшується). Немає спрайта — null.
+        /// </summary>
+        public static VisualElement AddTopIcon(VisualElement button, string name, float size, float margin)
+        {
+            if (button == null || Get(name) == null)
+            {
+                return null;
+            }
+
+            var strip = new VisualElement { pickingMode = PickingMode.Ignore, name = "icon-strip" };
+            strip.style.position = Position.Absolute;
+            strip.style.left = 0;
+            strip.style.right = 0;
+            strip.style.top = margin;
+            strip.style.flexDirection = FlexDirection.Row;
+            strip.style.justifyContent = Justify.Center;
+            AddIcon(strip, name, size);
+            button.Add(strip);
+            button.style.paddingTop = size + (2f * margin);
+            return strip;
         }
 
         /// <summary>Підключає тему USS до кореня (повторне підключення нічого не міняє). Немає теми — нічого не робить.</summary>
