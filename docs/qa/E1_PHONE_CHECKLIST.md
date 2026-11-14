@@ -18,7 +18,7 @@
 
 **Яку збірку ставимо.** Збірка з `main`, коміт `40d7a5f` (містить PR #42–#47: меню рівнів, гриль, прилавок, видача, результат, навчання, графіка, звуки, читабельність S1-17, іконки S1-18, відгук на тап S1-21, лог кадрів S1-22).
 - Запуск перевірки (CI) на GitHub: <https://github.com/SaVoJ13/PERFECT-PARCEL/actions/runs/43618143698> — зелений, 1402 тести з 1402.
-- Файл називається `KebabStreet-Android-Builds` (усередині `KebabStreet.apk` і `KebabStreet.aab`; ще тека `Kebab Street_BurstDebugInformation_DoNotShip` — **ігноруйте її**; `KebabStreet.apk` — 32 747 966 байтів, sha256 `\9e9d8cf6ea34d6714b59ed5921dbfdaa660583531eeb805421f3b2753758e60c`).
+- Файл називається `KebabStreet-Android-Builds` (усередині `KebabStreet.apk` і `KebabStreet.aab`; ще тека `Kebab Street_BurstDebugInformation_DoNotShip` — **ігноруйте її**; `KebabStreet.apk` — 32 747 966 байтів, sha256 `9e9d8cf6ea34d6714b59ed5921dbfdaa660583531eeb805421f3b2753758e60c`).
 - Файл зберігається на GitHub до ≈2026-11-28. Якщо пізніше — попросіть Агента 0 зібрати наново.
 
 ---
