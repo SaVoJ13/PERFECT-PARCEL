@@ -1,85 +1,145 @@
 using KebabStreet.Core;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace KebabStreet.Game
 {
     /// <summary>
-    /// Порожня зміна: рухає ShiftSimulation кадрами і показує таймер. Текст оновлюється лише
-    /// коли змінилась секунда, щоб не створювати сміття щокадру.
+    /// Зміна на реальному часі (S1-08, екран S1-09a): рівень, обраний у меню, запускається через
+    /// ShiftDriver. Контролер лише передає час кадру й паузу; показ — <see cref="ShiftScreen"/>,
+    /// тапи по грилю йдуть у <see cref="ShiftDriver.Tap"/>. Правил гри тут немає.
+    /// Пауза гравця (кнопка) і пауза системи (згортання, втрата фокуса) складаються: гра йде, лише
+    /// коли жодної немає.
     /// </summary>
     public sealed class ShiftController : ScreenController
     {
-        private ShiftSimulation _shift;
-        private Label _timer;
-        private long _shownSeconds = -1;
-        private ShiftState _shownState = ShiftState.Intro;
-        private string _timeFormat;
+        private ShiftDriver _driver;
+        private ShiftEnding _ending;
+        private ShiftScreen _screen;
+        private SfxDirector _sfx;
+        private TutorialDirector _tutorial;
+        private bool _userPaused;
+        private bool _appPaused;
+        private bool _hasFocus = true;
 
         protected override void Build()
         {
-            ILocalizer text = Context.Text;
-            _timeFormat = text.Get(TextKeys.ShiftTimeLeft);
-            _timer = UiFactory.Title(Container, string.Empty);
-            UiFactory.AddButton(Container, text.Get(TextKeys.ShiftExit), OnExit);
+            if (Context.SelectedLevelNumber < 1 && !Context.SelectLevel(1))
+            {
+                GameLog.Info("Shift: немає жодного рівня");
+                return;
+            }
 
-            _shift = Context.NewShift();
-            _shift.Start();
-            Refresh();
+            LevelDefinition level = Context.Levels.FindByNumber(Context.SelectedLevelNumber);
+            ulong seed = Context.NextShiftSeed();
+            GameLog.Info("Shift: " + level.Id + " seed=" + seed + " спроба=" + Context.AttemptCount);
+
+            var completion = new ShiftCompletion(Context.Profile, level);
+            _driver = new ShiftDriver(level, seed, OnShiftFinished);
+            _sfx = SfxDirector.ForDriver(_driver, SfxHub.Router);
+            _tutorial = TutorialDirector.Create(_driver, Context.Tutorial, Context.Profile.Data);
+            _ending = new ShiftEnding(completion, Context.Profile, _tutorial.Model);
+            _screen = new ShiftScreen(
+                Container, _driver, Context.Text, OnPauseTap, OnResumeTap, OnExit, OnRetry, OnNext, Context.NextLevelNumber != 0, _tutorial, SaveTutorial);
+
+            _driver.Begin();
+            ApplyPause();
+            _screen.Refresh();
         }
 
         private void Update()
         {
-            if (_shift == null)
+            if (_driver == null)
             {
                 return;
             }
 
-            if (_shift.State == ShiftState.Running)
-            {
-                _shift.Advance(Time.unscaledDeltaTime);
-            }
+            _driver.Frame(Time.unscaledDeltaTime);
+            _sfx.Update(_driver.IsPaused);
+            _screen.Refresh();
+        }
 
-            Refresh();
+        private void OnDestroy()
+        {
+            SfxHub.Router.Paused = false;
         }
 
         private void OnApplicationPause(bool paused)
         {
-            if (_shift == null)
+            _appPaused = paused;
+            if (paused)
+            {
+                SaveTutorial();
+            }
+
+            ApplyPause();
+        }
+
+        private void OnApplicationFocus(bool hasFocus)
+        {
+            _hasFocus = hasFocus;
+            ApplyPause();
+        }
+
+        private void OnPauseTap()
+        {
+            _userPaused = true;
+            ApplyPause();
+        }
+
+        private void OnResumeTap()
+        {
+            _userPaused = false;
+            ApplyPause();
+        }
+
+        private void ApplyPause()
+        {
+            if (_driver == null)
             {
                 return;
             }
 
-            if (paused)
+            _driver.SetPaused(_userPaused || _appPaused || !_hasFocus);
+            _screen.Refresh();
+        }
+
+        private void OnShiftFinished(ShiftResult result)
+        {
+            SaveNotice notice = _ending.OnFinished(result);
+            if (_screen != null)
             {
-                _shift.Pause();
-            }
-            else
-            {
-                _shift.Resume();
+                _screen.ShowSaveNotice(notice);
             }
         }
 
-        private void Refresh()
+        /// <summary>Зберігає профіль, якщо навчання щось у ньому змінило (крок побачено чи пропущено).</summary>
+        private void SaveTutorial()
         {
-            long seconds = EmptyShift.RemainingSeconds(_shift);
-            if (seconds == _shownSeconds && _shift.State == _shownState)
+            if (_ending != null)
             {
-                return;
+                _ending.SaveTutorialIfDirty();
             }
+        }
 
-            _shownSeconds = seconds;
-            _shownState = _shift.State;
-            bool finished = _shift.State == ShiftState.Won || _shift.State == ShiftState.Lost
-                || _shift.State == ShiftState.Resolving;
-            _timer.text = finished
-                ? Context.Text.Get(TextKeys.ShiftFinished)
-                : string.Format(_timeFormat, EmptyShift.FormatClock(seconds));
+        private void OnRetry()
+        {
+            if (_driver != null && _driver.IsFinished && Context.RetryShift())
+            {
+                Open(GameFlow.SceneOf(Context.Flow.Current));
+            }
+        }
+
+        private void OnNext()
+        {
+            if (_driver != null && _driver.IsFinished && Context.AdvanceToNextLevel(_driver.Result.Won))
+            {
+                Open(GameFlow.SceneOf(Context.Flow.Current));
+            }
         }
 
         private void OnExit()
         {
-            Context.Profile.Save();
+            SaveTutorial();
             if (Context.Flow.ExitToMenu())
             {
                 Open(GameFlow.SceneOf(Context.Flow.Current));

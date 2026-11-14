@@ -1,0 +1,34 @@
+# S1-09c PR #35: test cases, CI run 43468900121 (workflow_dispatch, headSha c4c91d6) vs base S1-09b run 43462911591 (headSha 65b39cc)
+# PR: total=1249 passed=1249 failed=0 skipped=0; base: total=1225 passed=1225
+# Missing from PR (comm -23 base pr): 0
+# Added (comm -13 base pr): 24
+KebabStreet.Tests.EditMode.AssemblyPanelTests.Board_ShowsItemsInOrder_TapRemovesThatItem_ClearEmpties
+KebabStreet.Tests.EditMode.AssemblyPanelTests.CookingMeatTap_ShowsHint_ReadyDish_ShowsReady
+KebabStreet.Tests.EditMode.AssemblyPanelTests.Counter_ThreeSlotsInOneRow_TwelveSlotsInRowsOfFour
+KebabStreet.Tests.EditMode.AssemblyPanelTests.ExpertUiBot_PlaysWholeShift_OnlyThroughPanels(1)
+KebabStreet.Tests.EditMode.AssemblyPanelTests.ExpertUiBot_PlaysWholeShift_OnlyThroughPanels(2)
+KebabStreet.Tests.EditMode.AssemblyPanelTests.ExpertUiBot_PlaysWholeShift_OnlyThroughPanels(3)
+KebabStreet.Tests.EditMode.AssemblyPanelTests.ExpertUiBot_PlaysWholeShift_OnlyThroughPanels(4)
+KebabStreet.Tests.EditMode.AssemblyPanelTests.ExpertUiBot_PlaysWholeShift_OnlyThroughPanels(5)
+KebabStreet.Tests.EditMode.AssemblyPanelTests.Queue_ShowsActionNames_AndTapCancels
+KebabStreet.Tests.EditMode.AssemblyPanelTests.Stations_ButtonPerUnlockedIngredient_WithLocalizedName(1)
+KebabStreet.Tests.EditMode.AssemblyPanelTests.Stations_ButtonPerUnlockedIngredient_WithLocalizedName(4)
+KebabStreet.Tests.EditMode.AssemblyViewTests.AssemblyTaps_GoToCore_AndChangeBoardSnapshot
+KebabStreet.Tests.EditMode.AssemblyViewTests.Combo_ShownFromSecondServeInARow
+KebabStreet.Tests.EditMode.AssemblyViewTests.DishText_SaysReadyOrWrong_AndNothingWhileBuilding
+KebabStreet.Tests.EditMode.AssemblyViewTests.ExpertUiBot_Level1_OnlyScreenTaps_WinsLikeCoreBot
+KebabStreet.Tests.EditMode.AssemblyViewTests.Hint_ForEveryIgnoredResult_IsKnownOrNone
+KebabStreet.Tests.EditMode.AssemblyViewTests.Paused_TapsDoNothing_AndNoHint
+KebabStreet.Tests.EditMode.AssemblyViewTests.QueuedActionNames_AreDistinctKeys_IngredientUsesItsName
+KebabStreet.Tests.EditMode.AssemblyViewTests.ServeOnEmptyBoard_CoreIgnores_HintSaysDishNotReady
+KebabStreet.Tests.EditMode.AssemblyViewTests.Stations_FollowLevelUnlocks_WithoutMeat(1,System.String[])
+KebabStreet.Tests.EditMode.AssemblyViewTests.Stations_FollowLevelUnlocks_WithoutMeat(2,System.String[])
+KebabStreet.Tests.EditMode.AssemblyViewTests.Stations_FollowLevelUnlocks_WithoutMeat(3,System.String[])
+KebabStreet.Tests.EditMode.AssemblyViewTests.Stations_FollowLevelUnlocks_WithoutMeat(4,System.String[])
+KebabStreet.Tests.EditMode.AssemblyViewTests.TapOnCookingMeat_SendsNothing_ShowsHint_ThatExpires
+# Bot output (TestContext, AssemblyPanelTests.ExpertUiBot_PlaysWholeShift_OnlyThroughPanels):
+L01: won=True stars=3 served=4 coins=52 lost=0 wrong=0 maxCombo=1 comboShown=False taps=16
+L02: won=True stars=3 served=8 coins=106 lost=0 wrong=0 maxCombo=2 comboShown=True taps=32
+L03: won=True stars=3 served=8 coins=128 lost=0 wrong=0 maxCombo=2 comboShown=True taps=36
+L04: won=True stars=3 served=14 coins=258 lost=0 wrong=0 maxCombo=1 comboShown=False taps=71
+L05: won=True stars=3 served=20 coins=380 lost=0 wrong=0 maxCombo=3 comboShown=True taps=99

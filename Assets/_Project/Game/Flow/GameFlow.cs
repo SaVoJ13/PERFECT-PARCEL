@@ -47,6 +47,12 @@ namespace KebabStreet.Game
             return Move(GameScreen.Shift, GameScreen.Menu);
         }
 
+        /// <summary>Shift - Shift: «Ще раз» або «Далі» на екрані результату (сцена завантажується заново).</summary>
+        public bool Replay()
+        {
+            return Move(GameScreen.Shift, GameScreen.Shift);
+        }
+
         private bool Move(GameScreen from, GameScreen to)
         {
             if (Current != from)

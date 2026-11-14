@@ -5,7 +5,7 @@
   "nameKey": "level.l01.name",
   "durationSec": 90,
   "counterSlots": 1,
-  "goal": { "type": "serve", "count": 3 },
+  "goal": { "type": "serve", "count": 3, "endOnGoal": false },
   "stars": { "two": { "type": "coins", "value": 40 }, "three": { "condition": "noBurnt" } },
   "lose": { "maxLostCustomers": null, "countLostCustomers": false },
   "grill": { "slots": 1, "cookSec": 5, "burnAfterDoneSec": 30, "warnBeforeBurnSec": 5, "burntPenaltyCoins": 0 },
@@ -15,6 +15,6 @@
     { "atSec": 45, "customer": "olya", "graceSec": 300, "order": { "recipe": "kebab_pita" } },
     { "atSec": 65, "customer": "olya", "graceSec": 300, "order": { "recipe": "kebab_pita" } }
   ],
-  "tutorialKeys": ["tutorial.l01.step1", "tutorial.l01.step2", "tutorial.l01.step3", "tutorial.l01.step4", "tutorial.l01.step5"],
+  "tutorialKeys": ["tutorial.l01.step1", "tutorial.l01.step2", "tutorial.l01.step3", "tutorial.l01.step4", "tutorial.l02.burnt"],
   "storyKeys": { "intro": "story.l01.intro", "outro": "story.l01.outro" }
 }
