@@ -63,8 +63,8 @@
 | ID | Завдання | Агент | Статус |
 |---|---|---|---|
 | Q-01 | QUALITY_BAR (планка якості) | ui-art-designer (opus) | Done (PR #55, QA Verified L0) |
-| Q-02 | DESIGN_DEPTH (глибина дизайну) | game-designer (opus) | Backlog |
-| Q-03 | D09_DOSSIER (графіка: ціни, інструменти, сценарії) | ui-art-designer (opus) | Backlog |
+| Q-02 | DESIGN_DEPTH (глибина дизайну) | game-designer (opus) | Done (PR #56, QA Verified L0) |
+| Q-03 | D09_DOSSIER (графіка: ціни, інструменти, сценарії) | ui-art-designer (opus) | Done (PR #57, QA Verified L0) |
 | Q-04 | GAP_ANALYSIS (скриншоти + P0/P1/P2) | qa-release (sonnet) | Backlog |
 | Q-05 | Реалізація без нової графіки (підкартки Q-05a…) | gameplay-developer (sonnet) | Backlog |
 
