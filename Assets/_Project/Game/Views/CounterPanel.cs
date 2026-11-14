@@ -217,6 +217,12 @@ namespace KebabStreet.Game
             return _cards[slot].Decor;
         }
 
+        /// <summary>Рух клієнта в слоті (Q-05c): дихання, виїзд, тремтіння, підскок, відхід.</summary>
+        public MotionTarget GetActorMotion(int slot)
+        {
+            return _cards[slot].Actor;
+        }
+
         /// <summary>Подія слота, яку зараз показано.</summary>
         public CounterEvent GetShownEvent(int slot)
         {
@@ -393,6 +399,13 @@ namespace KebabStreet.Game
             private readonly bool _showPortrait;
             private System.Collections.Generic.List<VisualElement> _orderRows;
             private bool _drawn;
+            private MotionTarget _actor;
+            private MotionTarget _eventMotion;
+            private float _phase;
+            private float _arriveAt = -1f;
+            private float _leaveAt = -1f;
+            private float _hopAt = -1f;
+            private float _eventAt = -1f;
 
             public Card(VisualElement parent, int index, int hearts, CounterPanel owner)
             {
@@ -497,7 +510,19 @@ namespace KebabStreet.Game
                 // S1-21: рамка підсвічування тапу (видача) і смужка дії на картці.
                 _index = index;
                 _decor = new TapDecor(_button, "counter-slot-" + index);
+
+                // Q-05c: рух лише на внутрішніх елементах (не на кнопці: її scale/translate веде .ks-press).
+                // Є портрет - рухається він, інакше (12 слотів) - рядок сердечок. Фаза дихання різна в кожного слота.
+                _actor = new MotionTarget(_showPortrait ? _portrait : _heartsRow);
+                _eventMotion = new MotionTarget(Feedback);
+                _phase = (index * 0.37f) % 1f;
             }
+
+            /// <summary>Рух клієнта, який зараз застосовано (Q-05c).</summary>
+            public MotionTarget Actor => _actor;
+
+            /// <summary>Рух підпису події.</summary>
+            public MotionTarget EventMotion => _eventMotion;
 
             public TapDecor Decor => _decor;
 
@@ -529,9 +554,22 @@ namespace KebabStreet.Game
                     _owner._input.ProgressOf(FeedbackTarget.Customer, _index),
                     view.Occupied ? CardColor : FreeCardColor);
                 CustomerSlotView previous = Shown;
+                float now = UiMotion.Now;
                 if (first || view.CustomerId != previous.CustomerId)
                 {
                     DrawCustomer(view);
+                    if (!first && view.Occupied)
+                    {
+                        _arriveAt = now; // QB-SHIFT-08: виїзд збоку.
+                        _leaveAt = -1f; // новий клієнт у слоті перериває відхід попереднього.
+                    }
+
+                    if (!first && previous.Occupied && !view.Occupied && _showPortrait && !UiMotion.Reduced)
+                    {
+                        // QB-SHIFT-13/16: клієнт не зникає, а відходить 400 мс; слот у моделі вже вільний.
+                        _leaveAt = now;
+                        _portrait.style.display = DisplayStyle.Flex;
+                    }
                 }
 
                 if (first || !view.Patience.Equals(previous.Patience) || view.CustomerId != previous.CustomerId)
@@ -550,10 +588,66 @@ namespace KebabStreet.Game
                 {
                     Feedback.text = _owner.EventText(counterEvent);
                     Feedback.style.color = ColorOf(counterEvent.Kind);
+                    if (!first && counterEvent.Kind != CounterEventKind.None)
+                    {
+                        _eventAt = now; // підскок підпису; QB-SHIFT-13: підскок клієнта при оплаті.
+                        if (counterEvent.Kind == CounterEventKind.Served)
+                        {
+                            _hopAt = now;
+                        }
+                    }
+
                     ShownEvent = counterEvent;
                 }
 
                 Shown = view;
+                UpdateMotion(view, now);
+            }
+
+            private void UpdateMotion(CustomerSlotView view, float now)
+            {
+                float leave = now - _leaveAt;
+                bool leaving = _leaveAt >= 0f && UiMotion.Active(leave, UiMotion.LeaveSec);
+                if (_leaveAt >= 0f && !leaving)
+                {
+                    _leaveAt = -1f;
+                    if (!view.Occupied)
+                    {
+                        _portrait.style.display = DisplayStyle.None;
+                    }
+                }
+
+                float sx = 1f;
+                float sy = 1f;
+                float tx = 0f;
+                float ty = 0f;
+                float opacity = 1f;
+                if (leaving)
+                {
+                    tx = UiMotion.LeaveOffset(leave);
+                    opacity = UiMotion.LeaveOpacity(leave);
+                }
+                else if (view.Occupied)
+                {
+                    sy = UiMotion.Breath(now, _phase); // QB-SHIFT-09
+                    float arrive = now - _arriveAt;
+                    if (_arriveAt >= 0f && UiMotion.Active(arrive, UiMotion.ArriveSec))
+                    {
+                        tx = UiMotion.SlideIn(arrive);
+                        opacity = UiMotion.ArriveOpacity(arrive);
+                    }
+
+                    if (view.Patience.Low)
+                    {
+                        tx += UiMotion.Shake(now); // QB-SHIFT-10: тремтіння на останньому сердечку.
+                    }
+                }
+
+                ty = UiMotion.Hop(now - _hopAt); // QB-SHIFT-13; поза проміжком - 0.
+
+                _actor.Set(sx, sy, tx, ty, opacity);
+                float pop = UiMotion.Pop(now - _eventAt, UiMotion.EventPopSec, UiMotion.EventPopPeak);
+                _eventMotion.Set(pop, pop, 0f, 0f, 1f);
             }
 
             private void DrawCustomer(CustomerSlotView view)

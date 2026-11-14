@@ -66,6 +66,16 @@ namespace KebabStreet.Game
         private readonly bool _hasNextLevel;
         private ShiftHudView _shown;
         private bool _drawn;
+        private readonly MotionTarget _timerMotion;
+        private readonly MotionTarget _goalMotion;
+        private readonly MotionTarget _coinBoxMotion;
+        private float _timerTickAt = -1f;
+        private float _goalPopAt = -1f;
+        private float _coinsAt = -1f;
+        private long _coinsFrom;
+        private long _coinsTarget;
+        private long _coinsDisplayed = -1;
+        private bool _timerWarningShown;
 
         /// <param name="container">Куди будувати екран (повноекранний контейнер контролера).</param>
         /// <param name="onPause">Гравець натиснув «Пауза».</param>
@@ -151,6 +161,9 @@ namespace KebabStreet.Game
             _coins = HudLabel(coinBox, string.Empty, HudFontSize, CoinColor);
             _goal.style.marginLeft = Gap;
             _goal.style.marginRight = Gap;
+            _timerMotion = new MotionTarget(_timer);
+            _goalMotion = new MotionTarget(_goal);
+            _coinBoxMotion = new MotionTarget(coinBox);
 
             _hint = UiFactory.Notice(root, string.Empty);
             _hint.name = "shift-hint";
@@ -233,7 +246,22 @@ namespace KebabStreet.Game
         public string GoalShownText => _goal.text;
 
         /// <summary>Те, що справді показано біля монети.</summary>
-        public string CoinsShownText => _coins.text;
+        public string CoinsShownText => _coinsTarget.ToString();
+
+        /// <summary>Q-05c: число, яке зараз на екрані (під час набігання відстає від <see cref="CoinsShownText"/>).</summary>
+        public string CoinsAnimatedText => _coins.text;
+
+        /// <summary>Рух числа таймера (пульс в останні 10 с).</summary>
+        public MotionTarget TimerMotion => _timerMotion;
+
+        /// <summary>Рух смуги цілі (підскок при прогресі).</summary>
+        public MotionTarget GoalMotion => _goalMotion;
+
+        /// <summary>Рух блоку монет (пульс значка при набіганні).</summary>
+        public MotionTarget CoinsMotion => _coinBoxMotion;
+
+        /// <summary>Чи таймер показано в стані попередження (колір Ember Red).</summary>
+        public bool TimerWarningShown => _timerWarningShown;
 
         public string HintText => _hint.text;
 
@@ -281,6 +309,7 @@ namespace KebabStreet.Game
                 _drawn = true;
             }
 
+            UpdateMotion();
             Input.Update();
             Counter.Refresh();
             Assembly.Refresh();
@@ -304,9 +333,11 @@ namespace KebabStreet.Game
 
         private void Draw(ShiftHudView view, ShiftHudView previous, bool first)
         {
+            float now = UiMotion.Now;
             if (first || view.RemainingSeconds != previous.RemainingSeconds)
             {
                 _timer.text = EmptyShift.FormatClock(view.RemainingSeconds);
+                _timerTickAt = now;
             }
 
             if (first || view.GoalProgress != previous.GoalProgress || view.GoalTarget != previous.GoalTarget)
@@ -314,13 +345,24 @@ namespace KebabStreet.Game
                 _goalFullText = string.Format(_goalFormat, view.GoalProgress, view.GoalTarget);
                 _goal.text = string.Format(GoalShownFormat, view.GoalProgress, view.GoalTarget);
                 _goal.tooltip = _goalFullText;
+                if (!first && view.GoalProgress > previous.GoalProgress)
+                {
+                    _goalPopAt = now; // QB-SHIFT-03: число цілі підскакує.
+                }
             }
 
             if (first || view.Coins != previous.Coins)
             {
                 _coinsFullText = string.Format(_coinsFormat, view.Coins);
-                _coins.text = view.Coins.ToString();
                 _coins.tooltip = _coinsFullText;
+                _coinsFrom = first ? view.Coins : _coinsDisplayed;
+                _coinsTarget = view.Coins;
+                _coinsAt = first ? -1f : now; // QB-SHIFT-04: набігання замість стрибка.
+                if (first)
+                {
+                    _coinsDisplayed = view.Coins;
+                    _coins.text = view.Coins.ToString();
+                }
             }
 
             if (first || view.GoalDoneStarHint != previous.GoalDoneStarHint)
@@ -344,6 +386,35 @@ namespace KebabStreet.Game
                     ShowResult(_driver.Result);
                 }
             }
+        }
+
+        /// <summary>Q-05c: рух HUD щокадру; записує стиль і текст лише коли значення змінилось.</summary>
+        private void UpdateMotion()
+        {
+            float now = UiMotion.Now;
+            long remaining = _shown.RemainingSeconds;
+            bool warning = UiMotion.IsTimerWarning(remaining) && !_shown.Finished;
+            if (warning != _timerWarningShown)
+            {
+                _timerWarningShown = warning;
+                _timer.style.color = warning ? UiColors.EmberRed : Color.white; // QB-SHIFT-02
+            }
+
+            float pulse = warning && !_shown.Paused ? UiMotion.TimerPulse(now - _timerTickAt, remaining) : 1f;
+            _timerMotion.Set(pulse, pulse, 0f, 0f, 1f);
+
+            float goalPop = UiMotion.Pop(now - _goalPopAt, UiMotion.GoalPopSec, UiMotion.GoalPopPeak);
+            _goalMotion.Set(goalPop, goalPop, 0f, 0f, 1f);
+
+            long shownCoins = UiMotion.CountUp(_coinsFrom, _coinsTarget, now - _coinsAt, UiMotion.CoinCountSec);
+            if (shownCoins != _coinsDisplayed)
+            {
+                _coinsDisplayed = shownCoins;
+                _coins.text = shownCoins.ToString();
+            }
+
+            float coinPop = _coinsAt < 0f ? 1f : UiMotion.Pop(now - _coinsAt, UiMotion.CoinPopSec, UiMotion.CoinPopPeak);
+            _coinBoxMotion.Set(coinPop, coinPop, 0f, 0f, 1f);
         }
 
         private void ShowResult(ShiftResult result)
