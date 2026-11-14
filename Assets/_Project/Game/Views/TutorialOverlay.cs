@@ -272,7 +272,8 @@ namespace KebabStreet.Game
 
         private static Button AddButton(VisualElement parent, string text, Action onClick)
         {
-            var button = new Button(onClick) { text = text };
+            var button = new Button(SfxHub.WithTapSound(onClick)) { text = text };
+            button.AddToClassList(UiFactory.PressClass);
             button.style.height = ButtonHeight;
             button.style.flexGrow = 1;
             button.style.marginLeft = 8f;

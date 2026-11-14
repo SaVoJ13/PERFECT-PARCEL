@@ -37,9 +37,18 @@
     min-height: 144px;
 }
 
-.ks-button:active {
-    border-bottom-width: 4px;
-    margin-top: 6px;
+/* Q-05a (G-01, QB-ALL-02): spring press: 70 ms down, 150 ms back with overshoot. Only scale/translate, no layout changes (QB-ALL-16). */
+.ks-press {
+    transition-property: scale, translate;
+    transition-duration: 150ms, 150ms;
+    transition-timing-function: ease-out-back, ease-out-back;
+}
+
+.ks-press:active {
+    scale: 0.94 0.94;
+    translate: 0 4px;
+    transition-duration: 70ms, 70ms;
+    transition-timing-function: ease-out, ease-out;
 }
 
 .ks-panel {

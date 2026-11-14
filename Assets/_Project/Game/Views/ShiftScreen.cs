@@ -103,7 +103,7 @@ namespace KebabStreet.Game
             root.style.paddingTop = SafeTop;
             root.style.paddingBottom = SafeBottom;
             container.Add(root);
-
+            UiDecor.AddVignette(root); // Q-05a: QB-ALL-08, краї темніші поверх ілюстрації фону.
             // S1-17: відступи за справжньою безпечною зоною телефона (виріз, жестова панель), а не лише за референсом.
             root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea(root));
 
@@ -124,6 +124,7 @@ namespace KebabStreet.Game
             VisualElement hud = Row(root);
             Backdrop(hud);
             hud.name = "shift-hud";
+            UiDecor.AddPanelShadow(hud); // Q-05a: QB-ALL-07, тінь HUD-панелі.
             hud.style.justifyContent = Justify.SpaceBetween;
 
             // Вузький екран, польська чи великі числа: написи переносяться на другий рядок, а не обрізаються (QA S1-09a).
