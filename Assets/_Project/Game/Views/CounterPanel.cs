@@ -35,7 +35,10 @@ namespace KebabStreet.Game
         private const float HeartBorder = 4f;
         private const float BarHeight = 12f;
         private const float ChipPadding = 8f;
-        private const float ChipHeight = 40f;
+        private const float ChipHeight = 64f;
+        private const float ChipWidth = 64f;
+        private const int ChipsPerRow = 3;
+        private const float ExcludedOpacity = 0.55f;
         private const float ChipGap = 6f;
         private const float StrikeHeight = 6f;
         private const float HalfPercent = 50f;
@@ -67,6 +70,7 @@ namespace KebabStreet.Game
         private readonly string _paidTipFormat;
         private readonly string[] _typeNames;
         private readonly string[] _ingredientNames;
+        private readonly string[] _ingredientIcons;
         private readonly string[] _portraitNames;
         private readonly OrderIcon[][] _orders;
         private readonly Label _queue;
@@ -122,9 +126,11 @@ namespace KebabStreet.Game
             }
 
             _ingredientNames = new string[board == null ? 0 : board.Config.IngredientCount];
+            _ingredientIcons = new string[_ingredientNames.Length];
             for (int i = 0; i < _ingredientNames.Length; i++)
             {
                 _ingredientNames[i] = text.Get(board.Config.GetIngredient(i).NameKey);
+                _ingredientIcons[i] = ArtLibrary.IngredientIcon(board.Config.GetIngredient(i).Id);
             }
 
             _orders = new OrderIcon[counter == null ? 0 : counter.CustomerCount][];
@@ -220,7 +226,19 @@ namespace KebabStreet.Game
         /// <summary>Ім'я клієнта в слоті (або напис «вільно»).</summary>
         public string GetNameText(int slot)
         {
-            return _cards[slot].Name.text;
+            return _cards[slot].NameText;
+        }
+
+        /// <summary>Чи показано ім'я словом (Q-05b: коли є портрет клієнта, а також для порожнього слота - ні).</summary>
+        public bool IsNameShown(int slot)
+        {
+            return _cards[slot].Name.style.display.value != DisplayStyle.None;
+        }
+
+        /// <summary>Чи значок замовлення показано спрайтом (а не словом).</summary>
+        public bool IsOrderChipIcon(int slot, int index)
+        {
+            return string.IsNullOrEmpty(_cards[slot].Chips[index].text);
         }
 
         /// <summary>Напис події в слоті (порожньо — події немає).</summary>
@@ -238,7 +256,7 @@ namespace KebabStreet.Game
         /// <summary>Напис значка замовлення.</summary>
         public string GetOrderChipText(int slot, int index)
         {
-            return _cards[slot].Chips[index].text;
+            return _cards[slot].ChipTexts[index];
         }
 
         /// <summary>Чи перекреслено значок («не класти»).</summary>
@@ -373,6 +391,7 @@ namespace KebabStreet.Game
             private readonly TapDecor _decor;
             private readonly int _index;
             private readonly bool _showPortrait;
+            private System.Collections.Generic.List<VisualElement> _orderRows;
             private bool _drawn;
 
             public Card(VisualElement parent, int index, int hearts, CounterPanel owner)
@@ -389,6 +408,7 @@ namespace KebabStreet.Game
                 _button.style.paddingBottom = CardGap / 2f;
                 SetBorder(_button, CardBorder, IdleBorder);
                 parent.Add(_button);
+                UiDecor.AddButtonDepth(_button, CardColor); // Q-05b: QB-ALL-06, глибина картки клієнта.
 
                 // Портрет клієнта (S1-12) лише коли слотів небагато (один рядок): інакше картки стають задовгими.
                 _portrait = new VisualElement { name = "counter-portrait-" + index, pickingMode = PickingMode.Ignore };
@@ -460,6 +480,7 @@ namespace KebabStreet.Game
 
                 // S1-23: значки замовлення — стовпчик рядків (кожен значок займає свій рядок), без перенесення,
                 // що на телефоні складав усі значки в одну точку.
+                // Q-05b: значки замовлення - спрайти по ChipsPerRow у рядку (рядки створюються явно, без Wrap).
                 _order.style.flexDirection = FlexDirection.Column;
                 _order.style.flexWrap = Wrap.NoWrap;
                 _order.style.alignItems = Align.Center;
@@ -468,6 +489,8 @@ namespace KebabStreet.Game
                 _button.Add(_order);
                 Chips = new Label[0];
                 Strikes = new VisualElement[0];
+                ChipTexts = new string[0];
+                _orderRows = new System.Collections.Generic.List<VisualElement>();
 
                 Feedback = AddLabel(_button, "counter-event-" + index, FeedbackFontSize, CoinColor);
 
@@ -479,6 +502,11 @@ namespace KebabStreet.Game
             public TapDecor Decor => _decor;
 
             public Label Name { get; }
+
+            /// <summary>Локалізований текст імені (a11y); на екрані ім'я - лише коли портрета немає.</summary>
+            public string NameText { get; private set; } = string.Empty;
+
+            public string[] ChipTexts { get; private set; }
 
             public Label Feedback { get; }
 
@@ -531,13 +559,18 @@ namespace KebabStreet.Game
             private void DrawCustomer(CustomerSlotView view)
             {
                 bool occupied = view.Occupied;
-                Name.text = occupied ? _owner._typeNames[view.TypeIndex] : _owner._freeText;
+                NameText = occupied ? _owner._typeNames[view.TypeIndex] : _owner._freeText;
+                Name.tooltip = NameText;
                 _button.style.backgroundColor = occupied ? CardColor : FreeCardColor;
                 DisplayStyle shown = occupied ? DisplayStyle.Flex : DisplayStyle.None;
                 _heartsRow.style.display = shown;
-                _portrait.style.display = occupied && _showPortrait && ArtLibrary.Apply(_portrait, _owner._portraitNames[view.TypeIndex])
-                    ? DisplayStyle.Flex
-                    : DisplayStyle.None;
+                bool portrait = occupied && _showPortrait && ArtLibrary.Apply(_portrait, _owner._portraitNames[view.TypeIndex]);
+                _portrait.style.display = portrait ? DisplayStyle.Flex : DisplayStyle.None;
+
+                // Q-05b (QB-SHIFT-33): слово - лише коли клієнта не видно за портретом; у порожньому слоті слів немає.
+                bool showName = occupied && !portrait;
+                Name.text = showName ? NameText : string.Empty;
+                Name.style.display = showName ? DisplayStyle.Flex : DisplayStyle.None;
                 _barFrame.style.display = shown;
                 _order.style.display = shown;
 
@@ -554,9 +587,17 @@ namespace KebabStreet.Game
                     }
 
                     OrderIcon icon = icons[i];
-                    Chips[i].text = _owner._ingredientNames[icon.Ingredient];
+                    ChipTexts[i] = _owner._ingredientNames[icon.Ingredient];
+                    Chips[i].tooltip = ChipTexts[i];
+
+                    // Q-05b (QB-SHIFT-12, G-21): значок-спрайт без слів; слово лише коли спрайта немає. Без тексту маркер
+                    // кольору не може перекрити першу літеру.
+                    bool sprite = ArtLibrary.Apply(Chips[i], _owner._ingredientIcons[icon.Ingredient]);
+                    Chips[i].text = sprite ? string.Empty : ChipTexts[i];
                     Chips[i].style.backgroundColor = ColorOf(icon.Kind);
-                    Strikes[i].style.display = icon.Kind == OrderIconKind.Excluded ? DisplayStyle.Flex : DisplayStyle.None;
+                    bool excluded = icon.Kind == OrderIconKind.Excluded;
+                    Chips[i].style.opacity = excluded ? ExcludedOpacity : 1f;
+                    Strikes[i].style.display = excluded ? DisplayStyle.Flex : DisplayStyle.None;
                 }
 
                 VisibleChips = count;
@@ -585,15 +626,22 @@ namespace KebabStreet.Game
 
                 var chips = new Label[count];
                 var strikes = new VisualElement[count];
+                var texts = new string[count];
                 Array.Copy(Chips, chips, Chips.Length);
                 Array.Copy(Strikes, strikes, Strikes.Length);
+                Array.Copy(ChipTexts, texts, ChipTexts.Length);
                 for (int i = Chips.Length; i < count; i++)
                 {
                     var chip = new Label(string.Empty) { pickingMode = PickingMode.Ignore };
                     chip.style.fontSize = ChipFontSize;
                     chip.style.color = Color.white;
-                    chip.style.paddingLeft = ChipPadding;
-                    chip.style.paddingRight = ChipPadding;
+                    chip.style.width = ChipWidth;
+                    chip.style.minWidth = ChipWidth;
+                    chip.style.borderTopLeftRadius = ChipPadding;
+                    chip.style.borderTopRightRadius = ChipPadding;
+                    chip.style.borderBottomLeftRadius = ChipPadding;
+                    chip.style.borderBottomRightRadius = ChipPadding;
+                    chip.AddToClassList("ks-icon");
                     chip.style.marginLeft = ChipGap / 2f;
                     chip.style.marginRight = ChipGap / 2f;
                     chip.style.marginTop = ChipGap / 2f;
@@ -614,13 +662,26 @@ namespace KebabStreet.Game
                     strike.style.display = DisplayStyle.None;
                     chip.Add(strike);
 
-                    _order.Add(chip);
+                    int rowIndex = i / ChipsPerRow;
+                    while (_orderRows.Count <= rowIndex)
+                    {
+                        var orderRow = new VisualElement { pickingMode = PickingMode.Ignore };
+                        orderRow.style.flexDirection = FlexDirection.Row;
+                        orderRow.style.flexShrink = 0;
+                        orderRow.style.justifyContent = Justify.Center;
+                        _order.Add(orderRow);
+                        _orderRows.Add(orderRow);
+                    }
+
+                    _orderRows[rowIndex].Add(chip);
                     chips[i] = chip;
                     strikes[i] = strike;
+                    texts[i] = string.Empty;
                 }
 
                 Chips = chips;
                 Strikes = strikes;
+                ChipTexts = texts;
             }
 
             private static Label AddLabel(VisualElement parent, string name, float size, Color color)
