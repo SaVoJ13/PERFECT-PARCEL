@@ -7,6 +7,10 @@ on:
         description: 'Зібрати також AAB (на push у main AAB збирається завжди)'
         type: boolean
         default: false
+      developmentBuild:
+        description: 'Development-збірка з логом кадрів [KS] frames (S1-22); за замовчуванням реліз'
+        type: boolean
+        default: false
   push:
     branches:
       - main
@@ -125,6 +129,8 @@ jobs:
       # Збірки з PR підписуються debug-ключем (секрети keystore не передаються);
       # релізний ключ — лише для main і ручних запусків.
       USE_RELEASE_KEY: ${{ github.event_name != 'pull_request' }}
+      # S1-22: development лише за ручним параметром; на push у main завжди реліз.
+      KS_DEVELOPMENT_BUILD: ${{ github.event_name == 'workflow_dispatch' && inputs.developmentBuild == true }}
 
     steps:
       - name: Free Disk Space
@@ -178,7 +184,8 @@ jobs:
           androidKeystorePass: ${{ env.USE_RELEASE_KEY == 'true' && secrets.ANDROID_KEYSTORE_PASS || '' }}
           androidKeyaliasName: ${{ env.USE_RELEASE_KEY == 'true' && secrets.ANDROID_KEYALIAS_NAME || '' }}
           androidKeyaliasPass: ${{ env.USE_RELEASE_KEY == 'true' && secrets.ANDROID_KEYALIAS_PASS || '' }}
-          customParameters: -nographics -DisableDirectoryMonitor
+          # Змінні середовища кроку в контейнер game-ci не потрапляють, тому development передається аргументом.
+          customParameters: -nographics -DisableDirectoryMonitor ${{ env.KS_DEVELOPMENT_BUILD == 'true' && '-ksDevelopmentBuild true' || '' }}
 
       # BUG-011: Unity пише дані підпису в Library/Bee (Gradle-проєкт, графи збірки) під час збірки з ключем.
       # Перед збереженням кешу такі файли видаляються (повторна генерація дешева), потім запобіжник перевіряє результат.
