@@ -1,4 +1,4 @@
-/* KEBAB STREET theme (S1-12). Palette: docs/design/ART_STYLE_GUIDE.md section 2. Applied to the root element via ThemeLoader. */
+/* KEBAB STREET theme (S1-12). Palette: docs/design/ART_STYLE_GUIDE.md section 2. Connected to the root by ArtLibrary.ApplyTheme (UiFactory.Screen). */
 :root {
     --ks-cream: rgb(255, 243, 214);
     --ks-sand: rgb(247, 226, 176);

@@ -26,10 +26,35 @@ namespace KebabStreet.Game
                 int number = entry.Number;
                 Button button = UiFactory.AddButton(Container, LevelButtonText(text, entry), () => OnPlay(number));
                 button.SetEnabled(entry.Unlocked);
+                AddLevelIcons(button, entry);
             }
 
             UiFactory.AddButton(Container, text.Get(TextKeys.MenuSettings), OnSettings);
             _settingsHint = UiFactory.Body(Container, string.Empty);
+        }
+
+        private const float LevelIconSize = 56f;
+        private const int MaxStars = 3;
+
+        /// <summary>Замок або зірки на кнопці рівня (S1-18); текстовий підпис лишається, без спрайтів — лише він.</summary>
+        private static void AddLevelIcons(Button button, LevelEntry entry)
+        {
+            button.style.flexDirection = FlexDirection.Row;
+            button.style.alignItems = Align.Center;
+            button.style.justifyContent = Justify.Center;
+            if (!entry.Unlocked)
+            {
+                ArtLibrary.AddIcon(button, ArtLibrary.Lock, LevelIconSize, true);
+                return;
+            }
+
+            if (entry.BestStars > 0)
+            {
+                for (int s = 0; s < MaxStars; s++)
+                {
+                    ArtLibrary.AddIcon(button, s < entry.BestStars ? ArtLibrary.StarFull : ArtLibrary.StarEmpty, LevelIconSize);
+                }
+            }
         }
 
         /// <summary>Підпис кнопки рівня: замок, зірки або просто номер (відкритий, ще не пройдений).</summary>

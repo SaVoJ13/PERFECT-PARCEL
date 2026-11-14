@@ -402,14 +402,29 @@ namespace KebabStreet.Game
                     frame.style.height = HeartSize;
                     frame.style.marginLeft = HeartGap / 2f;
                     frame.style.marginRight = HeartGap / 2f;
-                    SetBorder(frame, HeartBorder, HeartFrame);
+                    frame.AddToClassList("ks-icon");
+                    // S1-18: спрайти сердечок; без них лишається рамка й заливка кольором.
+                    bool sprites = ArtLibrary.Apply(frame, ArtLibrary.HeartEmpty);
+                    if (!sprites)
+                    {
+                        SetBorder(frame, HeartBorder, HeartFrame);
+                    }
+
                     var fill = new VisualElement { pickingMode = PickingMode.Ignore };
                     fill.style.position = Position.Absolute;
                     fill.style.left = 0;
                     fill.style.top = 0;
                     fill.style.bottom = 0;
                     fill.style.width = Length.Percent(0);
-                    fill.style.backgroundColor = HeartColor;
+                    if (sprites && ArtLibrary.ApplyFixed(fill, ArtLibrary.HeartFull, HeartSize))
+                    {
+                        fill.style.backgroundColor = Color.clear;
+                    }
+                    else
+                    {
+                        fill.style.backgroundColor = HeartColor;
+                    }
+
                     frame.Add(fill);
                     _heartsRow.Add(frame);
                     _heartFills[h] = fill;

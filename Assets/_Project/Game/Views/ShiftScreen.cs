@@ -24,6 +24,9 @@ namespace KebabStreet.Game
         private const float HudFontSize = 48f;
         private const float LevelFontSize = 40f;
         private const float PauseButtonWidth = 260f;
+        private const int StarIconCount = 3;
+        private const float IconSize = 64f;
+        private const float StarIconSize = 96f;
         private const float PauseButtonHeight = 144f;
         private const float ZoneBorder = 4f;
 
@@ -44,6 +47,7 @@ namespace KebabStreet.Game
         private readonly VisualElement _resultPanel;
         private readonly Label _resultTitle;
         private readonly Label _resultStars;
+        private readonly VisualElement[] _starIcons = new VisualElement[StarIconCount];
         private readonly Label _resultCoins;
         private readonly Label _resultReason;
         private readonly Label _resultShortfall;
@@ -112,6 +116,10 @@ namespace KebabStreet.Game
             pause.style.width = PauseButtonWidth;
             pause.style.height = PauseButtonHeight;
             pause.style.marginTop = 0;
+            pause.style.flexDirection = FlexDirection.Row;
+            pause.style.alignItems = Align.Center;
+            pause.style.justifyContent = Justify.Center;
+            ArtLibrary.AddIcon(pause, ArtLibrary.Pause, IconSize, true);
 
             Backdrop(titleRow);
             VisualElement hud = Row(root);
@@ -123,7 +131,11 @@ namespace KebabStreet.Game
             hud.style.flexWrap = Wrap.Wrap;
             _timer = HudLabel(hud, string.Empty, HudFontSize, Color.white);
             _goal = HudLabel(hud, string.Empty, HudFontSize, Color.white);
-            _coins = HudLabel(hud, string.Empty, HudFontSize, CoinColor);
+            VisualElement coinBox = Row(hud);
+            coinBox.style.alignItems = Align.Center;
+            coinBox.style.flexShrink = 1;
+            ArtLibrary.AddIcon(coinBox, ArtLibrary.Coin, IconSize);
+            _coins = HudLabel(coinBox, string.Empty, HudFontSize, CoinColor);
             _goal.style.marginLeft = Gap;
             _goal.style.marginRight = Gap;
 
@@ -151,6 +163,14 @@ namespace KebabStreet.Game
             _resultPanel = Overlay(root, "result-panel");
             _resultTitle = UiFactory.Title(_resultPanel, string.Empty);
             _resultStars = UiFactory.Body(_resultPanel, string.Empty);
+            VisualElement starRow = Row(_resultPanel);
+            starRow.style.justifyContent = Justify.Center;
+            starRow.name = "result-star-icons";
+            for (int i = 0; i < StarIconCount; i++)
+            {
+                _starIcons[i] = ArtLibrary.AddIcon(starRow, ArtLibrary.StarEmpty, StarIconSize);
+            }
+
             _resultCoins = UiFactory.Body(_resultPanel, string.Empty);
             _resultReason = UiFactory.Notice(_resultPanel, string.Empty);
             _resultShortfall = UiFactory.Body(_resultPanel, string.Empty);
@@ -164,6 +184,10 @@ namespace KebabStreet.Game
             _retryButton.style.display = onRetry == null ? DisplayStyle.None : DisplayStyle.Flex;
             Button menu = UiFactory.AddButton(_resultPanel, text.Get(TextKeys.ResultMenu), onExit);
             menu.name = "result-menu";
+            menu.style.flexDirection = FlexDirection.Row;
+            menu.style.alignItems = Align.Center;
+            menu.style.justifyContent = Justify.Center;
+            ArtLibrary.AddIcon(menu, ArtLibrary.Menu, IconSize, true);
 
             Refresh();
         }
@@ -305,6 +329,14 @@ namespace KebabStreet.Game
             Result = view;
             _resultTitle.text = _text.Get(view.TitleKey);
             _resultStars.text = string.Format(_text.Get(TextKeys.ShiftResultStars), view.Stars);
+            for (int i = 0; i < StarIconCount; i++)
+            {
+                if (_starIcons[i] != null)
+                {
+                    ArtLibrary.Apply(_starIcons[i], i < view.Stars ? ArtLibrary.StarFull : ArtLibrary.StarEmpty);
+                }
+            }
+
             _resultCoins.text = string.Format(_text.Get(TextKeys.ShiftResultCoins), view.RewardCoins);
             _resultReason.text = ResultView.Format(_text, view.Reason);
             _resultShortfall.text = ResultView.Format(_text, view.Shortfall);
