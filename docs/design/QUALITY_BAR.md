@@ -273,6 +273,6 @@
 - [S17] W3C WCAG 2.1, 1.4.3 Contrast (Minimum) — https://www.w3.org/TR/WCAG21/#contrast-minimum (норма відома з `ART_STYLE_GUIDE.md` 2.3; сторінку в цій сесії не перечитано)
 - [S18] W3C WAI, Understanding 2.3.1 Three Flashes or Below Threshold — https://www.w3.org/WAI/WCAG21/Understanding/three-flashes-or-below-threshold.html
 - [S19] Unity Manual (6.x), USS transitions (рекомендовано `translate/rotate/scale`; інші властивості можуть перераховувати розмітку щокадру; кольори й `opacity` — швидкий шлях; функції згладжування, зокрема `ease-out-back`, `ease-out-bounce`) — https://docs.unity.com/en-us/engine/current/manual/uitoolkits/uielements/uie-uss/properties/uie-transitions
-- [S20] Unity Manual 6.3 LTS, Built-in filters (USS `filter: blur(...)`; `drop-shadow` у 6.3 не підтримується) — https://docs.unity3d.com/Manual/ui-systems/built-in-filters.html
+- [S20] Unity Manual 6.3 LTS, Built-in filters (USS `filter: blur(...)`; `drop-shadow` у 6.3 не підтримується) — https://docs.unity.com/en-us/engine/6000.3/manual/uitoolkits/uielements/uie-uss/uss-filter/built-in-filters
 
 **Обмеження джерел:** S2, S6, S9 — агрегатори відгуків; S3, S5 — маркетингові тексти розробників; числові пороги в критеріях без посилання — припущення Агента 2, підлягають перевірці на телефоні (L3) і плейтесті.
