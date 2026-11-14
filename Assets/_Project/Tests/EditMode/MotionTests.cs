@@ -310,7 +310,6 @@ namespace KebabStreet.Tests.EditMode
             Assert.Greater(paid, 0L);
             Assert.AreEqual(paid.ToString(), screen.CoinsShownText, "цільове число - з Core");
             Assert.AreNotEqual(screen.CoinsShownText, screen.CoinsAnimatedText, "у момент оплати число ще не добігло");
-            Assert.Greater(screen.CoinsMotion.Writes, 0, "значок монети пульсує");
 
             // Той самий кадр: підскок цілі й клієнта стартують один раз.
             MotionTarget actor = screen.Counter.GetActor(slot);
@@ -318,6 +317,7 @@ namespace KebabStreet.Tests.EditMode
             screen.Refresh();
             Assert.AreEqual(-UiMotion.HopHeightPx, actor.TranslateY, 0.5f, "клієнт підскакує на 12 px");
             Assert.Greater(screen.GoalMotion.ScaleX, 1f, "число цілі підскакує");
+            Assert.Greater(screen.CoinsMotion.ScaleX, 1f, "значок монети пульсує");
             Assert.LessOrEqual(screen.GoalMotion.ScaleX, UiMotion.GoalPopPeak + Eps);
             int hopWrites = actor.Writes;
             screen.Refresh();
