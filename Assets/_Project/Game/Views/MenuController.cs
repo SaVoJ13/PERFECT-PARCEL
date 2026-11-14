@@ -33,7 +33,7 @@ namespace KebabStreet.Game
             _settingsHint = UiFactory.Body(Container, string.Empty);
         }
 
-        private const float LevelIconSize = 44f;
+        private const float LevelIconSize = 40f;
         private const float LevelIconMargin = 20f;
         private const int MaxStars = 3;
 

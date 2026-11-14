@@ -20,8 +20,8 @@ namespace KebabStreet.Tests.EditMode
             Assert.IsNotNull(strip);
             Assert.AreEqual(3, strip.childCount);
             Assert.AreEqual(Position.Absolute, strip.style.position.value);
-            Assert.AreEqual(172f, button.style.paddingLeft.value.value, 0.01f);
-            Assert.AreEqual(button.style.paddingLeft.value.value, button.style.paddingRight.value.value, 0.01f);
+            Assert.AreEqual(132f + 40f + ArtLibrary.IconTextGap, button.style.paddingLeft.value.value, 0.01f);
+            Assert.AreEqual(20f, button.style.paddingRight.value.value, 0.01f, "праворуч лише поле: напис не стискується");
             Assert.AreEqual("Рівень 1", button.text, "текст кнопки не змінено");
         }
 
@@ -31,6 +31,15 @@ namespace KebabStreet.Tests.EditMode
             var button = new Button();
             Assert.IsNull(ArtLibrary.AddLeadingIcons(button, new[] { "no_such_sprite" }, 44f, 20f));
             Assert.AreEqual(0, button.childCount);
+        }
+
+        [Test]
+        public void AddTopIcon_ReservesTopSpace_NoSideSqueeze()
+        {
+            var button = new Button { text = "Часник" };
+            Assert.IsNotNull(ArtLibrary.AddTopIcon(button, ArtLibrary.Coin, 48f, 8f));
+            Assert.AreEqual(64f, button.style.paddingTop.value.value, 0.01f);
+            Assert.AreEqual(StyleKeyword.Null, button.style.paddingLeft.keyword);
         }
 
         [Test]
@@ -44,6 +53,10 @@ namespace KebabStreet.Tests.EditMode
             Assert.IsNotNull(order);
             Assert.AreEqual(FlexDirection.Column, order.style.flexDirection.value);
             Assert.AreEqual(Wrap.NoWrap, order.style.flexWrap.value);
+            for (int i = 0; i < screen.Counter.GetOrderChipCount(0); i++)
+            {
+                Assert.Greater(order[i].style.height.value.value, 0f, "значок має власну висоту, а не нульову");
+            }
         }
 
         [Test]

@@ -35,6 +35,7 @@ namespace KebabStreet.Game
         private const float HeartBorder = 4f;
         private const float BarHeight = 12f;
         private const float ChipPadding = 8f;
+        private const float ChipHeight = 40f;
         private const float ChipGap = 6f;
         private const float StrikeHeight = 6f;
         private const float HalfPercent = 50f;
@@ -598,6 +599,8 @@ namespace KebabStreet.Game
                     chip.style.marginBottom = ChipGap / 2f;
                     chip.style.unityTextAlign = TextAnchor.MiddleCenter;
                     chip.style.flexShrink = 0;
+                    chip.style.height = ChipHeight;
+                    chip.style.minHeight = ChipHeight;
                     chip.style.whiteSpace = WhiteSpace.NoWrap;
 
                     var strike = new VisualElement { pickingMode = PickingMode.Ignore };

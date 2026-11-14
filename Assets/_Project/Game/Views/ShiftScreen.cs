@@ -23,10 +23,10 @@ namespace KebabStreet.Game
         private const float Gap = 24f;
         private const float HudFontSize = 48f;
         private const float LevelFontSize = 40f;
-        private const float PauseButtonWidth = 260f;
+        private const float PauseButtonWidth = 320f;
         private const int StarIconCount = 3;
         private const float IconSize = 64f;
-        private const float ButtonIconMargin = 12f;
+        private const float ButtonIconMargin = 16f;
         private const float StarIconSize = 96f;
         private const float PauseButtonHeight = 144f;
         private const float ZoneBorder = 4f;
