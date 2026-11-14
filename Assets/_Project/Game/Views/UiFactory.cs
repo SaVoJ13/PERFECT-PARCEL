@@ -40,7 +40,9 @@ namespace KebabStreet.Game
 
         public static Label Title(VisualElement parent, string text)
         {
-            return AddLabel(parent, text, TitleSize, Color.white);
+            Label title = AddLabel(parent, text, TitleSize, Color.white);
+            title.AddToClassList("ks-title");
+            return title;
         }
 
         public static Label Body(VisualElement parent, string text)

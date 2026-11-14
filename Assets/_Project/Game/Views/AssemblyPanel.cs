@@ -19,6 +19,7 @@ namespace KebabStreet.Game
 
         /// <summary>Скільки кнопок у рядку (станції, дошка): ≈ 290 px логічної ширини на 1080x2340.</summary>
         public const int ButtonsPerRow = 3;
+        private const float StationIconSize = 64f;
 
         /// <summary>Найбільше показаних дій черги (rules.actionQueueMax може бути більшим).</summary>
         public const int MaxQueueShown = 4;
@@ -95,6 +96,13 @@ namespace KebabStreet.Game
             for (int i = 0; i < _stations.Length; i++)
             {
                 _stationButtons[i].text = _ingredientNames[_stations[i]];
+
+                // S1-18: спрайт інгредієнта ing_<id> над написом; немає спрайта — лише текст.
+                Button station = _stationButtons[i];
+                station.style.flexDirection = FlexDirection.Column;
+                station.style.alignItems = Align.Center;
+                station.style.justifyContent = Justify.Center;
+                ArtLibrary.AddIcon(station, "ing_" + board.Config.GetIngredient(_stations[i]).Id, StationIconSize, true);
             }
 
             _items = Grid("assembly-item", board == null ? 0 : board.Capacity, ItemHeight, ItemColor, TapBoardItem);
