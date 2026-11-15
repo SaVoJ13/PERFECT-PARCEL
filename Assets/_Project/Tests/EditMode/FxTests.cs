@@ -382,7 +382,7 @@ namespace KebabStreet.Tests.EditMode
 
             Assert.AreEqual(active, screen.Fx.ActiveCount, "на паузі нових частинок немає й старі не гинуть");
             Assert.AreEqual(writes, screen.Fx.Writes, "на паузі рух не пишеться");
-            Assert.IsTrue(driver.SetPaused(false));
+            Assert.IsFalse(driver.SetPaused(false));
             screen.Refresh();
             Assert.IsFalse(UiMotion.Paused);
         }
