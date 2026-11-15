@@ -72,6 +72,9 @@ namespace KebabStreet.Game
 
         public static readonly Color Plaque = new Color(0.20f, 0.13f, 0.09f, 0.96f);
 
+        /// <summary>Картка паузи (Q-05h): суцільна, щоб кнопки читались на будь-якому затемненому фоні.</summary>
+        public static readonly Color PauseCard = new Color(0.20f, 0.13f, 0.09f, 1f);
+
         /// <summary>Кнопки плашки навчання: «Chili» палітри (ART_STYLE_GUIDE), білий текст ≥ 4.5:1.</summary>
         public static readonly Color TutorialButton = new Color(0.761f, 0.255f, 0.047f);
 
@@ -115,6 +118,9 @@ namespace KebabStreet.Game
             new ContrastPair("Заголовок/текст екрана", White, NightPlum, false),
             new ContrastPair("Повідомлення екрана", Saffron, NightPlum, false),
             new ContrastPair("Текст на затемненні паузи", White, Overlay, false),
+            new ContrastPair("Картка паузи", White, PauseCard, false),
+            new ContrastPair("Кнопка «Заново/Меню» паузи", White, StationButton, false),
+            new ContrastPair("Перемикач паузи", White, ItemButton, false),
             new ContrastPair("Смужка дії на доріжці", ActionFill, ActionTrack, true),
             new ContrastPair("Рамка тапу: станція", TapFrameFor(StationButton), StationButton, true),
             new ContrastPair("Рамка тапу: предмет дошки", TapFrameFor(ItemButton), ItemButton, true),

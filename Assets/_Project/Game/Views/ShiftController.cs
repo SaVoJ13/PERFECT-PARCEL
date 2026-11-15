@@ -40,7 +40,7 @@ namespace KebabStreet.Game
             _tutorial = TutorialDirector.Create(_driver, Context.Tutorial, Context.Profile.Data);
             _ending = new ShiftEnding(completion, Context.Profile, _tutorial.Model);
             _screen = new ShiftScreen(
-                Container, _driver, Context.Text, OnPauseTap, OnResumeTap, OnExit, OnRetry, OnNext, Context.NextLevelNumber != 0, _tutorial, SaveTutorial);
+                Container, _driver, Context.Text, OnPauseTap, OnResumeTap, OnExit, OnRetry, OnNext, Context.NextLevelNumber != 0, _tutorial, SaveTutorial, OnRestart, GameSettings.Shared);
 
             // S1-22: вимірювання кадрів лише в development-збірці (у релізній _frameStats лишається null).
             _frameStats = Debug.isDebugBuild ? new FrameStats() : null;
@@ -160,6 +160,19 @@ namespace KebabStreet.Game
             if (_driver != null && _driver.IsFinished && Context.RetryShift())
             {
                 Open(GameFlow.SceneOf(Context.Flow.Current));
+            }
+        }
+
+        /// <summary>Q-05h: «Заново» з паузи (після підтвердження): та сама зміна спочатку, новий seed; прогрес зміни втрачено.</summary>
+        private void OnRestart()
+        {
+            if (_driver != null && !_driver.IsFinished)
+            {
+                SaveTutorial();
+                if (Context.RetryShift())
+                {
+                    Open(GameFlow.SceneOf(Context.Flow.Current));
+                }
             }
         }
 

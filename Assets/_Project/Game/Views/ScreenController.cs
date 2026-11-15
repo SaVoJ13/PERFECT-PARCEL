@@ -40,6 +40,7 @@ namespace KebabStreet.Game
                 + " theme=" + (document.panelSettings != null && document.panelSettings.themeStyleSheet != null)
                 + " root=" + (root != null) + " panel=" + (root != null && root.panel != null));
             UnitySfxSink.EnsureInstalled();
+            GameSettings.Shared.ApplyTo(SfxHub.Router); // Q-05h: музика, звуки, «менше анімацій» з PlayerPrefs.
             Container = UiFactory.Screen(root);
             Build();
             GameLog.Info(GetType().Name + ".Build: дітей у контейнері=" + Container.childCount);

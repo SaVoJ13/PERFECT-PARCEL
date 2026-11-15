@@ -98,6 +98,18 @@ namespace KebabStreet.Game
         public const string TutorialNext = "ui.tutorial.next";
         public const string TutorialSkip = "ui.tutorial.skip";
 
+        // Панель паузи (Q-05h): перемикачі, підтвердження, пропуск навчання.
+        public const string PauseRestart = "ui.pause.restart";
+        public const string PauseMusic = "ui.pause.music";
+        public const string PauseSounds = "ui.pause.sounds";
+        public const string PauseHaptics = "ui.pause.haptics";
+        public const string PauseReducedMotion = "ui.pause.reduced_motion";
+        public const string PauseSkipTutorial = "ui.pause.skip_tutorial";
+        public const string PauseConfirmRestart = "ui.pause.confirm_restart";
+        public const string PauseConfirmMenu = "ui.pause.confirm_menu";
+        public const string PauseYes = "ui.pause.yes";
+        public const string PauseNo = "ui.pause.no";
+
         // Імена клієнтів і назви інгредієнтів: ці ключі вказані в customers.json / recipes.json (nameKey).
         public const string CustomerOlyaName = "customer.olya.name";
         public const string CustomerMarkoName = "customer.marko.name";
