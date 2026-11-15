@@ -101,7 +101,10 @@ namespace KebabStreet.Tests.EditMode
         [Test]
         public void Cascade_NormalGapIs70ms_ForTypicalMenu()
         {
-            Assert.AreEqual(0.07f, MenuMotion.CascadeDelay(1, 9), Eps);
+            Assert.AreEqual(0.07f, MenuMotion.CascadeDelay(1, 6), Eps);
+            float real = MenuMotion.CascadeDelay(1, 9);
+            Assert.GreaterOrEqual(real, 0.06f - Eps, "реальне меню (9 елементів): крок 60-80 мс");
+            Assert.LessOrEqual(real, 0.08f + Eps);
             Assert.AreEqual(1f, MenuMotion.CascadeOpacity(MenuMotion.CascadeItemSec), Eps);
             Assert.AreEqual(0f, MenuMotion.CascadeOpacity(0f), Eps);
             Assert.AreEqual(0f, MenuMotion.CascadeOffset(MenuMotion.CascadeItemSec), Eps);

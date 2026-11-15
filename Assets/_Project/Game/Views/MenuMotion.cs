@@ -24,7 +24,7 @@ namespace KebabStreet.Game
 
         // QB-MENU-04: каскад: затримка 60-80 мс між елементами, загалом <= 600 мс.
         public const float CascadeGapSec = 0.07f;
-        public const float CascadeItemSec = 0.15f;
+        public const float CascadeItemSec = 0.1f;
         public const float CascadeTotalSec = 0.6f;
         public const float CascadeRisePx = 24f;
 
