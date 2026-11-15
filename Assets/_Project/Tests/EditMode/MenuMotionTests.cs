@@ -125,6 +125,41 @@ namespace KebabStreet.Tests.EditMode
         }
 
         [Test]
+        public void MapOrder_LevelOneIsBottomRow_NewestOnTop()
+        {
+            const int count = 5;
+            Assert.AreEqual(count - 1, LevelMapLayout.IndexAtRow(0, count), "верхній рядок - найновіший рівень");
+            Assert.AreEqual(0, LevelMapLayout.IndexAtRow(count - 1, count), "нижній рядок - рівень 1");
+            for (int row = 1; row < count; row++)
+            {
+                Assert.Less(LevelMapLayout.IndexAtRow(row, count), LevelMapLayout.IndexAtRow(row - 1, count));
+            }
+        }
+
+        [Test]
+        public void MapScroll_CentersCurrentRow_ClampedToContent()
+        {
+            Assert.AreEqual(400f, LevelMapLayout.ScrollTarget(500f, 100f, 200f, 1000f), Eps);
+            Assert.AreEqual(0f, LevelMapLayout.ScrollTarget(10f, 100f, 200f, 1000f), Eps, "верх - не нижче нуля");
+            Assert.AreEqual(800f, LevelMapLayout.ScrollTarget(950f, 100f, 200f, 1000f), Eps, "низ - не далі за вміст");
+            Assert.AreEqual(0f, LevelMapLayout.ScrollTarget(50f, 100f, 2000f, 1000f), Eps, "вміст менший за вікно");
+        }
+
+        [Test]
+        public void MapScroll_FromBottomToCurrent_IsMonotonicUpward()
+        {
+            float last = 800f;
+            for (float t = 0f; t <= MenuMotion.ScrollSec; t += 0.01f)
+            {
+                float v = MenuMotion.ScrollOffset(800f, 100f, t);
+                Assert.LessOrEqual(v, last + Eps);
+                last = v;
+            }
+
+            Assert.AreEqual(100f, MenuMotion.ScrollOffset(800f, 100f, MenuMotion.ScrollSec), Eps);
+        }
+
+        [Test]
         public void Scroll_ReachesTargetWithin400ms_Monotonic()
         {
             Assert.LessOrEqual(MenuMotion.ScrollSec, 0.4f);
