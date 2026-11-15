@@ -66,7 +66,7 @@
 | Q-02 | DESIGN_DEPTH (глибина дизайну) | game-designer (opus) | Done (PR #56, QA Verified L0) |
 | Q-03 | D09_DOSSIER (графіка: ціни, інструменти, сценарії) | ui-art-designer (opus) | Done (PR #57, QA Verified L0) |
 | Q-04 | GAP_ANALYSIS (P0/P1/P2; скриншоти нових екранів - Q-04b після підключення телефона) | qa-release (sonnet) | Done (PR #59, QA Verified L0) |
-| Q-05 | Реалізація без нової графіки (підкартки Q-05a…) | gameplay-developer (sonnet) | Backlog |
+| Q-05 | Реалізація без нової графіки (Q-05a…i) | gameplay-developer (sonnet) | Done (L2; L3 чекає телефон) |
 | Q-05a | Відгук і матеріал кнопок (G-01, G-04) | gameplay-developer (sonnet) | Done (PR #60, QA Verified L2; L3 не перевірено)
 | Q-05b | Ігровий екран без слів (G-02, G-03, G-21) | gameplay-developer (sonnet) | Done (PR #61, QA Verified L2; L3 не перевірено)
 | Q-05c | Рух клієнтів і HUD | gameplay-developer (sonnet) | Done (PR #62, QA Verified L2; L3 не перевірено)
@@ -75,6 +75,8 @@
 | Q-05f | Меню і вибір рівнів (G-12, G-16) | gameplay-developer (sonnet) | Done (PR #65, QA Verified L2; L3 не перевірено)
 | Q-05g | Звук: мікс, ducking, синтезовані SFX (G-10) | gameplay-developer (sonnet) | Done (PR #66, QA Verified L2; на слух не перевірено)
 | Q-05h | Пауза і навчання (G-13, G-20) | gameplay-developer (sonnet) | Done (PR #67, QA Verified L2; L3 не перевірено)
-| Q-05i | Вібрація (G-14) | platform-engineer (sonnet) | In Progress |
+| Q-05i | Вібрація (G-14), без дозволу VIBRATE | platform-engineer (sonnet) | Done (PR #68, QA Verified L2; на пристрої не перевірено) |
 
 Далі (картки створюються окремо): екран результату й зірок, навчання (завантажувач `tutorial.json` + UI, BUG-036), Game-обв'язка симуляції з UI зміни, плейсхолдер-графіка і звуки, плейтест, пороги балансу після відповіді Власника (№26, №27).
+
+| Q-04b | Скриншоти/відео всіх екранів на телефоні, L3-перевірка Q-05a…i за QUALITY_BAR розд. 10 | qa-release | Backlog (чекає підключення телефона) |
