@@ -36,6 +36,8 @@ namespace KebabStreet.Game
         public static readonly Color NightPlum = new Color(0.169f, 0.106f, 0.180f);
         public static readonly Color Saffron = new Color(1f, 0.718f, 0.012f);
         public static readonly Color Coin = new Color(1f, 0.79f, 0.2f);
+        /// <summary>Q-05c (QB-SHIFT-02): колір таймера в останні 10 с (Ember Red, посвітлений для контрасту 4:1 на темній підкладці HUD).</summary>
+        public static readonly Color EmberRed = new Color(1f, 0.36f, 0.31f);
         public static readonly Color Warning = new Color(0.96f, 0.62f, 0.04f);
 
         /// <summary>Підкладка під написи верхньої смуги: білий текст на білих смугах навісу не читався.</summary>

@@ -68,6 +68,7 @@
 | Q-04 | GAP_ANALYSIS (P0/P1/P2; скриншоти нових екранів - Q-04b після підключення телефона) | qa-release (sonnet) | Done (PR #59, QA Verified L0) |
 | Q-05 | Реалізація без нової графіки (підкартки Q-05a…) | gameplay-developer (sonnet) | Backlog |
 | Q-05a | Відгук і матеріал кнопок (G-01, G-04) | gameplay-developer (sonnet) | Done (PR #60, QA Verified L2; L3 не перевірено)
-| Q-05b | Ігровий екран без слів (G-02, G-03, G-21) | gameplay-developer (sonnet) | In Progress |
+| Q-05b | Ігровий екран без слів (G-02, G-03, G-21) | gameplay-developer (sonnet) | Done (PR #61, QA Verified L2; L3 не перевірено)
+| Q-05c | Рух клієнтів і HUD | gameplay-developer (sonnet) | In Progress |
 
 Далі (картки створюються окремо): екран результату й зірок, навчання (завантажувач `tutorial.json` + UI, BUG-036), Game-обв'язка симуляції з UI зміни, плейсхолдер-графіка і звуки, плейтест, пороги балансу після відповіді Власника (№26, №27).
