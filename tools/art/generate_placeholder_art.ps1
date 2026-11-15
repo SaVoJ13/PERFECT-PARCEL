@@ -36,56 +36,101 @@ function RRectPath($x, $y, $w, $h, $r) {
 function RRect($g, $x, $y, $w, $h, $r, $fill, $line = 4) { $p = RRectPath $x $y $w $h $r; $g.FillPath((Brush $fill), $p); if ($line -gt 0) { $g.DrawPath((Pen $Espresso $line), $p) } }
 function Shine($g, $x, $y, $w, $h) { $g.FillEllipse((Brush (C "FFFFFF" 110)), $x, $y, $w, $h) }
 
+# --- Q-06c: volume helpers (light top-left, dark bottom-right, contact shadow, gloss, thick dark outline) ---
+function Shadow($g, $x, $y, $w, $h) { $g.FillEllipse((Brush (C "000000" 70)), $x, $y, $w, $h) }
+function Vol($g, $path, $c1, $c2, $line = 5) {
+    $rf = $path.GetBounds()
+    $lb = New-Object System.Drawing.Drawing2D.LinearGradientBrush($rf, $c1, $c2, [single]60)
+    $g.FillPath($lb, $path); $lb.Dispose()
+    if ($line -gt 0) { $g.DrawPath((Pen $Espresso $line), $path) }
+}
+function Gloss($g, $x, $y, $w, $h) { $g.FillEllipse((Brush (C "FFFFFF" 150)), $x, $y, $w, $h) }
+function Marks($g, $path, $col, $wd, $n) {   # diagonal grill marks, clipped to the body
+    $g.SetClip($path); $p = Pen $col $wd
+    for ($k = 0; $k -lt $n; $k++) { $x = 24 + $k * 26; $g.DrawLine($p, $x, 110, ($x + 46), 22) }
+    $g.ResetClip()
+}
+
 # --- meat on the grill: 4 states, different SHAPES of the badge (colour only reinforces) ---
-function Meat-Blob($g, $fill) { RRect $g 14 34 100 62 28 $fill 5; Shine $g 30 42 34 14 }
+function Meat-Body($g, $c1, $c2, $marks, $markCol) {
+    Shadow $g 14 88 100 22
+    $p = RRectPath 14 30 100 64 28; Vol $g $p $c1 $c2 5
+    if ($marks -gt 0) { Marks $g $p $markCol 8 $marks; $g.DrawPath((Pen $Espresso 5), $p) }
+    Gloss $g 30 38 36 12
+}
 function Badge-Check($g, $x, $y, $s) {
-    Ell $g $x $y $s $s $Mint 4
-    $g.DrawLines((Pen $White 6), (Pts @(($x+$s*0.25),($y+$s*0.52),($x+$s*0.43),($y+$s*0.7),($x+$s*0.76),($y+$s*0.32))))
+    Ell $g $x $y $s $s $Mint 4; Gloss $g ($x+$s*0.18) ($y+$s*0.1) ($s*0.4) ($s*0.2)
+    $g.DrawLines((Pen $White 7), (Pts @(($x+$s*0.25),($y+$s*0.52),($x+$s*0.43),($y+$s*0.7),($x+$s*0.76),($y+$s*0.32))))
 }
 function Badge-Warn($g, $x, $y, $s) {
     Poly $g (Pts @(($x+$s/2),$y,($x+$s),($y+$s*0.9),$x,($y+$s*0.9))) $Amber 4
-    $g.DrawLine((Pen $Espresso 6), ($x+$s/2), ($y+$s*0.3), ($x+$s/2), ($y+$s*0.6)); $g.FillEllipse((Brush $Espresso), ($x+$s/2-4), ($y+$s*0.68), 8, 8)
+    $g.DrawLine((Pen $Espresso 7), ($x+$s/2), ($y+$s*0.3), ($x+$s/2), ($y+$s*0.6)); $g.FillEllipse((Brush $Espresso), ($x+$s/2-5), ($y+$s*0.68), 10, 10)
 }
 function Badge-Cross($g, $x, $y, $s) {
-    Ell $g $x $y $s $s $Ember 4; $p = Pen $White 6
+    Ell $g $x $y $s $s $Ember 4; $p = Pen $White 7
     $g.DrawLine($p, ($x+$s*0.3), ($y+$s*0.3), ($x+$s*0.7), ($y+$s*0.7)); $g.DrawLine($p, ($x+$s*0.7), ($y+$s*0.3), ($x+$s*0.3), ($y+$s*0.7))
 }
 
-$i = New-Img 128 128; Meat-Blob $i.G (C "E8837A"); Save-Img $i "icon_meat_raw"
-# cooking: darker meat + wavy steam lines (shape: steam)
-$i = New-Img 128 128; Meat-Blob $i.G (C "C46A4A")
-$wp = Pen (C "FFFFFF" 200) 5
-foreach ($x in 34, 62, 90) { $i.G.DrawCurve($wp, (Pts @($x,30,($x+8),20,$x,10,($x+8),0))) }
+# raw: pale, glossy, marbling, no marks
+$i = New-Img 128 128; $g = $i.G; Meat-Body $g (C "FFB0A5") (C "D9625A") 0 $Espresso
+$g.DrawCurve((Pen (C "FFE3DC" 200) 4), (Pts @(40,70,56,62,72,72,90,64))); Save-Img $i "icon_meat_raw"
+# cooking: warmer, 2 pale marks, steam
+$i = New-Img 128 128; $g = $i.G; Meat-Body $g (C "E39070") (C "A9553A") 2 (C "7A3A24" 150)
+$wp = Pen (C "FFFFFF" 220) 6
+foreach ($x in 34, 62, 90) { $g.DrawCurve($wp, (Pts @($x,26,($x+8),17,$x,8,($x+8),0))) }
 Save-Img $i "icon_meat_cooking"
-# done: brown-gold + circle with check
-$i = New-Img 128 128; Meat-Blob $i.G (C "9C5A2B"); Badge-Check $i.G 72 62 50; Save-Img $i "icon_meat_done"
-# almost burnt: darker + triangle "!" + thin bar
-$i = New-Img 128 128; Meat-Blob $i.G (C "7A4220"); Badge-Warn $i.G 72 56 52
-$i.G.FillRectangle((Brush $Amber), 14, 108, 70, 8); Save-Img $i "icon_meat_warning"
-# burnt: almost black + soot spots + circle with cross
-$i = New-Img 128 128; Meat-Blob $i.G (C "2A1A12")
-$i.G.FillEllipse((Brush (C "000000")), 28, 60, 12, 12); $i.G.FillEllipse((Brush (C "000000")), 48, 74, 9, 9)
-Badge-Cross $i.G 72 62 50; Save-Img $i "icon_meat_burnt"
+# done: golden brown, 3 bold marks, check
+$i = New-Img 128 128; $g = $i.G; Meat-Body $g (C "C98545") (C "7A4220") 3 (C "4A2410"); Badge-Check $g 72 62 50; Save-Img $i "icon_meat_done"
+# almost burnt: dark, 3 marks, triangle "!" + bar
+$i = New-Img 128 128; $g = $i.G; Meat-Body $g (C "8A5230") (C "4A2514") 3 (C "1F100A"); Badge-Warn $g 72 56 52
+$g.FillRectangle((Brush $Amber), 14, 108, 70, 8); Save-Img $i "icon_meat_warning"
+# burnt: black, cracks and soot, circle with cross
+$i = New-Img 128 128; $g = $i.G; Meat-Body $g (C "4A3A33") (C "120A07") 3 (C "000000")
+$cp = Pen (C "8A7A70") 3; $g.DrawLines($cp, (Pts @(30,50,40,58,34,68))); $g.DrawLines($cp, (Pts @(54,44,60,54,52,62)))
+$g.FillEllipse((Brush (C "000000")), 28, 72, 12, 12); $g.FillEllipse((Brush (C "000000")), 48, 78, 9, 9)
+Badge-Cross $g 72 62 50; Save-Img $i "icon_meat_burnt"
 
-# --- ingredients (silhouette + outline, readable in black and white) ---
-$i = New-Img 128 128; $g = $i.G   # pita: half-round flatbread with pocket
-$g.FillPie((Brush (C "E9B872")), 8, 28, 112, 112, 180, 180); $g.DrawPie((Pen $Espresso 4), 8, 28, 112, 112, 180, 180)
-$g.DrawArc((Pen (C "B98544") 4), 28, 48, 72, 72, 190, 160); Save-Img $i "ing_pita"
-$i = New-Img 128 128; $g = $i.G   # meat slab with highlight
-RRect $g 12 30 104 68 30 (C "9C5A2B") 4; Shine $g 28 40 36 14
-$sp = Pen (C "6B3A18") 4; $g.DrawLine($sp, 40, 70, 56, 82); $g.DrawLine($sp, 66, 62, 82, 76); Save-Img $i "ing_meat"
-$i = New-Img 128 128; $g = $i.G   # salad: leaf with veins
-Poly $g (Pts @(64,10,100,40,108,84,64,118,20,84,28,40)) (C "6CBF3C") 4
-$g.DrawLine((Pen (C "3E8A1F") 4), 64, 24, 64, 108); $g.DrawLine((Pen (C "3E8A1F") 3), 64, 60, 88, 46); $g.DrawLine((Pen (C "3E8A1F") 3), 64, 76, 40, 62); Save-Img $i "ing_salad"
-$i = New-Img 128 128; $g = $i.G   # onion: round with rings and a tip
-Ell $g 18 30 92 88 (C "D9A6E0") 4; $g.DrawEllipse((Pen (C "A66BB0") 3), 38, 48, 52, 52)
-Poly $g (Pts @(64,6,76,34,52,34)) (C "6CBF3C") 4; Save-Img $i "ing_onion"
-$i = New-Img 128 128; $g = $i.G   # garlic sauce: bottle + drop, cream
-RRect $g 40 40 48 76 14 (C "FFF8E7") 4; RRect $g 52 14 24 30 6 $Sand 4
-$g.FillPolygon((Brush $Espresso), (Pts @(64,60,54,82,74,82))); Save-Img $i "ing_sauce_garlic"
-$i = New-Img 128 128; $g = $i.G   # hot sauce: bottle + flame (different badge shape)
-RRect $g 40 40 48 76 14 (C "E85D04") 4; RRect $g 52 14 24 30 6 $Chili 4
-Poly $g (Pts @(64,56,80,82,72,96,56,96,48,82)) $Saffron 3; Save-Img $i "ing_sauce_hot"
+# --- ingredients (silhouette + volume + outline, readable in black and white) ---
+# pita: domed flatbread with dark pocket opening along the flat edge and toast spots
+$i = New-Img 128 128; $g = $i.G; Shadow $g 8 100 112 18
+$pp = New-Object System.Drawing.Drawing2D.GraphicsPath; $pp.AddArc(10, 26, 108, 150, 180, 180); $pp.AddLine(118, 101, 10, 101); $pp.CloseFigure()
+Vol $g $pp (C "FFE0A0") (C "C98B44") 5
+$g.SetClip($pp); $g.FillEllipse((Brush (C "7A4A20")), 22, 84, 84, 34); $g.ResetClip(); $g.DrawPath((Pen $Espresso 5), $pp)
+$g.DrawArc((Pen (C "9C5E26" 200) 4), 30, 44, 68, 60, 200, 140)
+$g.FillEllipse((Brush (C "B26E2E" 190)), 44, 56, 9, 9); $g.FillEllipse((Brush (C "B26E2E" 190)), 74, 50, 8, 8); $g.FillEllipse((Brush (C "B26E2E" 190)), 86, 68, 7, 7)
+Gloss $g 24 38 30 12; Save-Img $i "ing_pita"
+# meat: thick slab with 3 grill marks
+$i = New-Img 128 128; $g = $i.G; Shadow $g 10 88 108 22
+$mp = RRectPath 12 28 104 68 30; Vol $g $mp (C "D9955A") (C "7A4220") 5; Marks $g $mp (C "4A2410") 8 3; $g.DrawPath((Pen $Espresso 5), $mp); Gloss $g 28 36 36 12; Save-Img $i "ing_meat"
+# salad: ruffled leaf with veins
+$i = New-Img 128 128; $g = $i.G; Shadow $g 24 100 80 16
+$sp = Pts @(64,8,80,18,98,26,106,46,112,64,104,84,88,102,64,114,40,102,24,84,16,64,22,46,30,26,48,18)
+$lp = New-Object System.Drawing.Drawing2D.GraphicsPath; $lp.AddClosedCurve($sp, [single]0.35)
+Vol $g $lp (C "B5EE72") (C "3F8F25") 5
+$vp = Pen (C "2E6E18") 4; $g.DrawLine($vp, 64, 24, 64, 104); $g.DrawLine((Pen (C "2E6E18") 3), 64, 56, 90, 40); $g.DrawLine((Pen (C "2E6E18") 3), 64, 74, 38, 58); $g.DrawLine((Pen (C "2E6E18") 3), 64, 88, 88, 74)
+Gloss $g 34 30 24 10; Save-Img $i "ing_salad"
+# onion: bulb with pointed top, curved layer lines, purple gradient
+$i = New-Img 128 128; $g = $i.G; Shadow $g 18 100 92 16
+$op = New-Object System.Drawing.Drawing2D.GraphicsPath; $op.AddEllipse(16, 32, 96, 82)
+Poly $g (Pts @(64,4,78,40,50,40)) (C "9BD060") 5
+Vol $g $op (C "F2CBEF") (C "A55AAE") 5
+$g.DrawArc((Pen (C "7E3C88") 3), 34, 44, 60, 62, 100, 160); $g.DrawArc((Pen (C "7E3C88") 3), 50, 44, 28, 62, 90, 180)
+Gloss $g 30 44 26 12; Save-Img $i "ing_onion"
+# bottles: cap + neck + body + label
+function Bottle($g, $body1, $body2, $cap) {
+    Shadow $g 30 104 70 14
+    $bp = RRectPath 36 40 56 70 16; Vol $g $bp $body1 $body2 5
+    $nk = RRectPath 50 16 28 32 6; Vol $g $nk $cap $cap 5
+    RRect $g 46 6 36 14 5 $Espresso 0
+    Gloss $g 42 46 12 26
+}
+$i = New-Img 128 128; $g = $i.G   # garlic sauce: cream bottle + garlic clove
+Bottle $g (C "FFFFFF") (C "E8D9B5") $Sand
+$g.FillPie((Brush (C "FFF8E7")), 52, 60, 24, 34, 0, 360); Poly $g (Pts @(64,56,74,76,70,92,58,92,54,76)) (C "FFFFFF") 3
+$g.DrawLine((Pen (C "B59A62") 2), 64, 62, 64, 90); Save-Img $i "ing_sauce_garlic"
+$i = New-Img 128 128; $g = $i.G   # hot sauce: red bottle + flame
+Bottle $g (C "FF7A2E") (C "B02A0A") $Chili
+Poly $g (Pts @(64,56,80,80,72,96,56,96,48,80)) $Saffron 3; Poly $g (Pts @(64,72,70,84,64,92,58,84)) (C "FFF3D6") 0; Save-Img $i "ing_sauce_hot"
 
 # --- UI icons ---
 function Heart-Path($x, $y, $s) {
