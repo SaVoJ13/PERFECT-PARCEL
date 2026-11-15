@@ -24,7 +24,7 @@
 
 | Група | Файли | Джерело | Ліцензія | Дата |
 |---|---|---|---|---|
-| Фон | `bg_bar.png` | власний код | Original | 2026-11-13 |
+| Фон | `bg_bar.png` (Q-06d: вікно на вулицю, гірлянда, полиці, прилавок), `bg_menu.png` (нічна вулиця й будка) | власний код | Original | 2026-11-16 |
 | Стани м'яса | `icon_meat_raw/cooking/done/warning/burnt.png` | власний код | Original | 2026-11-13 |
 | Інгредієнти | `ing_pita/meat/salad/onion/sauce_garlic/sauce_hot.png` | власний код | Original | 2026-11-13 |
 | HUD-значки | `icon_heart_full/empty`, `icon_coin`, `icon_star_full/empty`, `icon_lock`, `icon_pause`, `icon_menu` | власний код | Original | 2026-11-13 |

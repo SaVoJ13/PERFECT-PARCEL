@@ -95,6 +95,7 @@ namespace KebabStreet.Game
             _openedAt = UiMotion.Now;
             _lastNow = _openedAt;
             ILocalizer text = Context.Text;
+            ArtLibrary.Apply(Container, ArtLibrary.MenuBackground, true); // Q-06d: нічна вулиця й будка за картою.
             Container.style.justifyContent = Justify.FlexStart;
             Container.style.paddingTop = 40f;
             _entries = LevelProgress.Build(Context.Levels, Context.Profile.Data);

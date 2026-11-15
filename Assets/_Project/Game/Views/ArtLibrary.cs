@@ -26,6 +26,7 @@ namespace KebabStreet.Game
         public const string ThemePath = "Theme/kebab_theme";
 
         public const string Background = "bg_bar";
+        public const string MenuBackground = "bg_menu";
         public const string MeatRaw = "icon_meat_raw";
         public const string MeatCooking = "icon_meat_cooking";
         public const string MeatDone = "icon_meat_done";
@@ -44,7 +45,7 @@ namespace KebabStreet.Game
         /// <summary>Усі імена спрайтів (без .png); тест звіряє їх із файлами в Resources/Art і реєстром.</summary>
         public static readonly string[] AllNames =
         {
-            Background, MeatRaw, MeatCooking, MeatDone, MeatWarning, MeatBurnt,
+            Background, MenuBackground, MeatRaw, MeatCooking, MeatDone, MeatWarning, MeatBurnt,
             "ing_pita", "ing_meat", "ing_salad", "ing_onion", "ing_sauce_garlic", "ing_sauce_hot",
             HeartFull, HeartEmpty, Coin, StarFull, StarEmpty, Lock, Pause, Menu,
             "chr_olya", "chr_marko", "chr_hanna", Ali,

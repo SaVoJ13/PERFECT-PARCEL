@@ -19,7 +19,8 @@
 ## Файли
 | Файл (Resources/Art/) | Що | Джерело / автор | Ліцензія | Комерційне використання | Атрибуція | Дата |
 |---|---|---|---|---|---|---|
-| `bg_bar.png` | Фон бару: стіна, смугастий тент, дерев'яний прилавок | власний код, tools/art/generate_placeholder_art.ps1 | Original | так | не потрібна | 2026-11-13 |
+| `bg_bar.png` | Фон бару (Q-06d): задня стіна, вікно на вечірню вулицю з будинками й ліхтарями, гірлянда, полиці, тент з тінню, дерев'яний прилавок з текстурою й теплим світлом гриля | власний код, tools/art/generate_placeholder_art.ps1 | Original | так | не потрібна | 2026-11-16 |
+| `bg_menu.png` | Фон меню (Q-06d): нічне небо, силуети будинків, ліхтарі, мала будка з гірляндою внизу | власний код, tools/art/generate_placeholder_art.ps1 | Original | так | не потрібна | 2026-11-16 |
 | `icon_meat_raw.png` | Гриль: сире м'ясо | власний код, tools/art/generate_placeholder_art.ps1 | Original | так | не потрібна | 2026-11-13 |
 | `icon_meat_cooking.png` | Гриль: м'ясо готується (пара) | власний код, tools/art/generate_placeholder_art.ps1 | Original | так | не потрібна | 2026-11-13 |
 | `icon_meat_done.png` | Гриль: готове (галочка) | власний код, tools/art/generate_placeholder_art.ps1 | Original | так | не потрібна | 2026-11-13 |

@@ -242,14 +242,108 @@ foreach ($cl in $clients) {
     }
 }
 
-# --- bar background 540x960: wall, awning, wooden counter ---
+# --- Q-06d: backgrounds 540x960 (screen cover-crops the sides: keep key content centred). Muted vs. game objects (QB-SHIFT-31). ---
+function Glow($g, $cx, $cy, $rx, $ry, $hex, $alpha) {
+    $gp = New-Object System.Drawing.Drawing2D.GraphicsPath; $gp.AddEllipse($cx - $rx, $cy - $ry, $rx * 2, $ry * 2)
+    $pb = New-Object System.Drawing.Drawing2D.PathGradientBrush($gp)
+    $pb.CenterColor = (C $hex $alpha); $pb.SurroundColors = [System.Drawing.Color[]]@((C $hex 0))
+    $g.FillPath($pb, $gp); $pb.Dispose(); $gp.Dispose()
+}
+function VGrad($g, $x, $y, $w, $h, $top, $bottom) {
+    $r = New-Object System.Drawing.Rectangle $x, $y, $w, $h
+    $b = New-Object System.Drawing.Drawing2D.LinearGradientBrush($r, $top, $bottom, 90); $g.FillRectangle($b, $r); $b.Dispose()
+}
+function Houses($g, $rnd, $x0, $x1, $baseY, $minH, $maxH, $body, $lit, $litChance) {
+    $x = $x0
+    while ($x -lt $x1) {
+        $w = $rnd.Next(38, 78); $h = $rnd.Next($minH, $maxH)
+        $g.FillRectangle((Brush $body), $x, $baseY - $h, $w, $h)
+        if ($rnd.Next(0, 2) -eq 0) { $g.FillPolygon((Brush $body), (Pts @(($x - 3), ($baseY - $h), ($x + $w / 2), ($baseY - $h - 18), ($x + $w + 3), ($baseY - $h)))) }
+        for ($wy = $baseY - $h + 12; $wy -lt $baseY - 14; $wy += 22) {
+            for ($wx = $x + 8; $wx -lt $x + $w - 12; $wx += 18) {
+                if ($rnd.NextDouble() -lt $litChance) { $g.FillRectangle((Brush $lit), $wx, $wy, 9, 11) }
+            }
+        }
+        $x += $w + $rnd.Next(0, 6)
+    }
+}
+function Lamp($g, $x, $baseY, $h) {
+    Glow $g $x ($baseY - $h) 70 70 "FFD27A" 120
+    $g.DrawLine((Pen (C "1E1226") 6), $x, $baseY, $x, ($baseY - $h)); $g.DrawLine((Pen (C "1E1226") 6), $x, ($baseY - $h), ($x + 14), ($baseY - $h + 4))
+    $g.FillEllipse((Brush (C "FFE9A8")), $x + 8, $baseY - $h + 2, 12, 12)
+}
+function Bulbs($g, $y0, $sag, $n, $x0, $x1) {
+    $pen = Pen (C "1E1226" 200) 3
+    $pts = @(); for ($k = 0; $k -le 40; $k++) { $t = $k / 40; $pts += ($x0 + ($x1 - $x0) * $t); $pts += ($y0 + $sag * 4 * $t * (1 - $t)) }
+    $g.DrawLines($pen, (Pts $pts))
+    for ($k = 0; $k -lt $n; $k++) {
+        $t = ($k + 0.5) / $n; $bx = $x0 + ($x1 - $x0) * $t; $by = $y0 + $sag * 4 * $t * (1 - $t)
+        Glow $g $bx ($by + 8) 22 22 "FFC94A" 110
+        $g.FillEllipse((Brush (C "FFE9A8")), $bx - 5, $by + 3, 10, 13); $g.DrawEllipse((Pen $Espresso 2), $bx - 5, $by + 3, 10, 13)
+    }
+}
+
+# --- bar background: wall, street seen through the window, string lights, shelves, wood counter lit by the grill ---
+$rnd = New-Object System.Random 20061116
 $i = New-Img 540 960; $g = $i.G
-$lg = New-Object System.Drawing.Drawing2D.LinearGradientBrush((New-Object System.Drawing.Rectangle 0,0,540,960), (C "6B3A2A"), (C "3B2314"), 90)
-$g.FillRectangle($lg, 0, 0, 540, 960)
+VGrad $g 0 0 540 560 (C "7A4430") (C "3E2418")                       # back wall
+for ($k = 0; $k -lt 14; $k++) { $g.DrawLine((Pen (C "000000" 28) 2), 0, 118 + $k * 32, 540, 118 + $k * 32) }   # wall boards
+# window onto the street (dusk): sky, far/near houses, lamps
+$win = RRectPath 44 132 452 214 18
+$g.SetClip($win)
+VGrad $g 44 132 452 214 (C "6C4F8C") (C "F2A66A")
+Glow $g 400 300 150 90 "FFD9A0" 90
+Houses $g $rnd 44 496 300 40 100 (C "4A3560") (C "FFD27A") 0.18
+Houses $g $rnd 44 496 346 24 64 (C "2A1C38") (C "FFC94A") 0.28
+Lamp $g 120 346 74; Lamp $g 430 346 74
+$g.ResetClip()
+$g.DrawPath((Pen $Espresso 9), $win)
+$g.DrawLine((Pen $Espresso 7), 270, 132, 270, 346)
+RRect $g 30 342 480 16 6 (C "8A5530") 4                              # window sill
+Bulbs $g 116 22 9 20 520
+# shelves with jars on the side walls (visible between the panels)
+foreach ($sy in @(402, 470)) {
+    RRect $g 8 $sy 120 10 3 (C "5E3818") 3; RRect $g 412 $sy 120 10 3 (C "5E3818") 3
+    for ($k = 0; $k -lt 3; $k++) {
+        $jc = @((C "D62828"), (C "F59E0B"), (C "2E9E4F"))[($k + $sy) % 3]
+        RRect $g (16 + $k * 36) ($sy - 28) 26 28 6 $jc 3; RRect $g (420 + $k * 36) ($sy - 28) 26 28 6 $jc 3
+    }
+}
+# awning with soft shadow underneath
+VGrad $g 0 100 540 60 (C "000000" 90) (C "000000" 0)
 for ($k = 0; $k -lt 9; $k++) { $col = if ($k % 2 -eq 0) { $Chili } else { $Cream }; $g.FillRectangle((Brush $col), $k * 60, 0, 60, 84) }
-for ($k = 0; $k -lt 9; $k++) { $col = if ($k % 2 -eq 0) { $Chili } else { $Cream }; $g.FillPie((Brush $col), $k * 60, 54, 60, 60, 0, 180) }
-RRect $g 30 180 120 150 14 (C "F59E0B" 90) 4; RRect $g 390 180 120 150 14 (C "F59E0B" 90) 4
-$g.FillRectangle((Brush (C "7A4A24")), 0, 560, 540, 400); $g.FillRectangle((Brush $Espresso), 0, 556, 540, 8)
-for ($k = 0; $k -lt 10; $k++) { $g.DrawLine((Pen (C "5E3818") 3), 0, 600 + $k*40, 540, 600 + $k*40) }
+for ($k = 0; $k -lt 9; $k++) { $col = if ($k % 2 -eq 0) { $Chili } else { $Cream }; $g.FillPie((Brush $col), $k * 60, 54, 60, 60, 0, 180); $g.DrawArc((Pen $Espresso 3), $k * 60, 54, 60, 60, 0, 180) }
+VGrad $g 0 0 540 84 (C "FFFFFF" 40) (C "000000" 50)
+# wooden counter: planks, grain, highlight edge, warm glow from the grill
+VGrad $g 0 560 540 400 (C "8A5530") (C "5A3718")
+for ($k = 0; $k -lt 10; $k++) { $g.DrawLine((Pen (C "3E2410" 190) 3), 0, 600 + $k * 40, 540, 600 + $k * 40) }
+for ($k = 0; $k -lt 70; $k++) {
+    $gy = 566 + $rnd.Next(0, 390); $gx = $rnd.Next(-20, 500); $gl = $rnd.Next(40, 150)
+    $g.DrawLine((Pen (C "3E2410" 70) 2), $gx, $gy, ($gx + $gl), ($gy + $rnd.Next(-2, 3)))
+}
+foreach ($kn in @(@(90, 660), @(400, 740), @(210, 860))) { $g.DrawEllipse((Pen (C "3E2410" 120) 3), $kn[0], $kn[1], 22, 12) }
+$g.FillRectangle((Brush $Espresso), 0, 556, 540, 8); $g.FillRectangle((Brush (C "C98A4B" 150)), 0, 564, 540, 3)
+Glow $g 270 900 300 150 "FF9A3C" 85
 Save-Img $i "bg_bar"
+
+# --- menu background: night street, far/near houses, lamps with light cones, small booth with bulbs at the bottom ---
+$rnd = New-Object System.Random 20061117
+$i = New-Img 540 960; $g = $i.G
+VGrad $g 0 0 540 640 (C "1B1030") (C "5A2A48")
+VGrad $g 0 640 540 320 (C "5A2A48") (C "1E1226")
+for ($k = 0; $k -lt 40; $k++) { $g.FillEllipse((Brush (C "FFF3D6" 150)), $rnd.Next(0, 540), $rnd.Next(0, 360), 3, 3) }
+$g.FillEllipse((Brush (C "FFF3D6" 220)), 400, 70, 56, 56); $g.FillEllipse((Brush (C "241433" 255)), 418, 62, 52, 52)
+Glow $g 270 640 330 150 "F2783A" 110
+Houses $g $rnd 0 540 660 110 260 (C "3A2048") (C "FFC94A") 0.14
+Houses $g $rnd 0 540 740 70 170 (C "241230") (C "FFD27A") 0.22
+Lamp $g 36 780 220; Lamp $g 504 780 220
+$g.FillRectangle((Brush (C "1E1226")), 0, 780, 540, 180)                # pavement
+# small kebab booth, bottom centre (dim, behind the buttons)
+RRect $g 110 790 320 170 10 (C "4A2A22") 4
+for ($k = 0; $k -lt 6; $k++) { $col = if ($k % 2 -eq 0) { (C "9A3A12") } else { (C "D8C8A8") }; $g.FillRectangle((Brush $col), 110 + $k * 53.3, 780, 54, 34) }
+$g.DrawRectangle((Pen $Espresso 4), 110, 780, 320, 34)
+RRect $g 136 836 268 70 8 (C "2A1810") 3
+Glow $g 270 870 150 60 "FF9A3C" 90
+Bulbs $g 770 14 8 100 440
+Save-Img $i "bg_menu"
 Write-Host "Generated in $OutDir"
