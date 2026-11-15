@@ -17,6 +17,7 @@ namespace KebabStreet.Game
         private ShiftScreen _screen;
         private SfxDirector _sfx;
         private TutorialDirector _tutorial;
+        private TutorialPause _tutorialPause;
         private FrameStats _frameStats;
         private bool _userPaused;
         private bool _appPaused;
@@ -38,6 +39,7 @@ namespace KebabStreet.Game
             _driver = new ShiftDriver(level, seed, OnShiftFinished);
             _sfx = SfxDirector.ForDriver(_driver, SfxHub.Router);
             _tutorial = TutorialDirector.Create(_driver, Context.Tutorial, Context.Profile.Data);
+            _tutorialPause = new TutorialPause(_driver, _tutorial);
             _ending = new ShiftEnding(completion, Context.Profile, _tutorial.Model);
             _screen = new ShiftScreen(
                 Container, _driver, Context.Text, OnPauseTap, OnResumeTap, OnExit, OnRetry, OnNext, Context.NextLevelNumber != 0, _tutorial, SaveTutorial, OnRestart, GameSettings.Shared);
@@ -58,6 +60,7 @@ namespace KebabStreet.Game
             }
 
             float delta = Time.unscaledDeltaTime;
+            _tutorialPause.Update(); // Q-05k: поки видно підказку навчання, зміна стоїть.
             _driver.Frame(delta);
             if (_driver.IsFinished)
             {

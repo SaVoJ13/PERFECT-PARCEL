@@ -32,6 +32,8 @@ namespace KebabStreet.Game
         private readonly Action<ShiftResult> _onFinished;
         private bool _began;
         private bool _paused;
+        private bool _externalPause;
+        private bool _tutorialPause;
         private bool _discardNextFrame;
 
         public ShiftDriver(LevelDefinition level, ulong seed, Action<ShiftResult> onFinished = null)
@@ -82,12 +84,46 @@ namespace KebabStreet.Game
         /// </summary>
         public bool SetPaused(bool paused)
         {
-            if (!_began || IsFinished || paused == _paused)
+            if (!_began || IsFinished)
             {
                 return _paused;
             }
 
-            if (paused)
+            _externalPause = paused;
+            return ApplyPause();
+        }
+
+        /// <summary>
+        /// Q-05k: пауза на час підказки навчання (окрема від <see cref="SetPaused"/>: пауза гравця її не знімає і навпаки).
+        /// Гра стоїть, поки є хоч одна з двох. Тап гравця по грі під час лише такої паузи її знімає
+        /// (<see cref="IsTutorialPaused"/> стає false), щоб крок «зроби дію» можна було виконати.
+        /// </summary>
+        public bool SetTutorialPause(bool paused)
+        {
+            if (!_began || IsFinished)
+            {
+                return _paused;
+            }
+
+            _tutorialPause = paused;
+            return ApplyPause();
+        }
+
+        /// <summary>Триває пауза підказки навчання.</summary>
+        public bool IsTutorialPaused => _paused && _tutorialPause;
+
+        /// <summary>Пауза від гравця чи системи (без паузи підказки): саме її показує панель паузи.</summary>
+        public bool IsExternallyPaused => _paused && _externalPause;
+
+        private bool ApplyPause()
+        {
+            bool want = _externalPause || _tutorialPause;
+            if (want == _paused)
+            {
+                return _paused;
+            }
+
+            if (want)
             {
                 _paused = Simulation.Pause();
             }
@@ -143,7 +179,17 @@ namespace KebabStreet.Game
         /// </summary>
         public bool Tap(ShiftTap tap, int argument = AnyTarget)
         {
-            if (!_began || IsFinished || _paused)
+            if (!_began || IsFinished)
+            {
+                return false;
+            }
+
+            if (_paused && _tutorialPause && !_externalPause)
+            {
+                SetTutorialPause(false); // Q-05k: гравець узявся за дію, про яку підказка, - час іде.
+            }
+
+            if (_paused)
             {
                 return false;
             }

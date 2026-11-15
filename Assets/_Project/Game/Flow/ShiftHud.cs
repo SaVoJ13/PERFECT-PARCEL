@@ -109,7 +109,7 @@ namespace KebabStreet.Game
                 goal.Type == GoalType.Coins ? coins : simulation.ServedCount,
                 goal.Target,
                 coins,
-                driver.IsPaused,
+                driver.IsExternallyPaused, // Q-05k: панель паузи лише для паузи гравця, не для підказки навчання.
                 driver.GoalDoneStarHint,
                 driver.IsFinished);
         }
