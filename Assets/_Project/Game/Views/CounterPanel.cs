@@ -396,6 +396,8 @@ namespace KebabStreet.Game
             private readonly VisualElement _bar;
             private readonly VisualElement _order;
             private readonly VisualElement _portrait;
+            private ClientMood _shownMood = ClientMood.Neutral;
+            private int _moodCustomer = -1;
             private readonly TapDecor _decor;
             private readonly int _index;
             private readonly bool _showPortrait;
@@ -577,6 +579,7 @@ namespace KebabStreet.Game
                 if (first || !view.Patience.Equals(previous.Patience) || view.CustomerId != previous.CustomerId)
                 {
                     DrawPatience(view);
+                    DrawMood(view); // Q-06b: вираз обличчя за терпінням.
                 }
 
                 if (first || view.ServeQueued != previous.ServeQueued || view.Patience.Low != previous.Patience.Low
@@ -699,6 +702,29 @@ namespace KebabStreet.Game
                 }
 
                 VisibleChips = count;
+            }
+
+            private void DrawMood(CustomerSlotView view)
+            {
+                if (!view.Occupied || !_showPortrait || view.TypeIndex < 0)
+                {
+                    return;
+                }
+
+                ClientMood mood = ArtLibrary.MoodOf(view.Patience);
+                if (mood == _shownMood && view.CustomerId == _moodCustomer)
+                {
+                    return;
+                }
+
+                _shownMood = mood;
+                _moodCustomer = view.CustomerId;
+                string baseName = _owner._portraitNames[view.TypeIndex];
+                // Немає спрайта вираза — лишається базовий (нейтральний) портрет.
+                if (!ArtLibrary.Apply(_portrait, ArtLibrary.MoodName(baseName, mood)))
+                {
+                    ArtLibrary.Apply(_portrait, baseName);
+                }
             }
 
             private void DrawPatience(CustomerSlotView view)
