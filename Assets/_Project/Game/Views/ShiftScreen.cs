@@ -27,6 +27,7 @@ namespace KebabStreet.Game
         private const float HudFontSize = 48f;
         private const float LevelFontSize = 40f;
         private const int StarIconCount = 3;
+        private const int ResultButtonCount = 3;
         private const float IconSize = 64f;
         private const float ButtonIconMargin = 16f;
         private const float StarIconSize = 96f;
@@ -63,6 +64,19 @@ namespace KebabStreet.Game
         private readonly TutorialDirector _tutorial;
         private readonly Button _nextButton;
         private readonly Button _retryButton;
+        private readonly Button _menuButton;
+        private readonly VisualElement _screenRoot;
+        private readonly MotionTarget _bannerMotion;
+        private readonly MotionTarget[] _starMotion = new MotionTarget[StarIconCount];
+        private readonly MotionTarget[] _buttonMotion = new MotionTarget[ResultButtonCount];
+        private readonly Button[] _resultButtons = new Button[ResultButtonCount];
+        private string _resultCoinsFull = string.Empty;
+        private float _resultAt = -1f;
+        private bool _resultSkipped;
+        private bool _firstWin;
+        private int _starsRevealed;
+        private bool _confettiFired;
+        private long _resultCoinsShown = -1;
         private readonly bool _hasNextLevel;
         private ShiftHudView _shown;
         private bool _drawn;
@@ -120,6 +134,7 @@ namespace KebabStreet.Game
             root.style.paddingTop = SafeTop;
             root.style.paddingBottom = SafeBottom;
             container.Add(root);
+            _screenRoot = root;
             UiDecor.AddVignette(root); // Q-05a: QB-ALL-08, краї темніші поверх ілюстрації фону.
             // S1-17: відступи за справжньою безпечною зоною телефона (виріз, жестова панель), а не лише за референсом.
             root.RegisterCallback<GeometryChangedEvent>(_ => ApplySafeArea(root));
@@ -215,6 +230,27 @@ namespace KebabStreet.Game
             Button menu = UiFactory.AddButton(_resultPanel, text.Get(TextKeys.ResultMenu), onExit);
             menu.name = "result-menu";
             ArtLibrary.AddLeadingIcons(menu, new[] { ArtLibrary.Menu }, IconSize, ButtonIconMargin);
+            _menuButton = menu;
+
+            // Q-05e: ритуал результату. Банер - заголовок; кнопки з'являються після анімації; тап по панелі пропускає її.
+            _bannerMotion = new MotionTarget(_resultTitle);
+            for (int i = 0; i < StarIconCount; i++)
+            {
+                if (_starIcons[i] != null)
+                {
+                    _starMotion[i] = new MotionTarget(_starIcons[i]);
+                }
+            }
+
+            _resultButtons[0] = _nextButton;
+            _resultButtons[1] = _retryButton;
+            _resultButtons[2] = _menuButton;
+            for (int i = 0; i < ResultButtonCount; i++)
+            {
+                _buttonMotion[i] = new MotionTarget(_resultButtons[i]);
+            }
+
+            _resultPanel.RegisterCallback<PointerDownEvent>(_ => SkipResult());
 
             Refresh();
         }
@@ -275,7 +311,53 @@ namespace KebabStreet.Game
 
         public string ResultStarsText => _resultStars.text;
 
-        public string ResultCoinsText => _resultCoins.text;
+        /// <summary>Підсумкова (повна) сума монет результату; на екрані число набігає до неї (<see cref="ResultCoinsShownText"/>).</summary>
+        public string ResultCoinsText => _resultCoinsFull;
+
+        /// <summary>Те, що зараз написано на лічильнику монет результату (під час набігання відстає).</summary>
+        public string ResultCoinsShownText => _resultCoins.text;
+
+        /// <summary>Скільки зірок результату вже «засвітилось» (Q-05e).</summary>
+        public int StarsRevealed => _starsRevealed;
+
+        /// <summary>Чи кнопки результату вже доступні для тапу.</summary>
+        public bool ResultButtonsReady { get; private set; }
+
+        /// <summary>Чи гравець пропустив анімацію результату тапом.</summary>
+        public bool ResultSkipped => _resultSkipped;
+
+        /// <summary>Рух банера результату.</summary>
+        public MotionTarget BannerMotion => _bannerMotion;
+
+        /// <summary>Рух зірки результату (null, якщо спрайта зірки немає).</summary>
+        public MotionTarget StarMotion(int index)
+        {
+            return _starMotion[index];
+        }
+
+        /// <summary>Рух кнопки результату: 0 - «Далі», 1 - «Ще раз», 2 - «Меню».</summary>
+        public MotionTarget ResultButtonMotion(int index)
+        {
+            return _buttonMotion[index];
+        }
+
+        /// <summary>Чи це перша перемога на рівні (для конфеті, QB-RES-04); викликається контролером до збереження підсумку.</summary>
+        public void MarkFirstWin(bool firstWin)
+        {
+            _firstWin = firstWin;
+        }
+
+        /// <summary>Тап по екрану результату: миттєво доводить анімацію до кінця (QB-RES-03). Повторний тап нічого не змінює.</summary>
+        public void SkipResult()
+        {
+            if (!ResultPanelVisible || _resultSkipped || _resultAt < 0f)
+            {
+                return;
+            }
+
+            _resultSkipped = true;
+            UpdateResult();
+        }
 
         public string ResultReasonText => _resultReason.text;
 
@@ -321,6 +403,7 @@ namespace KebabStreet.Game
             Counter.Refresh();
             Assembly.Refresh();
             Grill.Refresh();
+            UpdateResult();
             Fx.Update();
             if (_tutorial != null)
             {
@@ -392,6 +475,7 @@ namespace KebabStreet.Game
                 if (view.Finished)
                 {
                     ShowResult(_driver.Result);
+                    BeginResultRitual();
                 }
             }
         }
@@ -439,11 +523,103 @@ namespace KebabStreet.Game
                 }
             }
 
-            _resultCoins.text = string.Format(_text.Get(TextKeys.ShiftResultCoins), view.RewardCoins);
+            _resultCoinsFull = string.Format(_text.Get(TextKeys.ShiftResultCoins), view.RewardCoins);
+            _resultCoins.text = _resultCoinsFull;
             _resultReason.text = ResultView.Format(_text, view.Reason);
             _resultShortfall.text = ResultView.Format(_text, view.Shortfall);
             _resultHint.text = ResultView.Format(_text, view.StarHint);
             _nextButton.style.display = view.CanNext ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+
+        /// <summary>Q-05e: початок ритуалу - частинки ігрового екрана гасяться, шар частинок піднімається над плашкою, шкала стартує.</summary>
+        private void BeginResultRitual()
+        {
+            Fx.Clear();
+            _screenRoot.Add(Fx.Root); // повторне додавання переносить шар на верх: конфеті й іскри над плашкою результату.
+            _resultAt = UiMotion.Now;
+            _resultSkipped = false;
+            _starsRevealed = 0;
+            _confettiFired = false;
+            _resultCoinsShown = -1;
+            ResultButtonsReady = false;
+            for (int i = 0; i < StarIconCount; i++)
+            {
+                if (_starIcons[i] != null)
+                {
+                    ArtLibrary.Apply(_starIcons[i], ArtLibrary.StarEmpty); // зароблені «засвітяться» по одній
+                }
+            }
+
+            UpdateResult();
+        }
+
+        /// <summary>
+        /// Q-05e (QB-RES-01...05): банер, зірки по одній з іскрами й «дзинь», набігання монет, конфеті, поява кнопок.
+        /// Після тапу-пропуску шкала стоїть у кінці (без іскор і звуків). Пише стиль лише при зміні значень.
+        /// </summary>
+        private void UpdateResult()
+        {
+            if (!ResultPanelVisible || _resultAt < 0f || Result == null)
+            {
+                return;
+            }
+
+            int stars = Result.Stars;
+            float elapsed = _resultSkipped ? ResultMotion.TotalSec(stars) : UiMotion.Now - _resultAt;
+            _bannerMotion.Set(1f, 1f, 0f, ResultMotion.BannerOffset(elapsed), ResultMotion.BannerOpacity(elapsed));
+
+            for (int i = 0; i < StarIconCount; i++)
+            {
+                bool earned = i < stars;
+                if (earned && i >= _starsRevealed && ResultMotion.StarReached(i, elapsed))
+                {
+                    _starsRevealed = i + 1;
+                    if (_starIcons[i] != null)
+                    {
+                        ArtLibrary.Apply(_starIcons[i], ArtLibrary.StarFull);
+                    }
+
+                    if (!_resultSkipped)
+                    {
+                        Fx.Sparks(_starIcons[i]);
+                        SfxHub.Play(SfxCue.Cash); // «дзинь» зі зростаючою висотою потребує нового звуку: поки наявний
+                    }
+                }
+
+                if (_starMotion[i] != null)
+                {
+                    float scale = earned ? ResultMotion.StarScale(i, elapsed) : 1f;
+                    _starMotion[i].Set(scale, scale, 0f, 0f, 1f);
+                }
+            }
+
+            long coins = ResultMotion.CoinsShown(Result.RewardCoins, elapsed);
+            if (coins != _resultCoinsShown)
+            {
+                _resultCoinsShown = coins;
+                _resultCoins.text = coins == Result.RewardCoins
+                    ? _resultCoinsFull
+                    : string.Format(_text.Get(TextKeys.ShiftResultCoins), coins);
+            }
+
+            if (!_confettiFired && Result.Won && (stars >= 3 || _firstWin) && elapsed >= ResultMotion.ConfettiAt(stars))
+            {
+                _confettiFired = true;
+                if (!_resultSkipped)
+                {
+                    Fx.Confetti(ResultMotion.ConfettiCount);
+                }
+            }
+
+            float buttons = ResultMotion.ButtonsOpacity(stars, elapsed);
+            bool ready = ResultMotion.ButtonsReady(stars, elapsed);
+            for (int i = 0; i < ResultButtonCount; i++)
+            {
+                _buttonMotion[i].Set(1f, 1f, 0f, 0f, buttons);
+                _resultButtons[i].pickingMode = ready ? PickingMode.Position : PickingMode.Ignore;
+            }
+
+            ResultButtonsReady = ready;
         }
 
         private static void ApplySafeArea(VisualElement root)

@@ -111,6 +111,23 @@ namespace KebabStreet.Game
         /// <summary>Рівень, обраний у меню (номер 1…); 0 — не обрано.</summary>
         public int SelectedLevelNumber { get; private set; }
 
+        /// <summary>Рівень, щойно відкритий першою перемогою на попередньому (Q-05e): меню підсвітить його; 0 - нічого підсвічувати.</summary>
+        public int UnlockHighlightLevel { get; private set; }
+
+        /// <summary>Запам'ятовує щойно відкритий рівень для підсвітки в меню (не зберігається в профілі).</summary>
+        public void MarkUnlocked(int levelNumber)
+        {
+            UnlockHighlightLevel = levelNumber;
+        }
+
+        /// <summary>Забирає номер рівня для підсвітки й скидає його: підсвітка показується один раз.</summary>
+        public int TakeUnlockHighlight()
+        {
+            int number = UnlockHighlightLevel;
+            UnlockHighlightLevel = 0;
+            return number;
+        }
+
         /// <summary>Скільки змін запущено за цей процес (входить у seed).</summary>
         public int AttemptCount { get; private set; }
 

@@ -19,6 +19,11 @@ namespace KebabStreet.Game
 
         protected virtual bool NeedsContext => true;
 
+        /// <summary>Чи екран має плавні переходи (Q-05e). Boot - ні: це миттєва службова сцена.</summary>
+        protected virtual bool UseTransitions => true;
+
+        private ScreenFader _fader;
+
         private void Start()
         {
             Context = GameContext.Current;
@@ -38,6 +43,14 @@ namespace KebabStreet.Game
             Container = UiFactory.Screen(root);
             Build();
             GameLog.Info(GetType().Name + ".Build: дітей у контейнері=" + Container.childCount);
+            if (UseTransitions)
+            {
+                // Q-05e (QB-ALL-04): поява з затемнення; ввід під накладкою ігнорується, доки перехід іде.
+                _fader = new ScreenFader(root, Container);
+                _fader.Attach();
+                _fader.PlayIn();
+            }
+
             root.schedule.Execute(() => LogLayout(root)).StartingIn(DiagnosticDelayMs);
         }
 
@@ -50,7 +63,22 @@ namespace KebabStreet.Game
 
         protected abstract void Build();
 
-        protected static void Open(string sceneName)
+        /// <summary>
+        /// Відкриває сцену. Якщо екран має переходи, спершу відбувається затемнення (200-300 мс); повторні виклики під час
+        /// переходу ігноруються, тож подвійний тап не завантажує сцену двічі.
+        /// </summary>
+        protected void Open(string sceneName)
+        {
+            if (_fader == null)
+            {
+                LoadScene(sceneName);
+                return;
+            }
+
+            _fader.Leave(() => LoadScene(sceneName));
+        }
+
+        private static void LoadScene(string sceneName)
         {
             GameLog.Info("Open " + sceneName + " (з " + SceneManager.GetActiveScene().name + ")");
             AsyncOperation load = SceneManager.LoadSceneAsync(sceneName);

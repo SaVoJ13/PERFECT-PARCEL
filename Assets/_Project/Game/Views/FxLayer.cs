@@ -12,6 +12,8 @@ namespace KebabStreet.Game
         Coin = 2,
         Flyer = 3,
         Text = 4,
+        Confetti = 5,
+        Spark = 6,
     }
 
     /// <summary>
@@ -33,6 +35,20 @@ namespace KebabStreet.Game
         public const int FlyerPool = 8;
         public const int TextPool = 8;
         public const int MaxActive = SteamPool + SmokePool + CoinPool + FlyerPool + TextPool;
+
+        // Q-05e: ефекти результату (QB-RES-02/04). Пускаються лише після Clear() на екрані результату,
+        // коли ігрових частинок уже немає, тож разом з ними ліміт 150 не перевищується.
+        public const int ConfettiPool = 60;
+        public const int SparkPool = 30;
+        public const int ResultMaxActive = ConfettiPool + SparkPool;
+        public const float ConfettiLifeMin = 1.5f;
+        public const float ConfettiLifeMax = 2.5f;
+        public const float ConfettiStaggerSec = 0.3f;
+        public const float SparkLifeSec = 0.5f;
+        public const float SparkReachMin = 60f;
+        public const float SparkReachMax = 110f;
+        public const float DefaultLayerWidth = 1080f;
+        public const float DefaultLayerHeight = 1920f;
 
         // QB-SHIFT-17: пара - підйом 40-80 px, життя 0,8-1,5 с. QB-SHIFT-21: дим темніший і повільніший.
         public const float SteamRiseMin = 40f;
@@ -70,6 +86,10 @@ namespace KebabStreet.Game
         private const float EmitSpreadPx = 36f;
         private const float EmitLiftPx = 40f;
         private const float TipOffsetPx = 90f;
+        private const float ConfettiSize = 18f;
+        private const float SparkSize = 14f;
+        private const float ConfettiDriftPx = 120f;
+        private const float FullTurn = 2f * (float)Math.PI;
         private const int CoinsPerParticle = 4;
         private const float Half = 0.5f;
 
@@ -78,9 +98,13 @@ namespace KebabStreet.Game
         private static readonly Color SmokeColor = new Color(0.12f, 0.11f, 0.11f);
         private static readonly Color PlusColor = UiColors.Coin;
         private static readonly Color TipColor = new Color(0.55f, 0.95f, 0.55f);
+        private static readonly Color[] ConfettiColors =
+        {
+            UiColors.Saffron, UiColors.Coin, UiColors.EmberRed, UiColors.ReadyText, Color.white,
+        };
 
         private readonly VisualElement _root;
-        private readonly Pool[] _pools = new Pool[5];
+        private readonly Pool[] _pools = new Pool[7];
         private readonly System.Random _random;
         private VisualElement _coinTarget;
 
@@ -99,6 +123,8 @@ namespace KebabStreet.Game
             _pools[(int)FxKind.Coin] = new Pool(_root, CoinPool, CoinSize, "fx-coin-");
             _pools[(int)FxKind.Flyer] = new Pool(_root, FlyerPool, FlyerSize, "fx-flyer-");
             _pools[(int)FxKind.Text] = new Pool(_root, TextPool, TextWidth, "fx-text-", TextHeight);
+            _pools[(int)FxKind.Confetti] = new Pool(_root, ConfettiPool, ConfettiSize, "fx-confetti-", 0f, false);
+            _pools[(int)FxKind.Spark] = new Pool(_root, SparkPool, SparkSize, "fx-spark-");
         }
 
         /// <summary>Елемент шару; додається в корінь екрана поверх панелей.</summary>
@@ -284,6 +310,77 @@ namespace KebabStreet.Game
             return started;
         }
 
+        /// <summary>
+        /// Конфеті (QB-RES-04): <paramref name="count"/> квадратиків кольорів палітри падають згори на 1,5-2,5 с.
+        /// У «менше анімацій» не створюється. Повертає, скільки запущено.
+        /// </summary>
+        public int Confetti(int count)
+        {
+            if (UiMotion.Reduced)
+            {
+                return 0;
+            }
+
+            Pool pool = _pools[(int)FxKind.Confetti];
+            float width = LayerSize(_root.layout.width, DefaultLayerWidth);
+            float height = LayerSize(_root.layout.height, DefaultLayerHeight);
+            float now = UiMotion.Now;
+            int started = 0;
+            for (int i = 0; i < count; i++)
+            {
+                int index = pool.Take();
+                if (index < 0)
+                {
+                    break;
+                }
+
+                float x = Range(0f, width);
+                Vector2 from = new Vector2(x, -ConfettiSize);
+                Vector2 to = new Vector2(x + Range(-ConfettiDriftPx, ConfettiDriftPx), height * Range(0.55f, 0.95f));
+                pool.Start(index, now + Range(0f, ConfettiStaggerSec), Range(ConfettiLifeMin, ConfettiLifeMax), from, to, 0f);
+                pool.Items[index].Opacity = 1f;
+                pool.Items[index].Scale1 = 1f;
+                pool.Elements[index].style.backgroundColor = ConfettiColors[_random.Next(ConfettiColors.Length)];
+                started++;
+            }
+
+            return started;
+        }
+
+        /// <summary>Іскри навколо зірки (QB-RES-02): 6-10 крапок розлітаються за 0,5 с. У «менше анімацій» не створюються.</summary>
+        public int Sparks(VisualElement source)
+        {
+            if (UiMotion.Reduced)
+            {
+                return 0;
+            }
+
+            Pool pool = _pools[(int)FxKind.Spark];
+            Vector2 origin = Anchor(source);
+            int count = _random.Next(ResultMotion.SparksMin, ResultMotion.SparksMax + 1);
+            float now = UiMotion.Now;
+            int started = 0;
+            for (int i = 0; i < count; i++)
+            {
+                int index = pool.Take();
+                if (index < 0)
+                {
+                    break;
+                }
+
+                float angle = FullTurn * ((i + (float)_random.NextDouble()) / count);
+                float reach = Range(SparkReachMin, SparkReachMax);
+                Vector2 to = origin + new Vector2(Mathf.Cos(angle) * reach, Mathf.Sin(angle) * reach);
+                pool.Start(index, now, SparkLifeSec, origin, to, 0f);
+                pool.Items[index].Opacity = 1f;
+                pool.Items[index].Scale1 = 1f;
+                pool.Elements[index].style.backgroundColor = PlusColor;
+                started++;
+            }
+
+            return started;
+        }
+
         /// <summary>Рух усіх активних частинок за ігровим часом; викликається щокадру, сміття не створює.</summary>
         public void Update()
         {
@@ -348,6 +445,11 @@ namespace KebabStreet.Game
             return _root.WorldToLocal(box.center);
         }
 
+        private static float LayerSize(float measured, float fallback)
+        {
+            return float.IsNaN(measured) || measured < 1f ? fallback : measured;
+        }
+
         private float Range(float min, float max)
         {
             return min + ((max - min) * (float)_random.NextDouble());
@@ -371,7 +473,7 @@ namespace KebabStreet.Game
             private readonly float _halfH;
             private readonly MotionTarget[] _targets;
 
-            public Pool(VisualElement parent, int count, float size, string prefix, float height = 0f)
+            public Pool(VisualElement parent, int count, float size, string prefix, float height = 0f, bool round = true)
             {
                 float h = height > 0f ? height : size;
                 _halfW = size * Half;
@@ -396,10 +498,13 @@ namespace KebabStreet.Game
                     else
                     {
                         element = new VisualElement();
-                        element.style.borderTopLeftRadius = size * Half;
-                        element.style.borderTopRightRadius = size * Half;
-                        element.style.borderBottomLeftRadius = size * Half;
-                        element.style.borderBottomRightRadius = size * Half;
+                        if (round)
+                        {
+                            element.style.borderTopLeftRadius = size * Half;
+                            element.style.borderTopRightRadius = size * Half;
+                            element.style.borderBottomLeftRadius = size * Half;
+                            element.style.borderBottomRightRadius = size * Half;
+                        }
                     }
 
                     element.name = prefix + i;

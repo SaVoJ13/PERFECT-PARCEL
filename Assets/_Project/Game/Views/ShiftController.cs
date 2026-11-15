@@ -115,6 +115,18 @@ namespace KebabStreet.Game
 
         private void OnShiftFinished(ShiftResult result)
         {
+            // Q-05e: «перша перемога» визначається ДО збереження підсумку (після нього найкращі зірки вже оновлено).
+            bool firstWin = result.Won && LevelProgress.BestStars(Context.Profile.Data, _driver.Level) == 0;
+            if (_screen != null)
+            {
+                _screen.MarkFirstWin(firstWin);
+            }
+
+            if (firstWin && Context.NextLevelNumber != 0)
+            {
+                Context.MarkUnlocked(Context.NextLevelNumber);
+            }
+
             SaveNotice notice = _ending.OnFinished(result);
             if (_screen != null)
             {
@@ -143,6 +155,7 @@ namespace KebabStreet.Game
         {
             if (_driver != null && _driver.IsFinished && Context.AdvanceToNextLevel(_driver.Result.Won))
             {
+                Context.TakeUnlockHighlight(); // гравець іде одразу в новий рівень: підсвітка в меню застаріла
                 Open(GameFlow.SceneOf(Context.Flow.Current));
             }
         }
