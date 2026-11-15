@@ -21,9 +21,17 @@ namespace KebabStreet.Tests.EditMode
         {
             public readonly List<SfxCue> Cues = new List<SfxCue>();
 
-            public void Play(SfxCue cue)
+            public void Play(SfxCue cue, float pitch)
             {
                 Cues.Add(cue);
+            }
+
+            public void SetLoop(SfxLoop loop, bool on)
+            {
+            }
+
+            public void SetVolumes(float effects, float music)
+            {
             }
         }
 
@@ -62,6 +70,12 @@ namespace KebabStreet.Tests.EditMode
             CollectionAssert.AreEquivalent(SfxCatalog.AllNames, names);
             foreach (SfxCue cue in Enum.GetValues(typeof(SfxCue)))
             {
+                if (SfxCatalog.IsSynth(cue))
+                {
+                    Assert.IsNull(SfxCatalog.NameOf(cue), "синтезований звук без файлу: " + cue);
+                    continue;
+                }
+
                 Assert.Contains(SfxCatalog.NameOf(cue), SfxCatalog.AllNames, cue.ToString());
             }
 
@@ -175,13 +189,13 @@ namespace KebabStreet.Tests.EditMode
                 foreach (SfxCue cue in Enum.GetValues(typeof(SfxCue)))
                 {
                     SfxCue captured = cue;
-                    Assert.DoesNotThrow(() => sink.Play(captured));
-                    Assert.DoesNotThrow(() => sink.Play(captured));
+                    Assert.DoesNotThrow(() => sink.Play(captured, 1f));
+                    Assert.DoesNotThrow(() => sink.Play(captured, 1f));
                 }
 
-                Assert.DoesNotThrow(() => sink.Play((SfxCue)0));
+                Assert.DoesNotThrow(() => sink.Play((SfxCue)0, 1f));
                 Assert.AreEqual(SfxCatalog.AllNames.Length, loads, "відсутній файл кешується");
-                Assert.DoesNotThrow(() => new UnitySfxSink(null).Play(SfxCue.Tap));
+                Assert.DoesNotThrow(() => new UnitySfxSink(null).Play(SfxCue.Tap, 1f));
             }
             finally
             {

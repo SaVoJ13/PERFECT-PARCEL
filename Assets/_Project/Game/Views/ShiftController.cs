@@ -59,7 +59,12 @@ namespace KebabStreet.Game
 
             float delta = Time.unscaledDeltaTime;
             _driver.Frame(delta);
-            _sfx.Update(_driver.IsPaused);
+            if (_driver.IsFinished)
+            {
+                _sfx.Stop();
+            }
+
+            _sfx.Update(_driver.IsPaused, delta);
             _screen.Refresh();
 
             if (_frameStats != null && _frameStats.Frame(delta, _driver.IsPaused))
@@ -70,6 +75,7 @@ namespace KebabStreet.Game
 
         private void OnDestroy()
         {
+            SfxHub.Router.StopLoops();
             SfxHub.Router.Paused = false;
         }
 

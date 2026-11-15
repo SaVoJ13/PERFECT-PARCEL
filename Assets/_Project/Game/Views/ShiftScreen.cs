@@ -582,7 +582,7 @@ namespace KebabStreet.Game
                     if (!_resultSkipped)
                     {
                         Fx.Sparks(_starIcons[i]);
-                        SfxHub.Play(SfxCue.Cash); // «дзинь» зі зростаючою висотою потребує нового звуку: поки наявний
+                        SfxHub.Play(SfxCue.StarChime, i); // QB-RES-02: «дзинь» зі зростаючою висотою
                     }
                 }
 
@@ -596,7 +596,13 @@ namespace KebabStreet.Game
             long coins = ResultMotion.CoinsShown(Result.RewardCoins, elapsed);
             if (coins != _resultCoinsShown)
             {
+                bool counting = _resultCoinsShown >= 0 && coins > _resultCoinsShown && !_resultSkipped;
                 _resultCoinsShown = coins;
+                if (counting)
+                {
+                    SfxHub.Play(SfxCue.CoinTick); // QB-RES-03: «тік-тік» не частіше 15/с (ліміт у SfxCatalog)
+                }
+
                 _resultCoins.text = coins == Result.RewardCoins
                     ? _resultCoinsFull
                     : string.Format(_text.Get(TextKeys.ShiftResultCoins), coins);
