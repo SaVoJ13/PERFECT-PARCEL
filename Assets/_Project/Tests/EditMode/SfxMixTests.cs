@@ -142,7 +142,13 @@ namespace KebabStreet.Tests.EditMode
                 Assert.AreEqual(SfxSynth.PeakOf(loop), peak, 0.001f, loop.ToString());
                 Assert.LessOrEqual(peak, 0.25f, loop + ": петля тиха");
                 float seam = Math.Abs(data[0] - data[data.Length - 1]);
-                Assert.LessOrEqual(seam, peak * 0.9f + 0.0001f, loop + ": шов");
+                float maxStep = 0f;
+                for (int i = 1; i < data.Length; i++)
+                {
+                    maxStep = Math.Max(maxStep, Math.Abs(data[i] - data[i - 1]));
+                }
+
+                Assert.LessOrEqual(seam, maxStep + 0.0001f, loop + ": шов не більший за звичайний крок між відліками");
             }
         }
 
