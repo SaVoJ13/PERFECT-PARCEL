@@ -50,7 +50,8 @@ namespace KebabStreet.Game
         private readonly Label _goal;
         private readonly Label _coins;
         private readonly Label _hint;
-        private readonly VisualElement _pausePanel;
+        private readonly PausePanel _pause;
+        private readonly Action _onTutorialChanged;
         private readonly VisualElement _resultPanel;
         private readonly Label _resultTitle;
         private readonly Label _resultStars;
@@ -110,7 +111,9 @@ namespace KebabStreet.Game
             Action onNext = null,
             bool hasNextLevel = false,
             TutorialDirector tutorial = null,
-            Action onTutorialChanged = null)
+            Action onTutorialChanged = null,
+            Action onRestart = null,
+            GameSettings settings = null)
         {
             _hasNextLevel = hasNextLevel;
             if (container == null)
@@ -197,13 +200,20 @@ namespace KebabStreet.Game
             if (tutorial != null)
             {
                 _tutorialOverlay = new TutorialOverlay(
-                    root, tutorial, text, Grill.Root, AssemblyZone, CounterZone, onTutorialChanged);
+                    root, tutorial, text, Grill.Root, AssemblyZone, CounterZone, onTutorialChanged, titleRow);
             }
 
-            _pausePanel = Overlay(root, "pause-panel");
-            UiFactory.Title(_pausePanel, text.Get(TextKeys.ShiftPaused));
-            UiFactory.AddButton(_pausePanel, text.Get(TextKeys.ShiftResume), onResume);
-            UiFactory.AddButton(_pausePanel, text.Get(TextKeys.ShiftExit), onExit);
+            // Q-05h: панель паузи - затемнення, картка з перемикачами, «Заново»/«Меню» з підтвердженням, «Продовжити».
+            _pause = new PausePanel(
+                root,
+                text,
+                settings ?? GameSettings.Shared,
+                onResume,
+                onRestart,
+                onExit,
+                _tutorial == null ? (Func<bool>)null : CanSkipTutorial,
+                SkipTutorialFromPause);
+            _onTutorialChanged = onTutorialChanged;
 
             _resultPanel = Overlay(root, "result-panel");
             _resultTitle = UiFactory.Title(_resultPanel, string.Empty);
@@ -371,6 +381,26 @@ namespace KebabStreet.Game
         /// <summary>Плашка навчання; null, якщо навчання не підключено.</summary>
         public TutorialOverlay Tutorial => _tutorialOverlay;
 
+        /// <summary>Панель паузи (Q-05h).</summary>
+        public PausePanel Pause => _pause;
+
+        private bool CanSkipTutorial()
+        {
+            return _tutorial != null && !_tutorial.Model.IsSkippedAll && _tutorial.Model.StepCount > 0;
+        }
+
+        private void SkipTutorialFromPause()
+        {
+            if (_tutorial != null && _tutorial.SkipAll())
+            {
+                _tutorialOverlay.Refresh();
+                if (_onTutorialChanged != null)
+                {
+                    _onTutorialChanged();
+                }
+            }
+        }
+
         /// <summary>Модель показаного результату; null, поки зміна не завершилась.</summary>
         public ResultView Result { get; private set; }
 
@@ -404,6 +434,7 @@ namespace KebabStreet.Game
             Assembly.Refresh();
             Grill.Refresh();
             UpdateResult();
+            _pause.Update();
             Fx.Update();
             if (_tutorial != null)
             {
@@ -465,7 +496,7 @@ namespace KebabStreet.Game
             if (first || pauseVisible != PausePanelVisible)
             {
                 PausePanelVisible = pauseVisible;
-                _pausePanel.style.display = pauseVisible ? DisplayStyle.Flex : DisplayStyle.None;
+                _pause.SetVisible(pauseVisible);
             }
 
             if (first || view.Finished != ResultPanelVisible)
