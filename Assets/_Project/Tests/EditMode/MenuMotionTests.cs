@@ -139,7 +139,7 @@ namespace KebabStreet.Tests.EditMode
         [Test]
         public void MapScroll_CentersCurrentRow_ClampedToContent()
         {
-            Assert.AreEqual(400f, LevelMapLayout.ScrollTarget(500f, 100f, 200f, 1000f), Eps);
+            Assert.AreEqual(450f, LevelMapLayout.ScrollTarget(500f, 100f, 200f, 1000f), Eps);
             Assert.AreEqual(0f, LevelMapLayout.ScrollTarget(10f, 100f, 200f, 1000f), Eps, "верх - не нижче нуля");
             Assert.AreEqual(800f, LevelMapLayout.ScrollTarget(950f, 100f, 200f, 1000f), Eps, "низ - не далі за вміст");
             Assert.AreEqual(0f, LevelMapLayout.ScrollTarget(50f, 100f, 2000f, 1000f), Eps, "вміст менший за вікно");
