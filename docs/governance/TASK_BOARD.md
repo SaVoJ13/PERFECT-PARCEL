@@ -74,6 +74,7 @@
 | Q-05e | Результат і переходи (G-06, G-07) | gameplay-developer (sonnet) | Done (PR #64, QA Verified L2; L3 не перевірено)
 | Q-05f | Меню і вибір рівнів (G-12, G-16) | gameplay-developer (sonnet) | Done (PR #65, QA Verified L2; L3 не перевірено)
 | Q-05g | Звук: мікс, ducking, синтезовані SFX (G-10) | gameplay-developer (sonnet) | Done (PR #66, QA Verified L2; на слух не перевірено)
-| Q-05h | Пауза і навчання (G-13, G-20) | gameplay-developer (sonnet) | In Progress |
+| Q-05h | Пауза і навчання (G-13, G-20) | gameplay-developer (sonnet) | Done (PR #67, QA Verified L2; L3 не перевірено)
+| Q-05i | Вібрація (G-14) | platform-engineer (sonnet) | In Progress |
 
 Далі (картки створюються окремо): екран результату й зірок, навчання (завантажувач `tutorial.json` + UI, BUG-036), Game-обв'язка симуляції з UI зміни, плейсхолдер-графіка і звуки, плейтест, пороги балансу після відповіді Власника (№26, №27).

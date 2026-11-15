@@ -193,6 +193,7 @@ namespace KebabStreet.Game
             source.playOnAwake = false;
             source.spatialBlend = 0f;
             SfxHub.Install(new UnitySfxSink(source));
+            HapticsHub.Install(AndroidHapticsService.Create()); // Q-05i: на Android - справжня, інакше заглушка
         }
 
         /// <summary>

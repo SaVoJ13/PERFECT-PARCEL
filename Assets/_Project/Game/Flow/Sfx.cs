@@ -189,6 +189,9 @@ namespace KebabStreet.Game
             _clock = clock ?? SfxClock.Now;
         }
 
+        /// <summary>Вихід вібрації (Q-05i); null - спільний <see cref="HapticsHub"/>.</summary>
+        public HapticsRouter Haptics { get; set; }
+
         /// <summary>Звук увімкнено (за замовчуванням так).</summary>
         public bool Enabled
         {
@@ -226,6 +229,12 @@ namespace KebabStreet.Game
         /// <summary>true — звук передано виходу. <paramref name="step"/> — кроки по два півтони вгору (зростаючий «дзинь»).</summary>
         public bool Play(SfxCue cue, int step = 0)
         {
+            if (!_paused)
+            {
+                // Q-05i: вібрація не залежить від звуку (гучність «Ефекти» 0 її не вимикає), але на паузі мовчить.
+                (Haptics ?? HapticsHub.Router).Cue(cue);
+            }
+
             if (_sink == null || !_enabled || _paused || !SfxCatalog.IsKnown(cue) || _effects <= 0f)
             {
                 return false;

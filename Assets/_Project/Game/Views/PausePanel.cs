@@ -269,6 +269,11 @@ namespace KebabStreet.Game
                     return Changed();
                 case PauseControl.Haptics:
                     _settings.SetHaptics(!_settings.HapticsEnabled);
+                    if (_settings.HapticsEnabled)
+                    {
+                        HapticsHub.Router.Confirm(); // Q-05i: відгук підтверджує, що вібрація ввімкнена
+                    }
+
                     return Changed();
                 case PauseControl.ReducedMotion:
                     _settings.SetReducedMotion(!_settings.ReducedMotion);
