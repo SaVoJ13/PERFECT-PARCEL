@@ -84,6 +84,17 @@ namespace KebabStreet.Game
         public const string TutorialL03Sauce = "tutorial.l03.sauce";
         public const string TutorialL04Salad = "tutorial.l04.salad";
         public const string TutorialL04Request = "tutorial.l04.request";
+        // Меню і вибір рівнів (Q-05f): підказка замкненого рівня, картка рівня (QB-LVL-04, QB-LVL-07).
+        public const string MenuLevelLockedHint = "menu.level_locked_hint";
+        public const string LevelStart = "ui.level.start";
+        public const string LevelGoalServe = LevelCard.GoalServeKey;
+        public const string LevelGoalCoins = LevelCard.GoalCoinsKey;
+        public const string LevelStar1 = LevelCard.Star1Key;
+        public const string LevelStar2 = LevelCard.Star2Key;
+        public const string LevelStar3NoLost = LevelCard.Star3NoLostKey;
+        public const string LevelStar3NoBurnt = LevelCard.Star3NoBurntKey;
+        public const string LevelStar3NoWrong = LevelCard.Star3NoWrongKey;
+        public const string LevelStar3Combo = LevelCard.Star3ComboKey;
         public const string TutorialNext = "ui.tutorial.next";
         public const string TutorialSkip = "ui.tutorial.skip";
 

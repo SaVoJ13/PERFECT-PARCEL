@@ -89,5 +89,15 @@
   "tutorial.l04.salad": "Для цього замовлення потрібен салат. Візьми його в салатному барі.",
   "tutorial.l04.request": "Ганна має особливе прохання. Перевір її замовлення, перш ніж подавати.",
   "ui.tutorial.next": "Далі",
-  "ui.tutorial.skip": "Пропустити все"
+  "ui.tutorial.skip": "Пропустити все",
+  "menu.level_locked_hint": "Спершу пройди рівень {0}",
+  "ui.level.start": "Почати",
+  "ui.level.goal.serve": "Обслужи клієнтів: {0}",
+  "ui.level.goal.coins": "Заробити монет: {0}",
+  "ui.level.star1": "Досягни цілі",
+  "ui.level.star2": "Заробити за зміну монет: {0}",
+  "ui.level.star3.no_lost": "Не втрать жодного клієнта",
+  "ui.level.star3.no_burnt": "Не пересмаж жодного шматка",
+  "ui.level.star3.no_wrong": "Не видай жодної хибної страви",
+  "ui.level.star3.combo": "Зроби комбо {0}"
 }

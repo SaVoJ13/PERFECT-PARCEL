@@ -122,6 +122,12 @@ namespace KebabStreet.Game
                 _screen.MarkFirstWin(firstWin);
             }
 
+            int previousStars = LevelProgress.BestStars(Context.Profile.Data, _driver.Level);
+            if (result.Won && result.Stars > previousStars)
+            {
+                Context.MarkStarsGained(_driver.Level.Number, previousStars);
+            }
+
             if (firstWin && Context.NextLevelNumber != 0)
             {
                 Context.MarkUnlocked(Context.NextLevelNumber);
