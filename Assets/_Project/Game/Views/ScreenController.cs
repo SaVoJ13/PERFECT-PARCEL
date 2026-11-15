@@ -75,20 +75,28 @@ namespace KebabStreet.Game
                 return;
             }
 
-            _fader.Leave(() => LoadScene(sceneName));
+            _fader.Leave(() =>
+            {
+                // Q-05f: сцену не знайдено - накладку знімаємо, щоб екран не лишився заблокованим.
+                if (!LoadScene(sceneName))
+                {
+                    _fader.Cancel();
+                }
+            });
         }
 
-        private static void LoadScene(string sceneName)
+        private static bool LoadScene(string sceneName)
         {
             GameLog.Info("Open " + sceneName + " (з " + SceneManager.GetActiveScene().name + ")");
             AsyncOperation load = SceneManager.LoadSceneAsync(sceneName);
             if (load == null)
             {
                 GameLog.Info("Open " + sceneName + ": сцену не знайдено в збірці");
-                return;
+                return false;
             }
 
             load.completed += _ => GameLog.Info("Open " + sceneName + ": завантажено");
+            return true;
         }
     }
 }

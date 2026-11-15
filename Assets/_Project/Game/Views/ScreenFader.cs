@@ -177,6 +177,20 @@ namespace KebabStreet.Game
             }
         }
 
+        /// <summary>
+        /// Скасовує відхід (сцену не завантажено): накладка зникає, ввід знову проходить, екран стоїть як був
+        /// (Q-05f, P3 з QA Q-05e).
+        /// </summary>
+        public void Cancel()
+        {
+            _leaving = false;
+            _entering = false;
+            _done = true;
+            _onLeft = null;
+            Apply(0f, 0f);
+            _overlay.pickingMode = PickingMode.Ignore;
+        }
+
         private void Apply(float overlayOpacity, float offsetY)
         {
             _overlayMotion.Set(1f, 1f, 0f, 0f, overlayOpacity);

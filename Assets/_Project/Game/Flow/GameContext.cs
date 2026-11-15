@@ -128,6 +128,29 @@ namespace KebabStreet.Game
             return number;
         }
 
+        /// <summary>Рівень, на якому щойно отримано нові зірки (Q-05f, QB-LVL-06); 0 - нічого показувати.</summary>
+        public int StarsGainLevel { get; private set; }
+
+        /// <summary>Скільки зірок на цьому рівні було до зміни (нові - з цього номера й далі).</summary>
+        public int StarsGainFrom { get; private set; }
+
+        /// <summary>Запам'ятовує нові зірки для показу в меню (не зберігається в профілі).</summary>
+        public void MarkStarsGained(int levelNumber, int previousStars)
+        {
+            StarsGainLevel = levelNumber;
+            StarsGainFrom = previousStars;
+        }
+
+        /// <summary>Забирає запис про нові зірки й скидає його: показується один раз. false - нічого немає.</summary>
+        public bool TakeStarsGain(out int levelNumber, out int previousStars)
+        {
+            levelNumber = StarsGainLevel;
+            previousStars = StarsGainFrom;
+            StarsGainLevel = 0;
+            StarsGainFrom = 0;
+            return levelNumber != 0;
+        }
+
         /// <summary>Скільки змін запущено за цей процес (входить у seed).</summary>
         public int AttemptCount { get; private set; }
 

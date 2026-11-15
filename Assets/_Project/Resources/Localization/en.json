@@ -89,5 +89,15 @@
   "tutorial.l04.salad": "This order needs salad. Take it from the salad bar.",
   "tutorial.l04.request": "Hanna has a special request. Check her order before you serve.",
   "ui.tutorial.next": "Next",
-  "ui.tutorial.skip": "Skip all"
+  "ui.tutorial.skip": "Skip all",
+  "menu.level_locked_hint": "Finish level {0} first",
+  "ui.level.start": "Start",
+  "ui.level.goal.serve": "Serve {0} customers",
+  "ui.level.goal.coins": "Earn {0} coins",
+  "ui.level.star1": "Reach the goal",
+  "ui.level.star2": "Earn {0} coins in the shift",
+  "ui.level.star3.no_lost": "Lose no customers",
+  "ui.level.star3.no_burnt": "Burn no meat",
+  "ui.level.star3.no_wrong": "Serve no wrong dishes",
+  "ui.level.star3.combo": "Reach a combo of {0}"
 }
