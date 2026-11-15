@@ -499,7 +499,7 @@ namespace KebabStreet.Game
                         node.Lock.style.display = DisplayStyle.None;
                         node.Button.text = node.Number.ToString();
                         ApplyFace(node.Button, true);
-                        SfxHub.Play(SfxCue.Cash);
+                        SfxHub.Play(SfxCue.StarChime, 2); // QB-LVL-05: «дзинь» відкриття
                     }
 
                     if (node.Locked)
@@ -530,7 +530,7 @@ namespace KebabStreet.Game
                 {
                     star.Shown = true;
                     ArtLibrary.Apply(star.Icon, ArtLibrary.StarFull);
-                    SfxHub.Play(SfxCue.Cash);
+                    SfxHub.Play(SfxCue.StarChime, star.Index); // QB-LVL-06: висота росте із кожною зіркою
                 }
 
                 if (star.Shown)
@@ -627,6 +627,7 @@ namespace KebabStreet.Game
                 }
 
                 _nodes[i].ShakeAt = UiMotion.Now; // QB-LVL-04: тряска без вібрації
+                SfxHub.Play(SfxCue.Locked); // QB-LVL-04: глухий звук
                 _hint.text = string.Format(Context.Text.Get(TextKeys.MenuLevelLockedHint), LevelMapLayout.RequiredNumber(_entries, i));
                 return;
             }
