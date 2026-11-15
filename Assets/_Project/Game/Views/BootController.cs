@@ -11,6 +11,8 @@ namespace KebabStreet.Game
     {
         protected override bool NeedsContext => false;
 
+        protected override bool UseTransitions => false;
+
         protected override void Build()
         {
             if (GameContext.Current == null)
