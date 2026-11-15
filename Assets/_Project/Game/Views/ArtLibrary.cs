@@ -4,6 +4,15 @@ using UnityEngine.UIElements;
 
 namespace KebabStreet.Game
 {
+    /// <summary>Вираз обличчя клієнта (Q-06b): за станом терпіння.</summary>
+    public enum ClientMood
+    {
+        Neutral = 0,
+        Happy = 1,
+        Worried = 2,
+        Angry = 3,
+    }
+
     /// <summary>
     /// Спрайти плейсхолдер-графіки (S1-12) з <c>Resources/Art</c> і тема USS з <c>Resources/Theme</c>.
     /// Лише вигляд: якщо спрайт чи тему не знайдено, елемент лишається з резервним кольором (без винятків).
@@ -39,7 +48,46 @@ namespace KebabStreet.Game
             "ing_pita", "ing_meat", "ing_salad", "ing_onion", "ing_sauce_garlic", "ing_sauce_hot",
             HeartFull, HeartEmpty, Coin, StarFull, StarEmpty, Lock, Pause, Menu,
             "chr_olya", "chr_marko", "chr_hanna", Ali,
+            "chr_olya_happy", "chr_olya_worried", "chr_olya_angry",
+            "chr_marko_happy", "chr_marko_worried", "chr_marko_angry",
+            "chr_hanna_happy", "chr_hanna_worried", "chr_hanna_angry",
         };
+
+        /// <summary>Виріз терпіння, з якого клієнт «щасливий» (Q-06b): щойно прийшов або в пільговому часі.</summary>
+        public const int HappyFromPercent = 85;
+
+        /// <summary>Нижче цього відсотка терпіння клієнт нетерплячий (занепокоєний).</summary>
+        public const int WorriedBelowPercent = 60;
+
+        /// <summary>
+        /// Вираз клієнта за станом терпіння (лише читання <see cref="PatienceView"/>, без логіки Core): Low (менше
+        /// одного сердечка) — сердитий; менше 60% — занепокоєний; від 85% або пільговий час — щасливий; інакше нейтральний.
+        /// </summary>
+        public static ClientMood MoodOf(PatienceView patience)
+        {
+            if (patience.Low)
+            {
+                return ClientMood.Angry;
+            }
+
+            if (patience.Grace || patience.Percent >= HappyFromPercent)
+            {
+                return ClientMood.Happy;
+            }
+
+            return patience.Percent < WorriedBelowPercent ? ClientMood.Worried : ClientMood.Neutral;
+        }
+
+        /// <summary>Ім'я спрайта вираза: нейтральний — базове ім'я, решта — з суфіксом <c>_happy/_worried/_angry</c>.</summary>
+        public static string MoodName(string portraitName, ClientMood mood)
+        {
+            if (string.IsNullOrEmpty(portraitName) || mood == ClientMood.Neutral)
+            {
+                return portraitName;
+            }
+
+            return portraitName + "_" + mood.ToString().ToLowerInvariant();
+        }
 
         /// <summary>Зазор між смужкою іконок і написом кнопки.</summary>
         public const float IconTextGap = 24f;

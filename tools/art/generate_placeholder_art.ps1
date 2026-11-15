@@ -173,10 +173,74 @@ function Portrait($name, $skin, $hairColor, $shirt, $style) {
     if ($style -eq "marko") { $g.DrawEllipse((Pen $Espresso 5), 92, 92, 30, 28); $g.DrawEllipse((Pen $Espresso 5), 134, 92, 30, 28) }
     Save-Img $i $name
 }
-Portrait "chr_olya" (C "C68642") (C "3B2314") (C "4CC9F0") "olya"
-Portrait "chr_marko" (C "F1C27D") (C "6B4630") (C "8E5CF6") "marko"
-Portrait "chr_hanna" (C "FFDBAC") (C "B0B0B0") (C "E5383B") "hanna"
 Portrait "chr_ali" (C "E0A370") (C "D8D8D8") (C "2E9E4F") "ali"
+
+# --- Q-06b: client portraits with volume and 4 expressions (neutral = chr_<id>; happy / worried / angry = chr_<id>_<mood>).
+# Moods differ by eyes, brows, mouth and a symbol (sparkle / sweat drop / anger mark), not by colour alone. No stereotypes.
+function EllPath($x, $y, $w, $h) { $p = New-Object System.Drawing.Drawing2D.GraphicsPath; $p.AddEllipse([single]$x, [single]$y, [single]$w, [single]$h); return $p }
+function Face($g, $mood) {
+    $pen = Pen $Espresso 7; $thin = Pen $Espresso 5; $thick = Pen $Espresso 9
+    $cheek = if ($mood -eq "happy") { 190 } else { 120 }
+    $g.FillEllipse((Brush (C "FF6F61" $cheek)), 78, 128, 26, 16); $g.FillEllipse((Brush (C "FF6F61" $cheek)), 152, 128, 26, 16)
+    if ($mood -eq "neutral") {
+        $g.FillEllipse((Brush $Espresso), 98, 98, 16, 22); $g.FillEllipse((Brush $Espresso), 142, 98, 16, 22)
+        $g.DrawLine($thin, 94, 88, 120, 88); $g.DrawLine($thin, 136, 88, 162, 88)
+        $g.DrawArc($pen, 108, 126, 40, 22, 20, 140)
+    }
+    if ($mood -eq "happy") {
+        $g.DrawArc($thick, 94, 100, 28, 24, 200, 140); $g.DrawArc($thick, 134, 100, 28, 24, 200, 140)
+        $g.DrawArc($thin, 94, 80, 28, 14, 200, 140); $g.DrawArc($thin, 134, 80, 28, 14, 200, 140)
+        $g.FillPie((Brush (C "8B1E2D")), 100, 122, 56, 44, 0, 180); $g.FillPie((Brush (C "FF8A80")), 114, 144, 28, 20, 0, 180)
+        $g.FillRectangle((Brush $White), 114, 125, 28, 6); $g.DrawPie($pen, 100, 122, 56, 44, 0, 180)
+    }
+    if ($mood -eq "worried") {
+        Ell $g 92 90 30 34 $White 5; Ell $g 134 90 30 34 $White 5
+        $g.FillEllipse((Brush $Espresso), 104, 98, 12, 16); $g.FillEllipse((Brush $Espresso), 140, 98, 12, 16)
+        $g.DrawLine($thick, 90, 84, 118, 72); $g.DrawLine($thick, 138, 72, 166, 84)
+        $g.DrawLines($pen, (Pts @(104,142, 114,134, 124,142, 134,134, 144,142, 152,136)))
+        $drop = Pts @(194,66, 184,86, 186,94, 194,98, 202,94, 204,86)
+        Poly $g $drop (C "5CC8FF") 4
+    }
+    if ($mood -eq "angry") {
+        $g.FillEllipse((Brush $White), 94, 98, 26, 20); $g.FillEllipse((Brush $White), 136, 98, 26, 20)
+        $g.FillEllipse((Brush $Espresso), 102, 104, 12, 14); $g.FillEllipse((Brush $Espresso), 142, 104, 12, 14)
+        $g.DrawLine($thick, 88, 76, 122, 96); $g.DrawLine($thick, 134, 96, 168, 76)
+        $g.DrawArc($thick, 106, 138, 44, 24, 200, 140)
+        $g.DrawLine((Pen $Ember 8), 180, 50, 200, 70); $g.DrawLine((Pen $Ember 8), 200, 50, 180, 70)
+    }
+}
+function Portrait2($name, $skin, $hairColor, $shirt, $style, $mood) {
+    $i = New-Img 256 256; $g = $i.G
+    Shadow $g 40 236 176 18
+    $b = RRectPath 44 160 168 90 36; Vol $g $b (C "FFFFFF" 255) $shirt 5
+    $g.FillPath((Brush (C $shirt.Name.Substring(2) 140)), $b); $g.DrawPath((Pen $Espresso 5), $b)
+    if ($style -eq "olya") { foreach ($c in @(@(44,52,64),@(70,26,64),@(122,16,64),@(158,26,64),@(150,52,64),@(26,92,56),@(174,92,56))) { Ell $g $c[0] $c[1] $c[2] $c[2] $hairColor 5 } }
+    if ($style -eq "hanna") { Ell $g 92 4 72 64 (C "B0B0B0") 5; Ell $g 54 40 148 140 (C "B0B0B0") 5 }
+    $h = EllPath 66 50 124 128; Vol $g $h (C "FFFFFF") $skin 5
+    $g.FillPath((Brush (C $skin.Name.Substring(2) 215)), $h); $g.DrawPath((Pen $Espresso 5), $h)
+    Gloss $g 84 62 40 14
+    if ($mood -eq "angry") { $g.FillPath((Brush (C "E5383B" 80)), $h) }
+    if ($style -eq "olya") { Ell $g 62 40 132 52 $hairColor 4; $g.DrawArc((Pen (C "FFB703") 10), 66, 50, 124, 40, 190, 160) }
+    if ($style -eq "hanna") { Ell $g 62 44 132 46 (C "B0B0B0") 4; $g.DrawArc((Pen $Mint 16), 70, 138, 116, 62, 20, 140) }
+    Face $g $mood
+    if ($style -eq "marko") {
+        RRect $g 54 28 148 46 22 $Chili 5; RRect $g 132 52 92 20 9 $Chili 4; Gloss $g 78 40 40 12
+        $g.DrawEllipse((Pen $Espresso 5), 90, 90, 34, 34); $g.DrawEllipse((Pen $Espresso 5), 132, 90, 34, 34); $g.DrawLine((Pen $Espresso 5), 124, 104, 132, 104)
+    }
+    if ($style -eq "hanna") { $g.DrawEllipse((Pen $Espresso 4), 92, 92, 30, 30); $g.DrawEllipse((Pen $Espresso 4), 134, 92, 30, 30); $g.DrawLine((Pen $Espresso 4), 122, 104, 134, 104) }
+    Save-Img $i $name
+}
+$clients = @(
+    @{ Id = "olya"; Skin = (C "C68642"); Hair = (C "3B2314"); Shirt = (C "4CC9F0") },
+    @{ Id = "marko"; Skin = (C "F1C27D"); Hair = (C "6B4630"); Shirt = (C "8E5CF6") },
+    @{ Id = "hanna"; Skin = (C "FFDBAC"); Hair = (C "B0B0B0"); Shirt = (C "E5383B") }
+)
+foreach ($cl in $clients) {
+    foreach ($m in @("neutral", "happy", "worried", "angry")) {
+        $n = if ($m -eq "neutral") { "chr_" + $cl.Id } else { "chr_" + $cl.Id + "_" + $m }
+        Portrait2 $n $cl.Skin $cl.Hair $cl.Shirt $cl.Id $m
+    }
+}
 
 # --- bar background 540x960: wall, awning, wooden counter ---
 $i = New-Img 540 960; $g = $i.G
