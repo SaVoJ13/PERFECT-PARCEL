@@ -34,9 +34,9 @@
 | External Dependency Manager | TBD | | Android-залежності SDK | |
 
 ## Android-дозволи і платформні виклики
-| Що | Версія | Ліцензія | Навіщо | Вплив на розмір |
-|---|---|---|---|---|
-| Дозвіл `VIBRATE` + `View.performHapticFeedback` через `AndroidJavaObject` (Q-05i, ADR-030) | без нової бібліотеки (модуль androidjni уже є) | - | Вібрація QB-ALL-14; подробиці - `docs/android/PERMISSIONS.md` | ~0 |
+| Що | Версія | Навіщо |
+|---|---|---|
+| `View.performHapticFeedback` через `AndroidJavaObject` (Q-05i) | без нової бібліотеки (модуль androidjni уже є) | Вібрація QB-ALL-14. VIBRATE не додається, performHapticFeedback дозволу не потребує (джерело: офіційна документація Android, https://developer.android.com/develop/ui/views/haptics/haptic-feedback, доступ 2026-11-15). Подробиці - `docs/android/PERMISSIONS.md` |
 
 ## Інструменти розробки (ПК Власника)
 | Інструмент | Навіщо |
