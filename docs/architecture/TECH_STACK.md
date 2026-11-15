@@ -33,6 +33,11 @@
 | Firebase Analytics / Crashlytics (якщо D-04) | TBD | | Аналітика, краші | |
 | External Dependency Manager | TBD | | Android-залежності SDK | |
 
+## Android-дозволи і платформні виклики
+| Що | Версія | Ліцензія | Навіщо | Вплив на розмір |
+|---|---|---|---|---|
+| Дозвіл `VIBRATE` + `View.performHapticFeedback` через `AndroidJavaObject` (Q-05i, ADR-030) | без нової бібліотеки (модуль androidjni уже є) | - | Вібрація QB-ALL-14; подробиці - `docs/android/PERMISSIONS.md` | ~0 |
+
 ## Інструменти розробки (ПК Власника)
 | Інструмент | Навіщо |
 |---|---|
