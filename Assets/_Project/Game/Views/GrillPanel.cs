@@ -27,6 +27,11 @@ namespace KebabStreet.Game
         private const int WarningTextIndex = 5;
         private const int TextCount = 6;
 
+        // Q-05d: пара 2-4/с (QB-SHIFT-17), дим 4-8/с (QB-SHIFT-21); це вигляд, не баланс.
+        private const float SteamPerSec = 3f;
+        private const float SmokePerSec = 6f;
+        private const float MaxEmitStepSec = 0.1f;
+
         private static readonly Color EmptyColor = UiColors.GrillEmpty;
         private static readonly Color RawColor = UiColors.GrillRaw;
         private static readonly Color CookingColor = UiColors.GrillCooking;
@@ -48,9 +53,16 @@ namespace KebabStreet.Game
         private readonly bool[] _drawn;
         private readonly string[] _texts = new string[TextCount];
         private readonly string[] _slotTexts;
+        private readonly FxLayer _fx;
+        private readonly MotionTarget[] _iconMotion;
+        private readonly float[] _dropAt;
+        private readonly float[] _doneAt;
+        private readonly float[] _emitted;
+        private float _lastNow;
 
-        public GrillPanel(VisualElement parent, ShiftInput input, ILocalizer text)
+        public GrillPanel(VisualElement parent, ShiftInput input, ILocalizer text, FxLayer fx = null)
         {
+            _fx = fx;
             if (parent == null)
             {
                 throw new ArgumentNullException(nameof(parent));
@@ -87,6 +99,11 @@ namespace KebabStreet.Game
             _shown = new GrillSlotView[count];
             _slotTexts = new string[count];
             _drawn = new bool[count];
+            _iconMotion = new MotionTarget[count];
+            _dropAt = new float[count];
+            _doneAt = new float[count];
+            _emitted = new float[count];
+            _lastNow = UiMotion.Now;
             for (int i = 0; i < count; i++)
             {
                 AddSlot(i);
@@ -122,6 +139,12 @@ namespace KebabStreet.Game
             return _decors[slot];
         }
 
+        /// <summary>Рух значка м'яса в слоті (падіння, вистриб, пульс, тремтіння); для тестів.</summary>
+        public MotionTarget GetIconMotion(int slot)
+        {
+            return _iconMotion[slot];
+        }
+
         /// <summary>Вигляд слота, який зараз показано.</summary>
         public GrillSlotView GetShownView(int slot)
         {
@@ -142,6 +165,9 @@ namespace KebabStreet.Game
         public void Refresh()
         {
             ShiftSimulation simulation = _driver.Simulation;
+            float now = UiMotion.Now;
+            float step = Mathf.Clamp(now - _lastNow, 0f, MaxEmitStepSec);
+            _lastNow = now;
             for (int i = 0; i < _buttons.Length; i++)
             {
                 GrillSlotView view = GrillView.FromSimulation(simulation, i);
@@ -149,14 +175,97 @@ namespace KebabStreet.Game
                 // S1-21: відгук на тап - рамка і смужка дії; оновлюється щокадру, стиль міняється лише за зміни.
                 _decors[i].Update(
                     _input.IsLit(FeedbackTarget.GrillSlot, i), _input.ProgressOf(FeedbackTarget.GrillSlot, i), ColorOf(view));
-                if (_drawn[i] && view.Equals(_shown[i]))
+                if (!_drawn[i] || !view.Equals(_shown[i]))
                 {
-                    continue;
+                    bool first = !_drawn[i];
+                    GrillSlotView previous = first ? default(GrillSlotView) : _shown[i];
+                    Draw(i, view, previous, first);
+                    if (!first)
+                    {
+                        NoteTransition(i, view, previous, now);
+                    }
+
+                    _shown[i] = view;
+                    _drawn[i] = true;
                 }
 
-                Draw(i, view, !_drawn[i] ? default(GrillSlotView) : _shown[i], !_drawn[i]);
-                _shown[i] = view;
-                _drawn[i] = true;
+                UpdateMotion(i, view, now, step);
+            }
+        }
+
+        /// <summary>Q-05d: падіння шматка при кладенні (QB-SHIFT-22) і «вистриб» при готовності (QB-SHIFT-19).</summary>
+        private void NoteTransition(int index, GrillSlotView view, GrillSlotView previous, float now)
+        {
+            if (view.Display == GrillSlotDisplay.Cooking && previous.Display != GrillSlotDisplay.Cooking)
+            {
+                _dropAt[index] = now;
+            }
+
+            if (view.Display == GrillSlotDisplay.Done && previous.Display != GrillSlotDisplay.Done)
+            {
+                _doneAt[index] = now;
+            }
+        }
+
+        /// <summary>
+        /// Рух значка м'яса й пара/дим за станом слота (G-09). Пише у стиль лише transform і opacity;
+        /// ігровий час, тож пауза все зупиняє.
+        /// </summary>
+        private void UpdateMotion(int index, GrillSlotView view, float now, float step)
+        {
+            float scale = 1f;
+            float tx = 0f;
+            float ty = 0f;
+            float rate = 0f;
+            bool dark = false;
+            switch (view.Display)
+            {
+                case GrillSlotDisplay.Cooking:
+                    ty = UiMotion.Drop(now - _dropAt[index]);
+                    rate = SteamPerSec;
+                    break;
+                case GrillSlotDisplay.Done:
+                    if (view.BurnWarning)
+                    {
+                        scale = UiMotion.WarnPulse(now);
+                        tx = UiMotion.WarnShake(now);
+                        rate = SteamPerSec;
+                        dark = true;
+                    }
+                    else
+                    {
+                        float since = now - _doneAt[index];
+                        scale = since < UiMotion.DonePopSec ? UiMotion.DonePop(since) : UiMotion.DonePulse(now);
+                    }
+
+                    break;
+                case GrillSlotDisplay.Burnt:
+                    rate = SmokePerSec;
+                    break;
+                default:
+                    break;
+            }
+
+            float opacity = view.Display == GrillSlotDisplay.Empty ? EmptyHintOpacity : 1f;
+            _iconMotion[index].Set(scale, scale, tx, ty, opacity);
+            if (_fx == null || rate <= 0f)
+            {
+                _emitted[index] = 0f;
+                return;
+            }
+
+            _emitted[index] += rate * step;
+            while (_emitted[index] >= 1f)
+            {
+                _emitted[index] -= 1f;
+                if (view.Display == GrillSlotDisplay.Burnt)
+                {
+                    _fx.Smoke(_buttons[index]);
+                }
+                else
+                {
+                    _fx.Steam(_buttons[index], dark);
+                }
             }
         }
 
@@ -193,6 +302,7 @@ namespace KebabStreet.Game
             // Значок стану м'яса (S1-12, Q-05b): велика іконка по центру слота замість напису стану.
             VisualElement icon = ArtLibrary.AddCenterIcon(button, IconSize, "grill-slot-icon-" + index);
             _icons[index] = icon;
+            _iconMotion[index] = new MotionTarget(icon);
             _decors[index] = new TapDecor(button, "grill-slot-" + index);
 
             Root.Add(button);
@@ -222,7 +332,7 @@ namespace KebabStreet.Game
                 bool empty = view.Display == GrillSlotDisplay.Empty;
                 string iconName = empty ? ArtLibrary.IngredientIcon("meat") : IconOf(view);
                 bool shown = ArtLibrary.ShowIcon(_icons[index], iconName);
-                _icons[index].style.opacity = empty ? EmptyHintOpacity : 1f;
+                // Прозорість значка веде UpdateMotion (MotionTarget), щоб Draw не розходився з рухом.
                 button.text = shown ? string.Empty : full;
             }
 
