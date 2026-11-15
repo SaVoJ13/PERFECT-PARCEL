@@ -105,6 +105,8 @@ namespace KebabStreet.Game
             }
 
             _driver = driver ?? throw new ArgumentNullException(nameof(driver));
+            UiMotion.ResetPause(); // нова зміна: облік пауз з нуля.
+            Fx = new FxLayer((int)(driver.Seed & int.MaxValue));
             _text = text ?? throw new ArgumentNullException(nameof(text));
             _goalFormat = text.Get(ShiftHud.GoalTextKey(driver.Level.Goal.Type));
             _coinsFormat = text.Get(TextKeys.ShiftHudCoins);
@@ -157,7 +159,7 @@ namespace KebabStreet.Game
             VisualElement coinBox = Row(hud);
             coinBox.style.alignItems = Align.Center;
             coinBox.style.flexShrink = 1;
-            ArtLibrary.AddIcon(coinBox, ArtLibrary.Coin, IconSize);
+            Fx.CoinTarget = ArtLibrary.AddIcon(coinBox, ArtLibrary.Coin, IconSize) ?? coinBox;
             _coins = HudLabel(coinBox, string.Empty, HudFontSize, CoinColor);
             _goal.style.marginLeft = Gap;
             _goal.style.marginRight = Gap;
@@ -170,10 +172,11 @@ namespace KebabStreet.Game
 
             Input = new ShiftInput(driver);
             CounterZone = Zone(root, CounterZoneName);
-            Counter = new CounterPanel(CounterZone, Input, text);
+            Counter = new CounterPanel(CounterZone, Input, text, Fx);
             AssemblyZone = Zone(root, AssemblyZoneName);
-            Assembly = new AssemblyPanel(AssemblyZone, Input, text);
-            Grill = new GrillPanel(root, Input, text);
+            Assembly = new AssemblyPanel(AssemblyZone, Input, text, Fx);
+            Grill = new GrillPanel(root, Input, text, Fx);
+            root.Add(Fx.Root); // Q-05d: частинки поверх панелей, під плашками паузи й результату.
 
             _tutorial = tutorial;
             if (tutorial != null)
@@ -230,6 +233,9 @@ namespace KebabStreet.Game
 
         /// <summary>Усі тапи екрана: панелі шлють команди лише через нього в ShiftDriver.Tap.</summary>
         public ShiftInput Input { get; }
+
+        /// <summary>Шар частинок: пара, дим, монети, політ інгредієнта, «+N» (Q-05d).</summary>
+        public FxLayer Fx { get; }
 
         /// <summary>Гриль зі слотами.</summary>
         public GrillPanel Grill { get; }
@@ -309,11 +315,13 @@ namespace KebabStreet.Game
                 _drawn = true;
             }
 
+            UiMotion.SetPaused(_shown.Paused && !_shown.Finished); // Q-05d: пауза зупиняє ігровий час руху.
             UpdateMotion();
             Input.Update();
             Counter.Refresh();
             Assembly.Refresh();
             Grill.Refresh();
+            Fx.Update();
             if (_tutorial != null)
             {
                 _tutorial.Update();

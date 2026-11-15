@@ -25,6 +25,11 @@ namespace KebabStreet.Game
         private const float ClearGlyphSize = 64f;
         private const float ClearWidth = 144f;
 
+        // Q-05d: «приземлення» інгредієнта на дошці: підскок 1 -> 1,15 -> 1 за 200 мс після польоту (QB-SHIFT-25/26).
+        private const float LandPopPeak = 1.15f;
+        private const float LandPopSec = 0.2f;
+        private const float NoLanding = -1000f;
+
         /// <summary>Найбільше показаних дій черги (rules.actionQueueMax може бути більшим).</summary>
         public const int MaxQueueShown = 4;
 
@@ -75,9 +80,13 @@ namespace KebabStreet.Game
         private string _shownHint;
         private long _shownCombo;
         private bool _drawn;
+        private readonly FxLayer _fx;
+        private MotionTarget[] _itemMotion;
+        private float[] _landAt;
 
-        public AssemblyPanel(VisualElement parent, ShiftInput input, ILocalizer text)
+        public AssemblyPanel(VisualElement parent, ShiftInput input, ILocalizer text, FxLayer fx = null)
         {
+            _fx = fx;
             if (parent == null)
             {
                 throw new ArgumentNullException(nameof(parent));
@@ -137,6 +146,14 @@ namespace KebabStreet.Game
                 UiDecor.AddButtonDepth(_items[i], ItemColor);
                 _itemIcons[i] = ArtLibrary.AddCenterIcon(_items[i], ItemIconSize, "assembly-item-icon-" + i);
                 _itemTexts[i] = string.Empty;
+            }
+
+            _itemMotion = new MotionTarget[_items.Length];
+            _landAt = new float[_items.Length];
+            for (int i = 0; i < _items.Length; i++)
+            {
+                _itemMotion[i] = new MotionTarget(_itemIcons[i]);
+                _landAt[i] = NoLanding;
             }
 
             // S1-21: відгук на тап - рамка підсвічування і смужка дії на кожній кнопці.
@@ -239,6 +256,12 @@ namespace KebabStreet.Game
         /// <summary>Відгук на тап «Очистити дошку» (смітник, S1-21).</summary>
         public TapDecor ClearDecor => _clearDecor;
 
+        /// <summary>Рух значка інгредієнта на дошці (прихований у польоті, потім «приземлення»); для тестів.</summary>
+        public MotionTarget GetItemMotion(int position)
+        {
+            return _itemMotion[position];
+        }
+
         /// <summary>Номер інгредієнта кнопки станції.</summary>
         public int GetStationIngredient(int index)
         {
@@ -328,6 +351,28 @@ namespace KebabStreet.Game
             }
         }
 
+        /// <summary>
+        /// Інгредієнт з'явився на дошці: значок летить зі станції на це місце (QB-SHIFT-25), місце приховане до
+        /// приземлення. Повертає момент приземлення; без ефектів (або «менше анімацій») - відразу.
+        /// </summary>
+        private float StartFlight(int ingredient, int position, float now)
+        {
+            if (_fx == null)
+            {
+                return NoLanding;
+            }
+
+            for (int s = 0; s < _stations.Length; s++)
+            {
+                if (_stations[s] == ingredient && _fx.Fly(_stationButtons[s], _items[position], _ingredientIcons[ingredient]))
+                {
+                    return now + FxLayer.FlightSec;
+                }
+            }
+
+            return NoLanding;
+        }
+
         /// <summary>Тап по кнопці станції: інгредієнт на дошку.</summary>
         public bool TapStation(int index)
         {
@@ -357,6 +402,7 @@ namespace KebabStreet.Game
         {
             ShiftSimulation simulation = _input.Driver.Simulation;
             Board board = simulation.Board;
+            float now = UiMotion.Now;
             for (int s = 0; s < _stationDecors.Length; s++)
             {
                 _stationDecors[s].Update(
@@ -378,6 +424,7 @@ namespace KebabStreet.Game
                 int item = p < board.ItemCount ? board.GetItem(p) : -1;
                 if (!_drawn || item != _shownItems[p])
                 {
+                    _landAt[p] = _drawn && item >= 0 ? StartFlight(item, p, now) : NoLanding;
                     _itemTexts[p] = item >= 0 ? _ingredientNames[item] : string.Empty;
                     _items[p].tooltip = _itemTexts[p];
                     bool itemIcon = ArtLibrary.ShowIcon(_itemIcons[p], item >= 0 ? _ingredientIcons[item] : null);
@@ -385,6 +432,13 @@ namespace KebabStreet.Game
                     _items[p].style.visibility = item >= 0 ? Visibility.Visible : Visibility.Hidden;
                     _shownItems[p] = item;
                 }
+            }
+
+            for (int p = 0; p < _items.Length; p++)
+            {
+                float since = now - _landAt[p];
+                float pop = UiMotion.Pop(since, LandPopSec, LandPopPeak);
+                _itemMotion[p].Set(pop, pop, 0f, 0f, since < 0f ? 0f : 1f);
             }
 
             for (int i = 0; i < _queue.Length; i++)

@@ -53,13 +53,73 @@ namespace KebabStreet.Game
         private const float FullTurn = 2f * (float)Math.PI;
         private const float Half = 0.5f;
 
-        /// <summary>Джерело часу (с). У грі — реальний час; тести підставляють власне.</summary>
-        public static Func<float> Clock = DefaultClock;
+        // Q-05d. QB-SHIFT-19: «вистриб» готового 1 -> 1,15 -> 1 за 200 мс, далі пульс 1,00..1,06 не частіше 1 Гц.
+        public const float DonePopPeak = 1.15f;
+        public const float DonePopSec = 0.2f;
+        public const float DonePulseAmplitude = 0.06f;
+        public const float DonePulseHz = 0.8f;
+
+        // QB-SHIFT-20: майже пригоріле - пульс індикатора 2 Гц (не більше 3 Гц, QB-ALL-13) і тремтіння +-2,5 px.
+        public const float WarnPulseAmplitude = 0.08f;
+        public const float WarnPulseHz = 2f;
+        public const float WarnShakePx = 2.5f;
+
+        // QB-SHIFT-22: шматок м'яса падає на слот з -30 px за 150 мс, з відскоком.
+        public const float DropHeightPx = 30f;
+        public const float DropSec = 0.15f;
+
+        private static Func<float> _clock = DefaultClock;
+        private static float _pausedAt = -1f;
+        private static float _pausedTotal;
+
+        /// <summary>
+        /// Джерело часу (с). У грі — реальний час; тести підставляють власне. Підміна скидає паузу.
+        /// </summary>
+        public static Func<float> Clock
+        {
+            get => _clock;
+            set
+            {
+                _clock = value ?? DefaultClock;
+                ResetPause();
+            }
+        }
+
+        /// <summary>Чи рух зупинено паузою гри (<see cref="Now"/> стоїть).</summary>
+        public static bool Paused => _pausedAt >= 0f;
 
         /// <summary>Режим «менше анімацій»: рух вимкнено, усе показується відразу.</summary>
         public static bool Reduced { get; set; }
 
-        public static float Now => Clock();
+        /// <summary>Ігровий час руху (с): реальний час без пауз. На паузі стоїть, тож дихання, пара, політ завмирають.</summary>
+        public static float Now => (Paused ? _pausedAt : _clock()) - _pausedTotal;
+
+        /// <summary>Пауза гри (Q-05d): зупиняє або відновлює <see cref="Now"/>; повторний виклик зіstanом нічого не міняє.</summary>
+        public static void SetPaused(bool paused)
+        {
+            if (paused == Paused)
+            {
+                return;
+            }
+
+            float real = _clock();
+            if (paused)
+            {
+                _pausedAt = real;
+            }
+            else
+            {
+                _pausedTotal += real - _pausedAt;
+                _pausedAt = -1f;
+            }
+        }
+
+        /// <summary>Скидає облік пауз (нова зміна, підміна годинника у тестах).</summary>
+        public static void ResetPause()
+        {
+            _pausedAt = -1f;
+            _pausedTotal = 0f;
+        }
 
         /// <summary>Дихання: scale-y; <paramref name="phase"/> (0..1) зсуває фазу, щоб клієнти дихали не синхронно.</summary>
         public static float Breath(float timeSec, float phase)
@@ -172,10 +232,76 @@ namespace KebabStreet.Game
             return Reduced || elapsedSec < 0f || elapsedSec >= LeaveSec ? 1f : 1f - (elapsedSec / LeaveSec);
         }
 
+        /// <summary>«Вистриб» готового м'яса (1 -> 1,15 -> 1 за 200 мс); 1 поза проміжком.</summary>
+        public static float DonePop(float elapsedSec)
+        {
+            return Pop(elapsedSec, DonePopSec, DonePopPeak);
+        }
+
+        /// <summary>Спокійний пульс готового м'яса 1,00..1,06, не частіше 1 Гц.</summary>
+        public static float DonePulse(float timeSec)
+        {
+            return Reduced ? 1f : 1f + (DonePulseAmplitude * Wave(timeSec, DonePulseHz));
+        }
+
+        /// <summary>Тривожний пульс майже пригорілого 1,00..1,08 з частотою 2 Гц (не більше 3 Гц).</summary>
+        public static float WarnPulse(float timeSec)
+        {
+            return Reduced ? 1f : 1f + (WarnPulseAmplitude * Wave(timeSec, Mathf.Min(WarnPulseHz, MaxFlashHz)));
+        }
+
+        /// <summary>Тремтіння майже пригорілого м'яса по горизонталі, px.</summary>
+        public static float WarnShake(float timeSec)
+        {
+            return Reduced ? 0f : WarnShakePx * Mathf.Sin(FullTurn * Mathf.Min(ShakeHz, MaxFlashHz) * timeSec);
+        }
+
+        /// <summary>Падіння шматка на слот: зсув по вертикалі від -30 px до 0 з відскоком; 0 поза проміжком.</summary>
+        public static float Drop(float elapsedSec)
+        {
+            if (Reduced || elapsedSec < 0f || elapsedSec >= DropSec)
+            {
+                return 0f;
+            }
+
+            return -DropHeightPx * (1f - BounceOut(elapsedSec / DropSec));
+        }
+
+        /// <summary>Ease-out-bounce: 0..1.</summary>
+        public static float BounceOut(float x)
+        {
+            const float n1 = 7.5625f;
+            const float d1 = 2.75f;
+            if (x < 1f / d1)
+            {
+                return n1 * x * x;
+            }
+
+            if (x < 2f / d1)
+            {
+                x -= 1.5f / d1;
+                return (n1 * x * x) + 0.75f;
+            }
+
+            if (x < 2.5f / d1)
+            {
+                x -= 2.25f / d1;
+                return (n1 * x * x) + 0.9375f;
+            }
+
+            x -= 2.625f / d1;
+            return (n1 * x * x) + 0.984375f;
+        }
+
         /// <summary>Чи триває проміжок [0, duration).</summary>
         public static bool Active(float elapsedSec, float durationSec)
         {
             return !Reduced && elapsedSec >= 0f && elapsedSec < durationSec;
+        }
+
+        private static float Wave(float timeSec, float hz)
+        {
+            return Half + (Half * Mathf.Sin(FullTurn * hz * timeSec));
         }
 
         private static float Hump(float elapsedSec, float durationSec, float peak)

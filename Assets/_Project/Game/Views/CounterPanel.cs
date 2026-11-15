@@ -75,15 +75,17 @@ namespace KebabStreet.Game
         private readonly OrderIcon[][] _orders;
         private readonly Label _queue;
         private readonly Card[] _cards;
+        private readonly FxLayer _fx;
         private int _shownQueue = -1;
 
-        public CounterPanel(VisualElement parent, ShiftInput input, ILocalizer text)
-            : this(parent, input, text, CounterView.DefaultHearts)
+        public CounterPanel(VisualElement parent, ShiftInput input, ILocalizer text, FxLayer fx = null)
+            : this(parent, input, text, CounterView.DefaultHearts, fx)
         {
         }
 
-        public CounterPanel(VisualElement parent, ShiftInput input, ILocalizer text, int hearts)
+        public CounterPanel(VisualElement parent, ShiftInput input, ILocalizer text, int hearts, FxLayer fx = null)
         {
+            _fx = fx;
             if (parent == null)
             {
                 throw new ArgumentNullException(nameof(parent));
@@ -594,6 +596,8 @@ namespace KebabStreet.Game
                         if (counterEvent.Kind == CounterEventKind.Served)
                         {
                             _hopAt = now;
+                            // Q-05d, QB-SHIFT-14: монети-частинки до лічильника і «+N» над клієнтом.
+                            _owner._fx?.Payment(_button, counterEvent.PaidCoins, counterEvent.TipCoins);
                         }
                     }
 
