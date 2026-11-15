@@ -68,6 +68,7 @@ namespace KebabStreet.Game
         private bool _scrollDone;
         private float _scrollStartAt;
         private float _scrollTarget;
+        private float _scrollFrom;
         private VisualElement _card;
         private MotionTarget _cardPanel;
         private float _cardOpenedAt;
@@ -127,8 +128,10 @@ namespace KebabStreet.Game
             _scroll.contentContainer.style.alignItems = Align.Center;
             Container.Add(_scroll);
 
-            for (int i = 0; i < _entries.Length; i++)
+            // Q-05j: рівень 1 знизу, новіші вище - рядки додаємо від останнього до першого.
+            for (int p = 0; p < _entries.Length; p++)
             {
+                int i = LevelMapLayout.IndexAtRow(p, _entries.Length);
                 bool unlocking = _entries[i].Number == highlight && _entries[i].Unlocked;
                 int gain = _entries[i].Number == gainLevel ? gainFrom : -1;
                 AddLevelRow(text, i, order++, total, unlocking, gain);
@@ -276,11 +279,6 @@ namespace KebabStreet.Game
             row.style.alignItems = Align.Center;
             row.style.flexShrink = 0;
 
-            if (index > 0)
-            {
-                AddLink(row, index - 1, _entries[index].Unlocked);
-            }
-
             var node = new Node { Index = index, Number = entry.Number };
             node.Wrap = new VisualElement { name = "level-node-wrap-" + entry.Number };
             node.Wrap.style.width = LevelMapLayout.NodeSize;
@@ -360,6 +358,11 @@ namespace KebabStreet.Game
 
             row.Add(node.Wrap);
             row.Add(BuildStars(node, entry, gainFrom, order, total));
+            if (index > 0)
+            {
+                AddLink(row, index - 1, _entries[index].Unlocked); // доріжка вниз до попереднього рівня
+            }
+
             _scroll.Add(row);
             _nodes.Add(node);
             RegisterCascade(row, order, total);
@@ -377,7 +380,7 @@ namespace KebabStreet.Game
                 dot.style.height = LevelMapLayout.DotSize;
                 dot.style.marginTop = LevelMapLayout.DotGap * 0.5f;
                 dot.style.marginBottom = LevelMapLayout.DotGap * 0.5f;
-                dot.style.marginLeft = 2f * LevelMapLayout.DotOffsetX(from, d);
+                dot.style.marginLeft = 2f * LevelMapLayout.DotOffsetX(from, LevelMapLayout.DotsPerLink - 1 - d);
                 dot.style.backgroundColor = passed ? UiColors.Coin : DotOff;
                 SetRadius(dot, LevelMapLayout.DotSize * 0.5f);
                 link.Add(dot);
@@ -567,14 +570,14 @@ namespace KebabStreet.Game
                     return;
                 }
 
-                float max = Mathf.Max(0f, content - viewport);
-                _scrollTarget = Mathf.Clamp(rowY + (rowH * 0.5f) - (viewport * 0.5f), 0f, max);
+                _scrollTarget = LevelMapLayout.ScrollTarget(rowY, rowH, viewport, content);
+                _scrollFrom = Mathf.Max(0f, content - viewport); // карта відкривається знизу (рівень 1)
                 _scrollStartAt = now;
                 _scrollStarted = true;
             }
 
             float elapsed = now - _scrollStartAt;
-            _scroll.scrollOffset = new Vector2(0f, MenuMotion.ScrollOffset(0f, _scrollTarget, elapsed));
+            _scroll.scrollOffset = new Vector2(0f, MenuMotion.ScrollOffset(_scrollFrom, _scrollTarget, elapsed));
             if (UiMotion.Reduced || elapsed >= MenuMotion.ScrollSec)
             {
                 _scrollDone = true;
@@ -626,7 +629,14 @@ namespace KebabStreet.Game
                     return;
                 }
 
-                _nodes[i].ShakeAt = UiMotion.Now; // QB-LVL-04: тряска без вібрації
+                for (int n = 0; n < _nodes.Count; n++)
+                {
+                    if (_nodes[n].Index == i)
+                    {
+                        _nodes[n].ShakeAt = UiMotion.Now;
+                    }
+                }
+ // QB-LVL-04: тряска без вібрації
                 SfxHub.Play(SfxCue.Locked); // QB-LVL-04: глухий звук
                 _hint.text = string.Format(Context.Text.Get(TextKeys.MenuLevelLockedHint), LevelMapLayout.RequiredNumber(_entries, i));
                 return;

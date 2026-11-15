@@ -245,6 +245,20 @@ namespace KebabStreet.Game
             return a + ((b - a) * t);
         }
 
+        /// <summary>Q-05j: індекс рівня в каталозі для <paramref name="row"/>-го рядка згори (0 - верхній = найновіший); рівень 1 - внизу.</summary>
+        public static int IndexAtRow(int row, int count)
+        {
+            return count - 1 - row;
+        }
+
+        /// <summary>Q-05j: зсув прокрутки, що ставить центр рядка в центр вікна, у межах 0..(вміст - вікно).</summary>
+        public static float ScrollTarget(float rowY, float rowHeight, float viewport, float content)
+        {
+            float max = content - viewport > 0f ? content - viewport : 0f;
+            float target = rowY + (rowHeight * 0.5f) - (viewport * 0.5f);
+            return target < 0f ? 0f : (target > max ? max : target);
+        }
+
         /// <summary>Індекс поточного рівня: перший відкритий без зірок; усе пройдено - останній відкритий; -1, якщо порожньо.</summary>
         public static int CurrentIndex(LevelEntry[] entries)
         {
