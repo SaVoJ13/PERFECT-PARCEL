@@ -30,8 +30,7 @@ namespace KebabStreet.Game
             if (!ReferenceEquals(current, _step))
             {
                 _step = current;
-                _released = false;
-                _applied = false;
+                _released = false; // _applied не скидаємо: пауза попереднього кроку ще діє, її має зняти SetTutorialPause
             }
 
             if (_applied && !_driver.IsTutorialPaused)

@@ -132,12 +132,12 @@ namespace KebabStreet.Tests.EditMode
 
             Assert.IsTrue(input.TapGrillSlot(0), "тап по грилю проходить, хоча підказка зупинила час");
             Assert.IsFalse(driver.IsTutorialPaused);
-            for (int i = 0; i < 10; i++)
+            int guard = (int)(10 / Tick(driver));
+            for (int i = 0; i < guard && director.Model.GetState("l01.step1") != TutorialStepState.Done; i++)
             {
                 Frame(driver, director, pause, Tick(driver));
             }
 
-            Assert.IsFalse(driver.IsPaused);
             Assert.AreEqual(TutorialStepState.Done, director.Model.GetState("l01.step1"), "дію зараховано");
         }
 
