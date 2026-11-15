@@ -427,7 +427,7 @@ namespace KebabStreet.Game
                 _drawn = true;
             }
 
-            UiMotion.SetPaused(_shown.Paused && !_shown.Finished); // Q-05d: пауза зупиняє ігровий час руху.
+            UiMotion.SetPaused((_shown.Paused || _driver.IsTutorialPaused) && !_shown.Finished); // Q-05d/Q-05k: пауза (гравця чи підказки) зупиняє ігровий час руху.
             UpdateMotion();
             Input.Update();
             Counter.Refresh();
