@@ -8,12 +8,24 @@ namespace KebabStreet.Tests.EditMode
     internal sealed class BotProfile
     {
         public BotProfile(string name, int reactionTicks, int distractionTicks, int mistakePermille)
+            : this(name, reactionTicks, distractionTicks, mistakePermille, false)
+        {
+        }
+
+        public BotProfile(string name, int reactionTicks, int distractionTicks, int mistakePermille, bool smart)
         {
             Name = name;
             ReactionTicks = reactionTicks;
             DistractionTicks = distractionTicks;
             MistakePermille = mistakePermille;
+            Smart = smart;
         }
+
+        /// <summary>
+        /// «Розумна» політика вибору наступного клієнта (Q-07): рятує тих, хто ось-ось піде, а решту
+        /// обирає за прибутком на одиницю роботи (а не лише за найменшим терпінням, як «жадібна»).
+        /// </summary>
+        public bool Smart { get; }
 
         /// <summary>Коротка назва для звітів.</summary>
         public string Name { get; }
@@ -31,6 +43,18 @@ namespace KebabStreet.Tests.EditMode
         public static BotProfile Expert
         {
             get { return new BotProfile("expert", 0, 0, 0); }
+        }
+
+        /// <summary>Як «досвідчений», але з розумною політикою вибору клієнта (метрика Q-07).</summary>
+        public static BotProfile SmartExpert
+        {
+            get { return new BotProfile("smart-expert", 0, 0, 0, true); }
+        }
+
+        /// <summary>Як «новачок», але з розумною політикою (метрика Q-07).</summary>
+        public static BotProfile SmartNovice
+        {
+            get { return new BotProfile("smart-novice", 45, 120, 80, true); }
         }
 
         /// <summary>Затримка реакції 0,75 с (при 60 тактах/с), відволікання 2 с, помилка в 8% рішень.</summary>
