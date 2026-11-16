@@ -18,11 +18,17 @@ namespace KebabStreet.Tests.EditMode
         private const int PermilleBase = 1000;
         private const int MistakeKinds = 3;
 
+        // Розумна політика (Q-07): оцінка роботи над стравою в тактах (0,5 с на дію при 60 тактах/с).
+        private const long ActionTicks = 30L;
+        private const long SlackTicks = 60L;
+        private const long RescueMarginTicks = 300L;
+
         private readonly ShiftSimulation _sim;
         private readonly BotProfile _profile;
         private readonly SplitMix64Random _random;
         private readonly List<int> _items = new List<int>(16);
         private int _waitTicks;
+        private Customer _committed;
 
         public BotPlayer(ShiftSimulation sim, BotProfile profile, ulong seed)
         {
@@ -136,7 +142,7 @@ namespace KebabStreet.Tests.EditMode
                     }
                 }
 
-                target = FindExtensionTarget(board);
+                target = (_profile.Smart ? FindCommitted(board) : null) ?? FindExtensionTarget(board);
                 if (target == null && WaitingCount(counter) > 0)
                 {
                     return _sim.RemoveIngredient();
@@ -152,7 +158,8 @@ namespace KebabStreet.Tests.EditMode
             // 4. Збирати страву.
             if (count == 0)
             {
-                target = FindMostUrgent();
+                target = _profile.Smart ? FindSmartTarget(board) : FindMostUrgent();
+                _committed = _profile.Smart ? target : null;
             }
 
             if (target == null)
@@ -278,6 +285,74 @@ namespace KebabStreet.Tests.EditMode
             }
 
             return best;
+        }
+
+        /// <summary>Розумний бот доводить до кінця страву, яку почав для обраного клієнта (а не перемикається на найменше терпіння).</summary>
+        private Customer FindCommitted(Board board)
+        {
+            Customer c = _committed;
+            if (c == null || c.State != CustomerState.Waiting)
+            {
+                return null;
+            }
+
+            BuildItems(c, board);
+            return _items.Count > board.ItemCount && IsPrefix(board) ? c : null;
+        }
+
+        /// <summary>
+        /// Розумний вибір (Q-07): спершу той, кого ось-ось втратимо (залишок терпіння не більший за
+        /// час на його страву плюс запас); інакше — клієнт із найкоротшою роботою (за рівної — дорожчий).
+        /// </summary>
+        private Customer FindSmartTarget(Board board)
+        {
+            Counter counter = _sim.Counter;
+            Customer rescue = null;
+            Customer best = null;
+            double bestDensity = -1d;
+            for (int s = 0; s < counter.Slots.Count; s++)
+            {
+                Customer c = counter.GetCustomerInSlot(s);
+                if (c == null)
+                {
+                    continue;
+                }
+
+                Recipe recipe = board.Config.GetRecipe(c.RecipeIndex);
+                int items = recipe.StepCount;
+                long price = recipe.PriceCoins;
+                for (int k = 0; k < recipe.OptionalCount; k++)
+                {
+                    if ((c.RequestedMask & (1 << k)) != 0)
+                    {
+                        items++;
+                        price += board.Config.GetIngredient(board.Config.IndexOfIngredient(recipe.GetOptional(k))).ExtraPriceCoins;
+                    }
+                }
+
+                long work = items * ActionTicks + SlackTicks;
+                if (Urgency(c) <= work + RescueMarginTicks)
+                {
+                    if (rescue == null || Urgency(c) < Urgency(rescue))
+                    {
+                        rescue = c;
+                    }
+
+                    continue;
+                }
+
+                CustomerType type = counter.Config.GetCustomerType(c.TypeIndex);
+                // Перша версія (прибуток на такт) збіглась із жадібною: платять більше саме ті, хто терпить менше.
+                // Тому тут — «найкоротша робота першою» (більше страв за час, довший ланцюжок комбо).
+                double density = 1d / work + ((double)price * type.PayPercent) * 1e-9;
+                if (density > bestDensity)
+                {
+                    bestDensity = density;
+                    best = c;
+                }
+            }
+
+            return rescue ?? best;
         }
 
         /// <summary>
