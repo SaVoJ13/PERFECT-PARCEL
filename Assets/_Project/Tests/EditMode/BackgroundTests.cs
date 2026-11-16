@@ -64,7 +64,7 @@ namespace KebabStreet.Tests.EditMode
             }
 
             Assert.GreaterOrEqual(colors.Count, 500, name + ": фон майже однотонний");
-            Assert.AreEqual(255, tex.GetPixel(10, 10).a, name + ": фон має бути непрозорим");
+            Assert.AreEqual(1f, tex.GetPixel(10, 10).a, 0.001f, name + ": фон має бути непрозорим");
         }
 
         [Test]
