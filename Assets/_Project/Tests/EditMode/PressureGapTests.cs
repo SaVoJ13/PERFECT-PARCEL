@@ -29,17 +29,36 @@ namespace KebabStreet.Tests.EditMode
             return FirstSeed + (ulong)index * SeedStep;
         }
 
+        // Кандидати параметрів клієнтів (Q-08, ADR-034): marko = нетерплячий і дешевий, hanna = терплячий і дорогий.
+        // Поля: ім'я, marko(терпіння с, оплата, чайові макс %, чайові мін %), hanna(те саме).
+        private static readonly double[][] CustomerSets =
+        {
+            null, // base: customers.json з диска
+            new double[] { 20, 0.70, 0, 0, 60, 1.60, 15, 0 },   // C1
+            new double[] { 15, 0.60, 0, 0, 70, 1.80, 20, 0 },   // C2
+            new double[] { 18, 0.80, 10, 50, 55, 1.50, 10, 0 }, // C3
+            new double[] { 20, 0.80, 0, 0, 50, 1.40, 10, 0 },   // C4 (м'якший)
+        };
+
+        private static readonly string[] CustomerSetNames = { "cust-base", "C1", "C2", "C3", "C4" };
+
         [Test]
         public void Report_GreedyVsSmartGap_OnLevels3To5()
         {
             for (int number = 3; number <= 5; number++)
             {
                 List<KeyValuePair<string, string>> variants = Variants(number);
+                for (int cs = 0; cs < CustomerSets.Length; cs++)
                 for (int v = 0; v < variants.Count; v++)
                 {
-                    string label = "L0" + number + " " + variants[v].Key;
+                    if (variants[v].Key != "base" && variants[v].Key != "P-peaks")
+                    {
+                        continue;
+                    }
+
+                    string label = "L0" + number + " " + CustomerSetNames[cs] + " " + variants[v].Key;
                     string error;
-                    LevelDefinition level = LoadLevel(number, variants[v].Value, out error);
+                    LevelDefinition level = LoadLevel(number, variants[v].Value, CustomerSets[cs], out error);
                     if (level == null)
                     {
                         Report("PRESSURE " + label + ": НЕВАЛІДНИЙ розклад: " + error);
@@ -91,17 +110,34 @@ namespace KebabStreet.Tests.EditMode
             UnityEngine.Debug.Log(text);
         }
 
-        private static LevelDefinition LoadLevel(int number, string wavesJson, out string error)
+        private static LevelDefinition LoadLevel(int number, string wavesJson, double[] customerSet, out string error)
         {
             error = null;
-            if (wavesJson == null)
+            if (wavesJson == null && customerSet == null)
             {
                 return ConfigTestKit.Level(number);
             }
 
-            ConfigSources sources = ConfigTestKit.Mutated(
-                "L0" + number,
-                tree => { tree["waves"] = SaveJson.Parse(wavesJson); });
+            ConfigSources sources = ConfigTestKit.Real();
+            if (customerSet != null)
+            {
+                sources = ConfigTestKit.Mutated(
+                    ConfigTestKit.Customers,
+                    tree =>
+                    {
+                        List<object> list = ConfigTestKit.Arr(tree, "customers");
+                        Apply(ConfigTestKit.ById(list, "marko"), customerSet, 0);
+                        Apply(ConfigTestKit.ById(list, "hanna"), customerSet, 4);
+                    });
+            }
+
+            if (wavesJson != null)
+            {
+                string levelText = ConfigTestKit.TextOf(sources, "L0" + number);
+                var levelTree = (Dictionary<string, object>)SaveJson.Parse(levelText);
+                levelTree["waves"] = SaveJson.Parse(wavesJson);
+                sources = ConfigTestKit.Replace(sources, "L0" + number, ConfigTestKit.Write(levelTree));
+            }
             ConfigResult<LevelCatalog> loaded = ConfigLoader.LoadAll(sources);
             if (!loaded.IsValid)
             {
@@ -110,6 +146,15 @@ namespace KebabStreet.Tests.EditMode
             }
 
             return loaded.Value.FindByNumber(number);
+        }
+
+        private static void Apply(Dictionary<string, object> customer, double[] set, int offset)
+        {
+            customer["patienceSec"] = (long)set[offset];
+            customer["payMultiplier"] = set[offset + 1];
+            var tip = (Dictionary<string, object>)customer["tipRule"];
+            tip["maxPercent"] = (long)set[offset + 2];
+            tip["minPatiencePercent"] = (long)set[offset + 3];
         }
 
         private delegate double Metric(BotResult r);

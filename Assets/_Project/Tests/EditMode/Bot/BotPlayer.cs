@@ -301,16 +301,20 @@ namespace KebabStreet.Tests.EditMode
         }
 
         /// <summary>
-        /// Розумний вибір (Q-07): спершу той, кого ось-ось втратимо (залишок терпіння не більший за
-        /// час на його страву плюс запас); інакше — клієнт із найкоротшою роботою (за рівної — дорожчий).
+        /// Розумний вибір (Q-08): оцінка вартості клієнта (оплата + половина можливих чайових) і роботи над його
+        /// стравою; для кожного кандидата X рахується виграш = вартість X мінус вартість тих, хто встигав би, якби
+        /// X не брали першим, а тепер не встигне. Береться максимальний виграш (за рівності — менший залишок
+        /// терпіння). Ті, кого вже не встигнути, ігноруються, доки є хтось інший.
         /// </summary>
         private Customer FindSmartTarget(Board board)
         {
             Counter counter = _sim.Counter;
-            Customer rescue = null;
-            Customer best = null;
-            double bestDensity = -1d;
-            for (int s = 0; s < counter.Slots.Count; s++)
+            int n = counter.Slots.Count;
+            var cust = new Customer[n];
+            var work = new long[n];
+            var value = new double[n];
+            int m = 0;
+            for (int s = 0; s < n; s++)
             {
                 Customer c = counter.GetCustomerInSlot(s);
                 if (c == null)
@@ -330,29 +334,40 @@ namespace KebabStreet.Tests.EditMode
                     }
                 }
 
-                long work = items * ActionTicks + SlackTicks;
-                if (Urgency(c) <= work + RescueMarginTicks)
-                {
-                    if (rescue == null || Urgency(c) < Urgency(rescue))
-                    {
-                        rescue = c;
-                    }
+                CustomerType type = counter.Config.GetCustomerType(c.TypeIndex);
+                double pay = price * type.PayPercent / 100d;
+                cust[m] = c;
+                work[m] = items * ActionTicks + SlackTicks;
+                value[m] = pay * (1d + type.Tip.MaxPercent / 200d);
+                m++;
+            }
 
+            Customer best = null;
+            double bestScore = double.NegativeInfinity;
+            for (int i = 0; i < m; i++)
+            {
+                if (Urgency(cust[i]) <= work[i] && m > 1)
+                {
                     continue;
                 }
 
-                CustomerType type = counter.Config.GetCustomerType(c.TypeIndex);
-                // Перша версія (прибуток на такт) збіглась із жадібною: платять більше саме ті, хто терпить менше.
-                // Тому тут — «найкоротша робота першою» (більше страв за час, довший ланцюжок комбо).
-                double density = 1d / work + ((double)price * type.PayPercent) * 1e-9;
-                if (density > bestDensity)
+                double score = value[i];
+                for (int j = 0; j < m; j++)
                 {
-                    bestDensity = density;
-                    best = c;
+                    if (j != i && Urgency(cust[j]) > work[j] && Urgency(cust[j]) <= work[i] + work[j] + RescueMarginTicks / 5)
+                    {
+                        score -= value[j];
+                    }
+                }
+
+                if (score > bestScore || (score == bestScore && best != null && Urgency(cust[i]) < Urgency(best)))
+                {
+                    bestScore = score;
+                    best = cust[i];
                 }
             }
 
-            return rescue ?? best;
+            return best ?? FindMostUrgent();
         }
 
         /// <summary>
