@@ -287,7 +287,7 @@ namespace KebabStreet.Tests.EditMode
 
         /// <summary>
         /// Розумний вибір (Q-07): спершу той, кого ось-ось втратимо (залишок терпіння не більший за
-        /// час на його страву плюс запас); інакше — клієнт із найбільшим прибутком на такт роботи.
+        /// час на його страву плюс запас); інакше — клієнт із найкоротшою роботою (за рівної — дорожчий).
         /// </summary>
         private Customer FindSmartTarget(Board board)
         {
@@ -327,7 +327,9 @@ namespace KebabStreet.Tests.EditMode
                 }
 
                 CustomerType type = counter.Config.GetCustomerType(c.TypeIndex);
-                double density = (double)price * type.PayPercent / work;
+                // Перша версія (прибуток на такт) збіглась із жадібною: платять більше саме ті, хто терпить менше.
+                // Тому тут — «найкоротша робота першою» (більше страв за час, довший ланцюжок комбо).
+                double density = 1d / work + ((double)price * type.PayPercent) * 1e-9;
                 if (density > bestDensity)
                 {
                     bestDensity = density;
