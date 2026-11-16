@@ -24,6 +24,11 @@
     background-color: var(--ks-plum);
 }
 
+.ks-bold {
+    -unity-font-definition: url("../../Art/Fonts/Nunito-ExtraBold.ttf");
+    -unity-font-style: normal;
+}
+
 .ks-title {
     color: var(--ks-saffron);
     -unity-font-definition: url("../../Art/Fonts/Nunito-ExtraBold.ttf");
