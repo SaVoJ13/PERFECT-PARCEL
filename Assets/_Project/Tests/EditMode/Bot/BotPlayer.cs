@@ -28,6 +28,7 @@ namespace KebabStreet.Tests.EditMode
         private readonly SplitMix64Random _random;
         private readonly List<int> _items = new List<int>(16);
         private int _waitTicks;
+        private Customer _committed;
 
         public BotPlayer(ShiftSimulation sim, BotProfile profile, ulong seed)
         {
@@ -141,7 +142,7 @@ namespace KebabStreet.Tests.EditMode
                     }
                 }
 
-                target = FindExtensionTarget(board);
+                target = (_profile.Smart ? FindCommitted(board) : null) ?? FindExtensionTarget(board);
                 if (target == null && WaitingCount(counter) > 0)
                 {
                     return _sim.RemoveIngredient();
@@ -158,6 +159,7 @@ namespace KebabStreet.Tests.EditMode
             if (count == 0)
             {
                 target = _profile.Smart ? FindSmartTarget(board) : FindMostUrgent();
+                _committed = _profile.Smart ? target : null;
             }
 
             if (target == null)
@@ -283,6 +285,19 @@ namespace KebabStreet.Tests.EditMode
             }
 
             return best;
+        }
+
+        /// <summary>Розумний бот доводить до кінця страву, яку почав для обраного клієнта (а не перемикається на найменше терпіння).</summary>
+        private Customer FindCommitted(Board board)
+        {
+            Customer c = _committed;
+            if (c == null || c.State != CustomerState.Waiting)
+            {
+                return null;
+            }
+
+            BuildItems(c, board);
+            return _items.Count > board.ItemCount && IsPrefix(board) ? c : null;
         }
 
         /// <summary>
