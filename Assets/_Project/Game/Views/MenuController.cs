@@ -217,7 +217,7 @@ namespace KebabStreet.Game
             var amount = new Label(Context.Profile.Data.Coins.ToString());
             amount.style.color = UiColors.Coin;
             amount.style.fontSize = 46f;
-            amount.style.unityFontStyleAndWeight = FontStyle.Bold;
+            amount.AddToClassList("ks-bold");
             amount.style.marginLeft = 14f;
             amount.style.textShadow = Shadow(2f, 3f);
             coins.Add(amount);
@@ -304,7 +304,7 @@ namespace KebabStreet.Game
             node.Button.style.marginTop = 0f;
             node.Button.style.marginBottom = 0f;
             node.Button.style.fontSize = NodeFontSize;
-            node.Button.style.unityFontStyleAndWeight = FontStyle.Bold;
+            node.Button.AddToClassList("ks-bold");
             node.Button.style.unityTextAlign = TextAnchor.MiddleCenter;
             SetRadius(node.Button, LevelMapLayout.NodeSize * 0.5f);
             SetBorder(node.Button, NodeBorder, UiColors.Espresso);
@@ -710,7 +710,7 @@ namespace KebabStreet.Game
             var title = new Label(string.Format(text.Get(TextKeys.MenuLevel), number));
             title.style.fontSize = 56f;
             title.style.color = UiColors.Espresso;
-            title.style.unityFontStyleAndWeight = FontStyle.Bold;
+            title.AddToClassList("ks-bold");
             title.style.marginBottom = 18f;
             panel.Add(title);
 

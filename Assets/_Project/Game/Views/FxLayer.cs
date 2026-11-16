@@ -489,7 +489,7 @@ namespace KebabStreet.Game
                     if (text)
                     {
                         var label = new Label();
-                        label.style.unityFontStyleAndWeight = FontStyle.Bold;
+                        label.AddToClassList("ks-bold");
                         label.style.fontSize = TextFontSize;
                         label.style.unityTextAlign = TextAnchor.MiddleCenter;
                         label.style.textShadow = new TextShadow { offset = new Vector2(2f, 3f), blurRadius = 0f, color = new Color(0.1f, 0.06f, 0.03f) };

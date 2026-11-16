@@ -198,15 +198,15 @@ function Face($g, $mood) {
         $g.FillEllipse((Brush $Espresso), 104, 98, 12, 16); $g.FillEllipse((Brush $Espresso), 140, 98, 12, 16)
         $g.DrawLine($thick, 90, 84, 118, 72); $g.DrawLine($thick, 138, 72, 166, 84)
         $g.DrawLines($pen, (Pts @(104,142, 114,134, 124,142, 134,134, 144,142, 152,136)))
-        $drop = Pts @(194,66, 184,86, 186,94, 194,98, 202,94, 204,86)
-        Poly $g $drop (C "5CC8FF") 4
+        $drop = Pts @(214,78, 194,110, 197,124, 214,132, 231,124, 234,110)
+        Poly $g $drop (C "5CC8FF") 8
     }
     if ($mood -eq "angry") {
         $g.FillEllipse((Brush $White), 94, 98, 26, 20); $g.FillEllipse((Brush $White), 136, 98, 26, 20)
         $g.FillEllipse((Brush $Espresso), 102, 104, 12, 14); $g.FillEllipse((Brush $Espresso), 142, 104, 12, 14)
         $g.DrawLine($thick, 88, 76, 122, 96); $g.DrawLine($thick, 134, 96, 168, 76)
         $g.DrawArc($thick, 106, 138, 44, 24, 200, 140)
-        $g.DrawLine((Pen $Ember 8), 180, 50, 200, 70); $g.DrawLine((Pen $Ember 8), 200, 50, 180, 70)
+        $g.DrawLine((Pen $Ember 13), 196, 86, 226, 116); $g.DrawLine((Pen $Ember 13), 226, 86, 196, 116)
     }
 }
 function Portrait2($name, $skin, $hairColor, $shirt, $style, $mood) {
