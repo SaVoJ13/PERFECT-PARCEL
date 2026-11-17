@@ -44,6 +44,11 @@ namespace KebabStreet.Game
         public const string AssemblyClear = "assembly.clear";
         public const string AssemblyQueue = "assembly.queue";
         public const string AssemblyCombo = "assembly.combo";
+        public const string ComboNext = "combo.next";
+        public const string ComboMax = "combo.max";
+        public const string ComboLostExpired = "combo.lost_expired";
+        public const string ComboLostWrongDish = "combo.lost_wrong_dish";
+        public const string ComboLostLeft = "combo.lost_left";
         public const string HintMeatNotReady = "hint.meat_not_ready";
         public const string HintGrillFull = "hint.grill_full";
         public const string HintBoardFull = "hint.board_full";

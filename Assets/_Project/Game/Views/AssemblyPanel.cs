@@ -47,7 +47,6 @@ namespace KebabStreet.Game
         private static readonly Color QueueColor = UiColors.QueueButton;
         private static readonly Color ReadyColor = UiColors.ReadyText;
         private static readonly Color WarningColor = UiColors.Warning;
-        private static readonly Color CoinColor = UiColors.Coin;
 
         private readonly ShiftInput _input;
         private readonly ILocalizer _text;
@@ -62,7 +61,6 @@ namespace KebabStreet.Game
         private readonly VisualElement[] _queueIcons;
         private readonly Label _queueTitle;
         private readonly string[] _actionNames = new string[(int)ShiftActionType.ServeDish + 1];
-        private readonly string _comboFormat;
         private readonly Button[] _stationButtons;
         private readonly Button[] _items;
         private readonly int[] _shownItems;
@@ -75,10 +73,10 @@ namespace KebabStreet.Game
         private readonly TapDecor _clearDecor;
         private readonly Label _dish;
         private readonly Label _hint;
-        private readonly Label _combo;
+        private readonly ComboMeter _comboMeter;
+        private readonly ComboTracker _comboTracker;
         private DishCheck _shownCheck;
         private string _shownHint;
-        private long _shownCombo;
         private bool _drawn;
         private readonly FxLayer _fx;
         private MotionTarget[] _itemMotion;
@@ -96,7 +94,6 @@ namespace KebabStreet.Game
             _text = text ?? throw new ArgumentNullException(nameof(text));
             ShiftSimulation simulation = input.Driver.Simulation;
             Board board = simulation.Board;
-            _comboFormat = text.Get(TextKeys.AssemblyCombo);
             _stations = board == null ? new int[0] : AssemblyView.Stations(board);
             _ingredientNames = new string[board == null ? 0 : board.Config.IngredientCount];
             _ingredientIcons = new string[_ingredientNames.Length];
@@ -222,8 +219,11 @@ namespace KebabStreet.Game
             _hint = AddLabel(notes, "assembly-hint", FontSize, WarningColor);
             Backdrop(_hint);
             _hint.style.flexGrow = 1;
-            _combo = AddLabel(notes, "assembly-combo", FontSize, CoinColor);
-            Backdrop(_combo);
+
+            // Q-11: видиме комбо - підписи і смужка вікна праворуч у рядку приміток, причина скидання - рядком нижче.
+            VisualElement reasonRow = Row(Root, "assembly-combo-reason-row");
+            _comboTracker = new ComboTracker(simulation);
+            _comboMeter = new ComboMeter(notes, reasonRow, text);
 
             Refresh();
         }
@@ -245,7 +245,10 @@ namespace KebabStreet.Game
 
         public string HintText => _hint.text;
 
-        public string ComboText => _combo.text;
+        public string ComboText => _comboMeter.ComboText;
+
+        /// <summary>Видиме комбо (Q-11): смужка вікна, «наступний бонус», причина скидання.</summary>
+        public ComboMeter Combo => _comboMeter;
 
         /// <summary>Відгук на тап кнопки станції (S1-21).</summary>
         public TapDecor GetStationDecor(int index)
@@ -471,12 +474,8 @@ namespace KebabStreet.Game
                 _shownHint = hint;
             }
 
-            long combo = simulation.Counter == null ? 0L : AssemblyView.ComboShown(simulation.Counter.Combo);
-            if (!_drawn || combo != _shownCombo)
-            {
-                _combo.text = combo > 0L ? string.Format(_comboFormat, combo) : string.Empty;
-                _shownCombo = combo;
-            }
+            _comboTracker.Update(simulation);
+            _comboMeter.Refresh(_comboTracker);
 
             _drawn = true;
         }

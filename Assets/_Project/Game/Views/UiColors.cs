@@ -40,6 +40,13 @@ namespace KebabStreet.Game
         public static readonly Color EmberRed = new Color(1f, 0.36f, 0.31f);
         public static readonly Color Warning = new Color(0.96f, 0.62f, 0.04f);
 
+        /// <summary>Q-11: «+N» надбавки комбо над клієнтом (помаранчевий, відрізняється від монет і чайових).</summary>
+        public static readonly Color ComboBonus = new Color(1f, 0.55f, 0.22f);
+
+        /// <summary>Q-11: смужка вікна комбо і її мерехтіння, коли вікно спливає.</summary>
+        public static readonly Color ComboBar = new Color(1f, 0.79f, 0.2f);
+        public static readonly Color ComboBarWarning = new Color(1f, 0.36f, 0.31f);
+
         /// <summary>Підкладка під написи верхньої смуги: білий текст на білих смугах навісу не читався.</summary>
         public static readonly Color HudBackdrop = new Color(0.231f, 0.137f, 0.078f, 0.80f);
 

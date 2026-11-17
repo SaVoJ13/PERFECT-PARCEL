@@ -22,12 +22,15 @@ namespace KebabStreet.Game
     /// <summary>Подія слота: що сталося, скільки заплачено (разом із чайовими й комбо), скільки з них чайові.</summary>
     public readonly struct CounterEvent : IEquatable<CounterEvent>
     {
-        public CounterEvent(CounterEventKind kind, long paidCoins, long tipCoins, long untilTick)
+        public CounterEvent(
+            CounterEventKind kind, long paidCoins, long tipCoins, long untilTick, long bonusCoins = 0L, long combo = 0L)
         {
             Kind = kind;
             PaidCoins = paidCoins;
             TipCoins = tipCoins;
             UntilTick = untilTick;
+            BonusCoins = bonusCoins;
+            Combo = combo;
         }
 
         public CounterEventKind Kind { get; }
@@ -38,6 +41,12 @@ namespace KebabStreet.Game
         /// <summary>Чайові в цій платі; 0 — немає або невідомо (кілька видач за один кадр).</summary>
         public long TipCoins { get; }
 
+        /// <summary>Надбавка комбо в цій платі (Q-11); 0 — немає або невідомо (кілька видач за один кадр).</summary>
+        public long BonusCoins { get; }
+
+        /// <summary>Комбо Core після цієї видачі (Q-11); 0 — невідомо.</summary>
+        public long Combo { get; }
+
         /// <summary>До якого такту зміни подію показувати.</summary>
         public long UntilTick { get; }
 
@@ -46,7 +55,9 @@ namespace KebabStreet.Game
             return Kind == other.Kind
                 && PaidCoins == other.PaidCoins
                 && TipCoins == other.TipCoins
-                && UntilTick == other.UntilTick;
+                && UntilTick == other.UntilTick
+                && BonusCoins == other.BonusCoins
+                && Combo == other.Combo;
         }
 
         public override bool Equals(object obj)
@@ -62,6 +73,8 @@ namespace KebabStreet.Game
                 hash = (hash * 397) ^ PaidCoins.GetHashCode();
                 hash = (hash * 397) ^ TipCoins.GetHashCode();
                 hash = (hash * 397) ^ UntilTick.GetHashCode();
+                hash = (hash * 397) ^ BonusCoins.GetHashCode();
+                hash = (hash * 397) ^ Combo.GetHashCode();
                 return hash;
             }
         }
@@ -90,6 +103,7 @@ namespace KebabStreet.Game
         private readonly CounterEvent[] _events;
         private readonly long _showTicks;
         private long _tipCoins;
+        private long _comboCoins;
 
         public CounterFeed(ShiftSimulation simulation)
         {
@@ -114,6 +128,7 @@ namespace KebabStreet.Game
             }
 
             _tipCoins = counter == null ? 0L : counter.TipCoins;
+            _comboCoins = counter == null ? 0L : counter.ComboCoins;
         }
 
         /// <summary>Скільки слотів прилавка.</summary>
@@ -142,6 +157,8 @@ namespace KebabStreet.Game
             long now = simulation.ElapsedTicks;
             long tipDelta = counter.TipCoins - _tipCoins;
             _tipCoins = counter.TipCoins;
+            long bonusDelta = counter.ComboCoins - _comboCoins;
+            _comboCoins = counter.ComboCoins;
             int served = 0;
             int servedSlot = CounterSlots.None;
 
@@ -183,7 +200,16 @@ namespace KebabStreet.Game
             if (served == 1 && tipDelta > 0L && IsShown(servedSlot))
             {
                 CounterEvent paid = _events[servedSlot];
-                _events[servedSlot] = new CounterEvent(paid.Kind, paid.PaidCoins, tipDelta, paid.UntilTick);
+                _events[servedSlot] = new CounterEvent(
+                    paid.Kind, paid.PaidCoins, tipDelta, paid.UntilTick, paid.BonusCoins, paid.Combo);
+            }
+
+            // Q-11: так само надбавка комбо і комбо після видачі — лише коли за кадр була одна видача.
+            if (served == 1 && IsShown(servedSlot))
+            {
+                CounterEvent paid = _events[servedSlot];
+                _events[servedSlot] = new CounterEvent(
+                    paid.Kind, paid.PaidCoins, paid.TipCoins, paid.UntilTick, bonusDelta > 0L ? bonusDelta : 0L, counter.Combo);
             }
 
             for (int slot = 0; slot < _events.Length; slot++)
