@@ -250,6 +250,12 @@ namespace KebabStreet.Game
             return Reduced ? 1f : 1f + (WarnPulseAmplitude * Wave(timeSec, Mathf.Min(WarnPulseHz, MaxFlashHz)));
         }
 
+        /// <summary>Q-11: прозорість смужки вікна комбо, що спливає: 1..0,45 з частотою 2 Гц (не більше 3 Гц); у «менше анімацій» - 1.</summary>
+        public static float ComboWarnBlink(float timeSec)
+        {
+            return Reduced ? 1f : 1f - (0.55f * Wave(timeSec, Mathf.Min(WarnPulseHz, MaxFlashHz)));
+        }
+
         /// <summary>Тремтіння майже пригорілого м'яса по горизонталі, px.</summary>
         public static float WarnShake(float timeSec)
         {

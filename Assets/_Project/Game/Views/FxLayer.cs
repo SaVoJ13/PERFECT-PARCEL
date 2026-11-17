@@ -97,6 +97,7 @@ namespace KebabStreet.Game
         private static readonly Color DarkSteamColor = new Color(0.32f, 0.3f, 0.3f);
         private static readonly Color SmokeColor = new Color(0.12f, 0.11f, 0.11f);
         private static readonly Color PlusColor = UiColors.Coin;
+        private static readonly Color ComboBonusColor = UiColors.ComboBonus;
         private static readonly Color TipColor = new Color(0.55f, 0.95f, 0.55f);
         private static readonly Color[] ConfettiColors =
         {
@@ -264,7 +265,7 @@ namespace KebabStreet.Game
         /// Оплата (QB-SHIFT-14): 3-8 монет від клієнта до лічильника і «+N» над клієнтом; чайові - окремий «+N»
         /// іншого відтінку. Кількість монет залежить від суми. Повертає, скільки монет запущено.
         /// </summary>
-        public int Payment(VisualElement source, long paid, long tip)
+        public int Payment(VisualElement source, long paid, long tip, long bonus = 0L)
         {
             Vector2 origin = Anchor(source);
             if (paid > 0L)
@@ -275,6 +276,12 @@ namespace KebabStreet.Game
             if (tip > 0L)
             {
                 Plus(origin + new Vector2(TipOffsetPx, 0f), "+" + tip, TipColor);
+            }
+
+            if (bonus > 0L)
+            {
+                // Q-11: надбавка комбо - окремий «+N» іншого кольору з протилежного від чайових боку.
+                Plus(origin - new Vector2(TipOffsetPx, 0f), "+" + bonus, ComboBonusColor);
             }
 
             if (UiMotion.Reduced)

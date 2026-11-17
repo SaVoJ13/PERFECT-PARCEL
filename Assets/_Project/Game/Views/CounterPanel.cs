@@ -600,7 +600,11 @@ namespace KebabStreet.Game
                         {
                             _hopAt = now;
                             // Q-05d, QB-SHIFT-14: монети-частинки до лічильника і «+N» над клієнтом.
-                            _owner._fx?.Payment(_button, counterEvent.PaidCoins, counterEvent.TipCoins);
+                            _owner._fx?.Payment(_button, counterEvent.PaidCoins, counterEvent.TipCoins, counterEvent.BonusCoins);
+                            if (counterEvent.Combo >= ComboView.SparksFrom)
+                            {
+                                _owner._fx?.Sparks(_button); // Q-11: іскра над клієнтом при комбо x3 і вище.
+                            }
                         }
                     }
 
